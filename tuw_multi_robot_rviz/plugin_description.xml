@@ -1,0 +1,18 @@
+<library path="lib/libtuw_voronoi_rviz">
+  <class name="tuw_voronoi_rviz"
+         type="tuw_voronoi_rviz::VoronoiGraphDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      Displays Voronoi Graphs in RVIZ
+    </description>
+    <message_type>voronoi_segmentation/VoronoiGraph</message_type>
+  </class>
+  <class name="tuw_segment_rviz"
+         type="tuw_voronoi_rviz::VoronoiSegmentDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      Displays Voronoi Segments in RVIZ
+    </description>
+    <message_type>voronoi_segmentation/VoronoiGraph</message_type>
+  </class>
+</library>

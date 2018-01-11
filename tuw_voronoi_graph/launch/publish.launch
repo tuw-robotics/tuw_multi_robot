@@ -1,0 +1,8 @@
+<launch> 
+    <arg name="robot_name" default="p3dx" />
+    <group  ns="$(arg robot_name)">
+        <node pkg="grid_map_visualization" type="grid_map_visualization" name="grid_map_visualization_local" output="screen">
+            <rosparam command="load" file="$(find tuw_voronoi_map)/cfg/gridmap_viz_local.yaml" />
+        </node>
+    </group>
+</launch>

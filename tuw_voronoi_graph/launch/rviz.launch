@@ -1,0 +1,5 @@
+<launch>
+
+ 
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find tuw_voronoi_graph)/cfg/rviz/rviz.rviz" output="screen"/> 
+</launch>

@@ -1,0 +1,658 @@
+/*
+ * Copyright (c) 2017, <copyright holder> <email>
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in the
+ *     documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the <organization> nor the
+ *     names of its contributors may be used to endorse or promote products
+ *     derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY <copyright holder> <email> ''AS IS'' AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL <copyright holder> <email> BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 
+ */
+
+#include <voronoi_segmentation/segment_expander.h>
+#include <voronoi_segmentation/crossing.h>
+#include <grid_map_ros/grid_map_ros.hpp>
+#include <ros/ros.h> //DEBUG
+
+Segment_Expander::Segment_Expander() 
+{
+}
+
+void Segment_Expander::Initialize(std::shared_ptr<grid_map::GridMap> _map)
+{
+  nx_ = _map->getSize()[0];
+  ny_ = _map->getSize()[1];
+  ns_ = nx_*ny_;
+  
+  distance_field_.reset(new float[nx_*ny_]);
+  voronoi_graph_.reset(new int8_t[nx_*ny_]);
+  global_map_.reset(new int8_t[nx_*ny_]);
+  
+  float *distance_field = distance_field_.get();
+  int8_t *voronoi_graph = voronoi_graph_.get();
+  int8_t *global_map = global_map_.get();
+  
+  getMaps(distance_field, voronoi_graph, global_map, _map.get());
+  
+}
+
+
+
+void Segment_Expander::getMaps(float *distance_field, int8_t *voronoi_graph, int8_t *global_map, grid_map::GridMap *voronoi_map)
+{
+  auto& distfield = voronoi_map->get("distfield");
+  auto& voronoi = voronoi_map->get("voronoi");
+  auto& map = voronoi_map->get("map");
+  
+  
+  for (grid_map::GridMapIterator iterator(*voronoi_map); !iterator.isPastEnd(); ++iterator) 
+  {
+    const grid_map::Index mapIndex = iterator.getUnwrappedIndex();
+    int arrayIndex = (ny_-1-mapIndex[1])*nx_+(nx_-1-mapIndex[0]);	//Maybe use Opencv to get rid of these calculation (turn 90deg and mirror)
+    distance_field[arrayIndex] = distfield(iterator.getLinearIndex());	
+    voronoi_graph[arrayIndex] = voronoi(iterator.getLinearIndex());
+    global_map[arrayIndex] = map(iterator.getLinearIndex());
+  }
+}
+
+
+
+std::vector< std::shared_ptr<Segment> > Segment_Expander::getGraph(std::shared_ptr< std::vector< std::vector< std::pair< int, int > > > > _endPoints, float* _potential)
+{
+  Segment::ResetId();
+  
+  std::vector<Crossing> crossings_;
+  for(int i = 0; i < _endPoints->size(); i++)
+  {
+	Crossing c(std::make_shared< std::vector< std::pair< int, int > > >((*_endPoints)[i]));
+	crossings_.push_back(c);
+  }
+  
+  std::vector< std::shared_ptr<Segment> > segments;
+  
+  std::shared_ptr< std::vector< std::vector< std::pair< int, int > > > > endPoints = std::make_shared<std::vector< std::vector< std::pair< int, int > > >>(*_endPoints);
+  while(endPoints->size() > 0)
+  {
+	std::vector<std::pair< int, int >> startCrossing = endPoints->back();
+	if(startCrossing.size()>0)
+	{
+	  std::pair< int, int > startPoint = startCrossing.back();
+	  for(auto it = startCrossing.begin(); it != startCrossing.end(); ++it)	//Occupie all Endpoints from the current crossing to avoid short segments 
+	  {
+		Index idx((*it).first, (*it).second, nx_, 0,0,0);	
+		_potential[idx.i] = 0;
+	  }
+	  
+	  Index start(startPoint.first, startPoint.second, nx_, 0,0,0);
+	  
+	  float min_d;
+	  std::vector<std::pair<int,int>> path = getPath(start, _potential, endPoints, min_d);
+	  if(path.size() > 1)
+	  {
+		std::shared_ptr<std::vector<std::pair<int,int>>> p = std::make_shared<std::vector<std::pair<int,int>>>(path);
+		Segment seg(p, min_d);
+		segments.push_back(std::make_shared<Segment>(seg));
+	  }
+	  removeEndpoint(start, endPoints);
+	}
+	else
+	{
+	  endPoints->pop_back();
+	}
+  }
+  
+  for(auto it = segments.begin(); it != segments.end(); ++it)
+  {
+	bool addedSegment = 0;
+	for(auto it_c = crossings_.begin(); it_c != crossings_.end(); ++it_c)
+	{
+	  it_c->TryAddSegment((*it));
+	}
+  }
+  
+  
+  return segments;
+}
+
+
+
+
+std::vector< std::shared_ptr<Segment> > Segment_Expander::getGraph(std::shared_ptr< std::vector< std::vector< std::pair< int, int > > > > _endPoints, float* _potential, float _max_length)
+{
+  Segment::ResetId();
+  
+  std::vector<Crossing> crossings_;
+  for(int i = 0; i < _endPoints->size(); i++)
+  {
+	Crossing c(std::make_shared< std::vector< std::pair< int, int > > >((*_endPoints)[i]));
+	crossings_.push_back(c);
+  }
+  
+  std::vector< std::shared_ptr<Segment> > segments;
+  
+  std::shared_ptr< std::vector< std::vector< std::pair< int, int > > > > endPoints = std::make_shared<std::vector< std::vector< std::pair< int, int > > >>(*_endPoints);
+  while(endPoints->size() > 0)
+  {
+	std::vector<std::pair< int, int >> startCrossing = endPoints->back();
+	if(startCrossing.size()>0)
+	{
+	  std::pair< int, int > startPoint = startCrossing.back();
+	  for(auto it = startCrossing.begin(); it != startCrossing.end(); ++it)	//Occupie all Endpoints from the current crossing to avoid short segments 
+	  {
+		Index idx((*it).first, (*it).second, nx_, 0,0,0);	
+		_potential[idx.i] = 0;
+	  }
+	  
+	  Index start(startPoint.first, startPoint.second, nx_, 0,0,0);
+	  
+	  float min_d;
+	  std::vector<std::pair<int,int>> path = getPath(start, _potential, endPoints, min_d);
+	  if(path.size() > 1 && path.size() <= _max_length)
+	  {
+		std::shared_ptr<std::vector<std::pair<int,int>>> p = std::make_shared<std::vector<std::pair<int,int>>>(path);
+		Segment seg(p, min_d);
+		segments.push_back(std::make_shared<Segment>(seg));
+	  }
+	  else if(path.size() > 1 && path.size() > _max_length)
+	  {
+		float nr_paths = std::ceil((float)path.size() / _max_length);
+		float real_length = std::ceil((float)path.size() / nr_paths);
+		
+		std::vector< std::shared_ptr<Segment> > new_segs;
+		for(int i = 0; i < nr_paths; i++)
+		{
+		  //Segment
+		  std::vector<std::pair<int,int>> path_n;
+		  for(int j = std::max<int>(0,i * real_length - 1); j <= (i+1)*real_length - 1 && j < path.size(); j++)
+		  {
+			path_n.push_back({path[j].first, path[j].second});
+		  }
+		  float mind = getMinD(path_n);
+		  
+		  Segment nSeg(std::make_shared<std::vector<std::pair<int,int>>>(path_n), mind);
+		  new_segs.push_back(std::make_shared<Segment>(nSeg));
+		  if(i > 0)
+		  {
+			new_segs[i-1]->AddSuccessor(new_segs[i]);
+			new_segs[i]->AddPredecessor(new_segs[i-1]);
+		  }
+			  
+		  segments.push_back(new_segs[i]);
+		}
+		
+		
+		
+	  }
+	  removeEndpoint(start, endPoints);
+	}
+	else
+	{
+	  endPoints->pop_back();
+	}
+  }
+  
+  for(auto it = segments.begin(); it != segments.end(); ++it)
+  {
+	bool addedSegment = 0;
+	for(auto it_c = crossings_.begin(); it_c != crossings_.end(); ++it_c)
+	{
+	  it_c->TryAddSegment((*it));
+	}
+  }
+  
+  
+  return segments;
+}
+
+float Segment_Expander::getMinD(std::vector< std::pair< int, int > > _path)
+{
+  Index p1(_path[0].first, _path[0].second, nx_, 0,0,0);
+  float min_d = distance_field_[p1.i];
+  for(auto it = _path.begin(); it != _path.end(); ++it)
+  {
+	Index p(it->first, it->second, nx_, 0,0,0);
+	min_d = std::min<float>( distance_field_[p.i], min_d);
+  }
+  return min_d;
+}
+
+
+std::shared_ptr< std::vector<std::vector< std::pair< int, int >> > > Segment_Expander::calcEndpoints(float* _potential)
+{
+  std::vector<std::vector< std::pair< int, int > >> endpoints;
+  
+  std::fill(_potential, _potential + ns_, -1);
+  for(int i = 0; i < ns_; i++)
+  {
+	//dont examine allready found potentials
+	if(_potential[i] >= 0)
+	  continue;
+	
+	//only look for voronoi points
+	if(voronoi_graph_[i] >= 0)
+	  continue;
+	
+	if(nrOfNeighbours(i) > 2)
+	{
+	  std::vector< std::pair< int, int > > crossing = expandCrossing(Index(i,0,0,0), _potential);
+	  endpoints.push_back(crossing);
+	}
+	
+  }
+  
+  return std::make_shared<std::vector<std::vector< std::pair< int, int > >>>(endpoints);
+}
+
+std::shared_ptr< std::vector< std::pair< std::pair< float, float >, std::pair< float, float > > > > Segment_Expander::getSegments(std::shared_ptr< std::vector< std::vector< std::pair< int, int > > > > _endPoints, float* _potential)
+{
+  std::vector< std::pair< std::pair< float, float >, std::pair< float, float > > > segments;
+  std::shared_ptr< std::vector< std::vector< std::pair< int, int > > > > endPoints = std::make_shared<std::vector< std::vector< std::pair< int, int > > >>(*_endPoints);
+  while(endPoints->size() > 0)
+  {
+	
+	std::vector<std::pair< int, int >> startCrossing = endPoints->back();	
+	if(startCrossing.size()>0)
+	{
+	  std::pair< int, int > startPoint = startCrossing.back();
+	  for(auto it = startCrossing.begin(); it != startCrossing.end(); ++it)	//Occupie all Endpoints from the current crossing to avoid short segments 
+	  {
+		Index idx((*it).first, (*it).second, nx_, 0,0,0);	
+		_potential[idx.i] = 0;
+	  }
+	  
+	  Index start(startPoint.first, startPoint.second, nx_, 0,0,0);
+	  std::pair< int, int > endPoint = expandSegment(start, _potential, endPoints);
+	  
+	  std::pair< std::pair< float, float >, std::pair< float, float > > segment(startPoint, endPoint);
+	  segments.push_back(segment);	
+	  
+	  removeEndpoint(start, endPoints);
+	}
+	else
+	{
+	  endPoints->pop_back();
+	}
+	
+  }
+  
+  return std::make_shared<std::vector< std::pair< std::pair< float, float >, std::pair< float, float > > >>(segments);
+}
+
+
+
+std::pair< float, float > Segment_Expander::getSegmentNeighbour(std::pair< float, float > _point, std::shared_ptr< std::vector< std::vector< std::pair< int, int > > > > _endpoints)
+{
+  Index p(_point.first, _point.second, nx_, 0,0,0);
+  
+  Index next = p.offsetDist(1,0,nx_,ny_);
+  if(checkSegmentPoint(next) && !isEndpoint(next, _endpoints))
+	return {next.getX(nx_), next.getY(ny_)};
+  
+  next = p.offsetDist(1,1,nx_,ny_);
+  if(checkSegmentPoint(next) && !isEndpoint(next, _endpoints))
+	return {next.getX(nx_), next.getY(ny_)};
+  
+  next = p.offsetDist(0,1,nx_,ny_);
+  if(checkSegmentPoint(next) && !isEndpoint(next, _endpoints))
+	return {next.getX(nx_), next.getY(ny_)};
+  
+  next = p.offsetDist(-1,0,nx_,ny_);
+  if(checkSegmentPoint(next) && !isEndpoint(next, _endpoints))
+	return {next.getX(nx_), next.getY(ny_)};
+  
+  next = p.offsetDist(-1,-1,nx_,ny_);
+  if(checkSegmentPoint(next) && !isEndpoint(next, _endpoints))
+	return {next.getX(nx_), next.getY(ny_)};
+  
+  next = p.offsetDist(0,-1,nx_,ny_);
+  if(checkSegmentPoint(next) && !isEndpoint(next, _endpoints))
+	return {next.getX(nx_), next.getY(ny_)};
+  
+  next = p.offsetDist(1,-1,nx_,ny_);
+  if(checkSegmentPoint(next) && !isEndpoint(next, _endpoints))
+	return {next.getX(nx_), next.getY(ny_)};
+  
+  next = p.offsetDist(-1,1,nx_,ny_);
+  if(checkSegmentPoint(next) && !isEndpoint(next, _endpoints))
+	return {next.getX(nx_), next.getY(ny_)};
+  
+  
+  ROS_INFO("ERROR");
+  return {0,0};	//Should not happen
+  
+}
+
+bool Segment_Expander::checkSegmentPoint(Segment_Expander::Index _point)
+{
+  //Check Boundries
+  if(_point.i < 0 || _point.i > ns_)
+      return false;
+
+
+  if(global_map_[_point.i] > 0)
+    return false;
+  
+  
+  if(voronoi_graph_[_point.i] >= 0)
+    return false;
+    
+  if(nrOfNeighbours(_point.i)!=2)
+	return false;
+  
+  return true;
+}
+
+
+
+std::vector< std::pair< int, int > > Segment_Expander::getPath(Segment_Expander::Index _start, float* _potential, std::shared_ptr< std::vector< std::vector< std::pair< int, int > > > > _endpoints, float& min_d)
+{
+  std::vector<std::pair<int, int>> points;
+  
+  int cycle = 0; 
+  int cycles = ns_;
+  _potential[_start.i] = _start.potential;
+
+  Index current(_start.i, _potential[_start.i],0, _potential[_start.i]);	
+  min_d = distance_field_[_start.i];
+  //clear the queue
+  clearpq(queue_);
+  queue_.push(current);
+
+  
+  while(!(queue_.empty())  && (cycle < cycles))
+  {
+    if(queue_.empty())
+      break;
+
+    current = queue_.top();
+    queue_.pop();
+    
+	min_d = std::min<float>(min_d, distance_field_[current.i]);
+	points.push_back({current.getX(nx_), current.getY(nx_)});
+  
+	if(current.i != _start.i && isEndpoint(current,_endpoints))
+	{
+	  
+		std::pair<int, int> point;
+		point.first = current.getX(nx_);
+		point.second = current.getY(nx_);
+		return points;
+	}
+    else
+	{
+	  addExpansionCandidate(current, current.offsetDist(1,0,nx_,ny_), _potential);
+	  addExpansionCandidate(current, current.offsetDist(0,1,nx_,ny_), _potential);
+	  addExpansionCandidate(current, current.offsetDist(-1,0,nx_,ny_), _potential);
+	  addExpansionCandidate(current, current.offsetDist(0,-1,nx_,ny_), _potential);
+
+	  addExpansionCandidate(current, current.offsetDist(1,1,nx_,ny_), _potential);
+	  addExpansionCandidate(current, current.offsetDist(-1,1,nx_,ny_), _potential);
+	  addExpansionCandidate(current, current.offsetDist(-1,-1,nx_,ny_), _potential);
+	  addExpansionCandidate(current, current.offsetDist(1,-1,nx_,ny_), _potential);
+	}
+    cycle++;
+  }
+  
+  float dx = points.front().first - points.back().first;
+  float dy = points.front().second - points.back().second;
+  
+  
+  if(!findEdgeSegments_ || points.size() <= 3 || std::sqrt(dx*dx + dy*dy) <= 3)
+  {
+	points.clear();
+  }
+
+  return points;
+}
+
+
+std::pair< int, int > Segment_Expander::expandSegment(Segment_Expander::Index _start, float* _potential, std::shared_ptr<std::vector<std::vector<std::pair<int,int>>>> _endpoints)
+{
+  std::vector<std::pair<int, int>> points;
+  
+  int cycle = 0; 
+  int cycles = ns_;
+  _potential[_start.i] = _start.potential;
+
+  Index current(_start.i, _potential[_start.i],0, _potential[_start.i]);	
+  
+  //clear the queue
+  clearpq(queue_);
+  queue_.push(current);
+
+  
+  while(!(queue_.empty())  && (cycle < cycles))
+  {
+    if(queue_.empty())
+      break;
+
+    current = queue_.top();
+    queue_.pop();
+    
+	
+	
+	if(current.i != _start.i && isEndpoint(current,_endpoints))
+	{
+	  
+		std::pair<int, int> point;
+		point.first = current.getX(nx_);
+		point.second = current.getY(nx_);
+		return point;
+	}
+    else
+	{
+	  addExpansionCandidate(current, current.offsetDist(1,0,nx_,ny_), _potential);
+	  addExpansionCandidate(current, current.offsetDist(0,1,nx_,ny_), _potential);
+	  addExpansionCandidate(current, current.offsetDist(-1,0,nx_,ny_), _potential);
+	  addExpansionCandidate(current, current.offsetDist(0,-1,nx_,ny_), _potential);
+
+	  addExpansionCandidate(current, current.offsetDist(1,1,nx_,ny_), _potential);
+	  addExpansionCandidate(current, current.offsetDist(-1,1,nx_,ny_), _potential);
+	  addExpansionCandidate(current, current.offsetDist(-1,-1,nx_,ny_), _potential);
+	  addExpansionCandidate(current, current.offsetDist(1,-1,nx_,ny_), _potential);
+	}
+    cycle++;
+  }
+  
+
+  if(findEdgeSegments_)
+	return std::pair<float,float>(current.getX(nx_),current.getY(nx_));
+  else
+	return std::pair<float,float>(_start.getX(nx_),_start.getY(nx_));
+  
+}
+
+
+
+std::vector< std::pair< int, int > > Segment_Expander::expandCrossing(Index _start, float* _potential)
+{
+  std::vector<std::pair<int, int>> points;
+  
+  int cycle = 0; 
+  int cycles = ns_;
+  _potential[_start.i] = _start.potential;
+
+  Index current(_start.i, _potential[_start.i],0, _potential[_start.i]);	
+  
+  //clear the queue
+  clearpq(queue_);
+  queue_.push(current);
+
+  
+  while(!(queue_.empty())  && (cycle < cycles))
+  {
+    if(queue_.empty())
+      break;
+
+    current = queue_.top();
+    queue_.pop();
+    
+	if(nrOfNeighbours(current.i) <= 2)
+	{
+	  std::pair<int, int> point;
+	  point.first = current.getX(nx_);
+	  point.second = current.getY(nx_);
+	  points.push_back(point);
+	  _potential[current.i] = -2;			//Reset potential to find point
+	}
+    else
+	{
+	  addExpansionCandidate(current, current.offsetDist(1,0,nx_,ny_), _potential);
+	  addExpansionCandidate(current, current.offsetDist(0,1,nx_,ny_), _potential);
+	  addExpansionCandidate(current, current.offsetDist(-1,0,nx_,ny_), _potential);
+	  addExpansionCandidate(current, current.offsetDist(0,-1,nx_,ny_), _potential);
+
+	  addExpansionCandidate(current, current.offsetDist(1,1,nx_,ny_), _potential);
+	  addExpansionCandidate(current, current.offsetDist(-1,1,nx_,ny_), _potential);
+	  addExpansionCandidate(current, current.offsetDist(-1,-1,nx_,ny_), _potential);
+	  addExpansionCandidate(current, current.offsetDist(1,-1,nx_,ny_), _potential);
+	}
+    cycle++;
+  }
+  
+  return points;
+}
+
+void Segment_Expander::addExpansionCandidate(Index current, Index next, float* potential)
+{
+  float potentialPrev = potential[current.i];
+  //Check Boundries
+  if(next.i < 0 || next.i > ns_)
+      return;
+
+  //Dont update allready found potentials
+  if (potential[next.i] >= 0)
+      return;
+
+  if(global_map_[next.i] > 0)
+    return;
+  
+  
+  if(voronoi_graph_[next.i] >= 0)
+    return;
+    
+    
+  float pot = potentialPrev + 1;
+  float dist = 0;
+  float weight = pot;
+  
+  potential[next.i] = pot;
+  
+  queue_.push(Index(next.i, weight, dist, pot));
+}
+
+
+int Segment_Expander::nrOfNeighbours(int i)
+{
+  //0 1 2
+  //7   3
+  //6 5 4
+  int neighbours[8] = {
+					  (voronoi_graph_[(Index(i,0,0,0).offsetDist(-1,1,nx_,ny_)).i] < 0),
+					  (voronoi_graph_[(Index(i,0,0,0).offsetDist(0,1,nx_,ny_)).i] < 0),
+					  (voronoi_graph_[(Index(i,0,0,0).offsetDist(1,1,nx_,ny_)).i] < 0),
+					  (voronoi_graph_[(Index(i,0,0,0).offsetDist(1,0,nx_,ny_)).i] < 0),
+					  (voronoi_graph_[(Index(i,0,0,0).offsetDist(1,-1,nx_,ny_)).i] < 0),
+					  (voronoi_graph_[(Index(i,0,0,0).offsetDist(0,-1,nx_,ny_)).i] < 0),
+					  (voronoi_graph_[(Index(i,0,0,0).offsetDist(-1,-1,nx_,ny_)).i] < 0),
+					  (voronoi_graph_[(Index(i,0,0,0).offsetDist(-1,0,nx_,ny_)).i] < 0)
+					  };
+  
+  
+  
+	//Remove double neighbours e.g.:
+	//	x x 0
+	//	0 x 0
+	//	0 x x
+	//should result in 2
+					  
+	int num_neighbours = neighbours[0] + neighbours[1] + neighbours[2] + neighbours[3] + neighbours[4] + neighbours[5] + neighbours[6] + neighbours[7];
+	
+	if(neighbours[0] && neighbours[1] && !neighbours[2])
+	  num_neighbours--;
+	
+	if(!neighbours[0] && neighbours[1] && neighbours[2])
+	  num_neighbours--;
+	
+	if(neighbours[2] && neighbours[3] && !neighbours[4])
+	  num_neighbours--;
+	
+	if(!neighbours[2] && neighbours[3] && neighbours[4])
+	  num_neighbours--;
+	
+	
+	if(neighbours[4] && neighbours[5] && !neighbours[6])
+	  num_neighbours--;
+	
+	if(!neighbours[4] && neighbours[5] && neighbours[6])
+	  num_neighbours--;
+	
+	
+	if(neighbours[6] && neighbours[7] && !neighbours[0])
+	  num_neighbours--;
+	
+	if(!neighbours[6] && neighbours[7] && neighbours[0])
+	  num_neighbours--;
+	
+	return num_neighbours;
+}
+
+
+void Segment_Expander::removeEndpoint(Segment_Expander::Index _current, std::shared_ptr< std::vector< std::vector< std::pair< int, int > > > > _endpoints)
+{
+  for(int j = 0; j < _endpoints->size(); j++)
+  {
+	if((*_endpoints)[j].size() > 0)
+	{
+	  for(int i = 0; i < (*_endpoints)[j].size(); i++)
+	  {
+		if((*_endpoints)[j][i].first == _current.getX(nx_) && (*_endpoints)[j][i].second == _current.getY(nx_))
+		{
+		  (*_endpoints)[j].erase((*_endpoints)[j].begin() + i);
+		  if((*_endpoints)[j].size() == 0)
+		  {
+			_endpoints->erase(_endpoints->begin()+j);
+		  }
+		}
+	  }
+	}
+	else 
+	{
+	  _endpoints->erase(_endpoints->begin()+j);
+	}
+  } 
+}
+
+
+bool Segment_Expander::isEndpoint(Segment_Expander::Index _current, std::shared_ptr< std::vector< std::vector< std::pair< int, int > > > > _endpoints)
+{
+  for(auto it_crossing = _endpoints->begin(); it_crossing != _endpoints->end(); it_crossing++)
+  {
+	for(auto it = it_crossing->begin(); it != it_crossing->end(); it++)
+	{
+	
+	  if((*it).first == _current.getX(nx_) && (*it).second == _current.getY(nx_))
+	  {
+		return true;
+	  }
+	}
+  } 
+  return false;
+}

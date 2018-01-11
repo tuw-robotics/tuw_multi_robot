@@ -1,0 +1,20 @@
+[Buildset]
+BuildItems=@Variant(\x00\x00\x00\t\x00\x00\x00\x00\x01\x00\x00\x00\x0b\x00\x00\x00\x00\x01\x00\x00\x004\x00s\x00i\x00m\x00p\x00l\x00e\x00_\x00v\x00e\x00l\x00o\x00c\x00i\x00t\x00y\x00_\x00c\x00o\x00n\x00t\x00r\x00o\x00l\x00l\x00e\x00r)
+
+[CMake]
+Build Directory Count=1
+Current Build Directory Index=0
+ProjectRootRelative=
+
+[CMake][CMake Build Directory 0]
+Build Directory Path=file:///home/benjamin/ros_workspace/build/simple_velocity_controller/
+Build Type=Debug
+CMake Binary=file:///usr/bin/cmake
+Environment Profile=
+Extra Arguments=-DCATKIN_DEVEL_PREFIX=../../devel -DCMAKE_INSTALL_PREFIX=../../install
+Install Directory=file:///home/benjamin/ros_workspace/install
+
+[Defines And Includes][Compiler]
+Name=GCC
+Path=gcc
+Type=GCC

@@ -1,0 +1,11 @@
+<launch>
+    <arg name="room" default="cave" /> 
+    <arg name="robot_name" default="p3dx" />
+    <arg name="cfg"  default="default" />
+  
+    <node pkg="tuw_voronoi_map" type="tuw_voronoi_publisher" name="tuw_voronoi_map_publisher" output="screen">
+        <param name="map_topic" value="voronoi_map"/>
+        <param name="mapPath" value="$(find tuw_voronoi_graph)/cfg/maps/$(arg room)/"/>
+        <param name="mapInfoName" value="vmap.info"/>
+    </node>
+</launch>

@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="robot_name_0" default="robot_0" />
+  <arg name="robot_name_1" default="robot_1" />
+  <arg name="robot_name_2" default="robot_2" />
+  
+  <group ns="$(arg robot_name_0)">
+    <node pkg="tuw_multi_robot_ctrl" type="tuw_velocity_controller" name="$(arg robot_name_0)" args="$(arg robot_name_0)" output="screen">  
+    </node>
+  </group>
+  <group ns="$(arg robot_name_1)">
+    <node pkg="tuw_multi_robot_ctrl" type="tuw_velocity_controller" name="$(arg robot_name_1)" args="$(arg robot_name_1)" output="screen">  
+    </node>
+  </group>
+  <group ns="$(arg robot_name_2)">
+    <node pkg="tuw_multi_robot_ctrl" type="tuw_velocity_controller" name="$(arg robot_name_2)" args="$(arg robot_name_2)" output="screen">  
+    </node>
+  </group>
+</launch>

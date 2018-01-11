@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="robot_name" default="robot_0" />
+  <arg name="segment_file" default="segments.yaml" />
+  <arg name="room" default="cave" />
+  
+  <group ns="$(arg robot_name)">
+    <node pkg="tuw_path_generator" type="segments_to_path_node" name="segments_to_path_node" output="screen"> 
+        <param name="segment_file" value="$(find tuw_p3dx)/cfg/segments/$(arg room)/$(arg segment_file)"/>  
+	<param name="sample_distance" value="0.25"/> 
+    </node>
+  </group>
+</launch>

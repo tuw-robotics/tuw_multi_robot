@@ -1,0 +1,7 @@
+int32 id
+int32 success
+int32 overallPathLength
+int32 longestPathLength
+int32 prioritySchedulingAttemps
+int32 speedSchedulingAttemps
+int32 duration

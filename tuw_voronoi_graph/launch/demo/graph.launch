@@ -1,0 +1,34 @@
+<launch>
+
+  <arg name="room"             default="cave"            />
+  <arg name="use_rviz"         default="true"            />
+  <arg name="use_map_server"   default="true"            />
+  <arg name="use_publisher"    default="true"            />
+  <arg name="use_segmentation" default="true"		 />
+  <arg name="cfg"	       default="default"	 />
+
+  <!-- map server -->
+  <group if="$(arg use_map_server)">
+	  <include file="$(find tuw_voronoi_graph)/launch/map_publisher.launch">
+	    <arg name="room" value="$(arg room)" />
+	  </include>
+	  <include file="$(find tuw_voronoi_graph)/launch/publish.launch">
+	  </include>
+  </group>
+
+
+  <!-- start rviz -->
+  <group if="$(arg use_rviz)">
+	  <include file="$(find tuw_voronoi_graph)/launch/rviz.launch">
+		<!--  <arg name="cfg" value="mpn"/> -->
+	  </include>
+  </group>
+
+
+
+  <group if="$(arg use_segmentation)">
+	  <include file="$(find tuw_voronoi_graph)/launch/segmentation.launch">
+	  </include>
+  </group>
+
+</launch>

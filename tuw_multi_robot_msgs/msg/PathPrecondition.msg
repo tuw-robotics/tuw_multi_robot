@@ -1,0 +1,2 @@
+int32 robotId
+int32 stepCondition
