@@ -1,0 +1,11 @@
+<launch>
+
+  <arg name="robot_name" default="p3dx" />
+  <arg name="cfg"  default="default" />
+  
+<node pkg="tuw_voronoi_map" type="tuw_voronoi_map_generator" name="tuw_segment_multi_robot_planner" output="screen">
+	<param name="map_name" value="voronoi_map"/>
+</node>
+
+  
+</launch>

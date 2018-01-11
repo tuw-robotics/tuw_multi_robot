@@ -1,0 +1,7 @@
+<launch>
+
+  <!--<arg name="cfg" default="mpn"/>
+  
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find tuw_p3dx)/cfg/rviz/$(arg cfg)/rviz.rviz" output="screen"/> -->
+  <node pkg="rviz" type="rviz" name="rviz" output="screen"/>
+</launch>

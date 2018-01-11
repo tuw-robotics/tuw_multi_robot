@@ -1,0 +1,3 @@
+[Project]
+Manager=KDevCMakeManager
+Name=tuw_global_planner
