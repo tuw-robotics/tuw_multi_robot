@@ -30,6 +30,7 @@
 #define MULTI_ROBOT_GOAL_SELECTOR_H
 
 #include <rviz/tool.h>
+#include <ros/ros.h>
 
 namespace Ogre
 {
@@ -56,7 +57,7 @@ class MultiRobotGoalSelector: public rviz::Tool
 {
 Q_OBJECT
 public:
-  MultiRobotGoalSelector();
+  MultiRobotGoalSelector( );
   ~MultiRobotGoalSelector();
 
   virtual void onInitialize();
@@ -65,14 +66,15 @@ public:
   virtual void deactivate();
 
   virtual int processMouseEvent( rviz::ViewportMouseEvent& event );
-
-  virtual void load( const rviz::Config& config );
-  virtual void save( rviz::Config config ) const;
+  
 
 private:
   void makeFlag( const Ogre::Vector3& position );
 
+  ros::NodeHandle nh_;
+  ros::Publisher pubGoals_;
   std::vector<Ogre::SceneNode*> flag_nodes_;
+  std::vector<rviz::VectorProperty*> vector_properties_;
   Ogre::SceneNode* moving_flag_node_;
   std::string flag_resource_;
   rviz::VectorProperty* current_flag_property_;
