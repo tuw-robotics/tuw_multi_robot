@@ -33,7 +33,7 @@
 #include <boost/circular_buffer.hpp>
 
 #include <rviz/message_filter_display.h>
-#include <voronoi_segmentation/VoronoiGraph.h>
+#include <tuw_multi_robot_msgs/VoronoiGraph.h>
 
 
 #ifndef Q_MOC_RUN
@@ -62,7 +62,7 @@ class IntProperty;
 
 // All the source in this plugin is in its own namespace.  This is not
 // required but is good practice.
-namespace tuw_voronoi_rviz
+namespace tuw_multi_robot_rviz
 {
 
 class VoronoiSegmentVisual;
@@ -84,7 +84,7 @@ class VoronoiSegmentVisual;
 // themselves are represented by a separate class, ImuVisual.  The
 // idiom for the visuals is that when the objects exist, they appear
 // in the scene, and when they are deleted, they disappear.
-class VoronoiSegmentDisplay: public rviz::MessageFilterDisplay<voronoi_segmentation::VoronoiGraph>
+class VoronoiSegmentDisplay: public rviz::MessageFilterDisplay<tuw_multi_robot_msgs::VoronoiGraph>
 {
 Q_OBJECT
 public:
@@ -113,7 +113,7 @@ private Q_SLOTS:
   
   // Function to handle an incoming ROS message.
 private:
-  void processMessage( const voronoi_segmentation::VoronoiGraph::ConstPtr& msg );
+  void processMessage( const tuw_multi_robot_msgs::VoronoiGraph::ConstPtr& msg );
 
   // Storage for the list of visuals.  It is a circular buffer where
   // data gets popped from the front (oldest) and pushed to the back (newest)

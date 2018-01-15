@@ -142,8 +142,8 @@ include_directories(
  )
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
-add_executable(tuw_global_planner_node src/planner_node.cpp)
-target_link_libraries(tuw_global_planner_node
+add_executable(tuw_multi_robot_router_node src/planner_node.cpp)
+target_link_libraries(tuw_multi_robot_router_node
   ${catkin_LIBRARIES}
   ${PROJECT_NAME}
 )

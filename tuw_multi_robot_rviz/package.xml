@@ -62,7 +62,6 @@
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
-    <!-- Other tools can request additional information be placed here -->
-
+    <rviz plugin="${prefix}/plugin_description.xml"/>
   </export>
 </package>

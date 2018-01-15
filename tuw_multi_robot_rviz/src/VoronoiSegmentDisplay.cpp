@@ -39,10 +39,10 @@
 #include <rviz/frame_manager.h>
 
 
-#include <tuw_voronoi_rviz/VoronoiSegmentDisplay.h>
-#include <tuw_voronoi_rviz/VoronoiSegmentVisual.h>
+#include <tuw_multi_robot_rviz/VoronoiSegmentDisplay.h>
+#include <tuw_multi_robot_rviz/VoronoiSegmentVisual.h>
 
-namespace tuw_voronoi_rviz
+namespace tuw_multi_robot_rviz
 {
 
 
@@ -109,7 +109,7 @@ void VoronoiSegmentDisplay::updatePathScale()
 }
 
 // This is our callback to handle an incoming message.
-void VoronoiSegmentDisplay::processMessage ( const  voronoi_segmentation::VoronoiGraph::ConstPtr& msg ) {
+void VoronoiSegmentDisplay::processMessage ( const  tuw_multi_robot_msgs::VoronoiGraph::ConstPtr& msg ) {
     // Here we call the rviz::FrameManager to get the transform from the
     // fixed frame to the frame in the header of this Imu message.  If
     // it fails, we can't do anything else so we return.
@@ -149,5 +149,5 @@ void VoronoiSegmentDisplay::processMessage ( const  voronoi_segmentation::Vorono
 // Tell pluginlib about this class.  It is important to do this in
 // global scope, outside our package's namespace.
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(tuw_voronoi_rviz::VoronoiSegmentDisplay,rviz::Display )
+PLUGINLIB_EXPORT_CLASS(tuw_multi_robot_rviz::VoronoiSegmentDisplay,rviz::Display )
 // END_TUTORIAL

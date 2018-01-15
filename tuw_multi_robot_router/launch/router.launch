@@ -1,0 +1,17 @@
+<launch>
+	<arg name="cfg"  default="default" />
+	<arg name="use_gdb"  default="false" />
+	
+    <group if="$(arg use_gdb)">
+	<node launch-prefix="gdb -ex run --args" pkg="tuw_multi_robot_router" type="tuw_multi_robot_router_node" name="tuw_robot_router" output="screen">
+		<rosparam command="load" file="$(find tuw_multi_robot_router)/cfg/multi_robot_planner/$(arg cfg)/multi_robot.yaml" />
+	</node>
+    </group>
+    <group unless="$(arg use_gdb)">
+	<node pkg="tuw_multi_robot_router" type="tuw_multi_robot_router_node" name="tuw_robot_router" output="screen">
+		<rosparam command="load" file="$(find tuw_multi_robot_router)/cfg/multi_robot_planner/$(arg cfg)/multi_robot.yaml" />
+	</node>
+    </group>
+</launch>
+
+	

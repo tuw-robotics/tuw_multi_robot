@@ -1,0 +1,2 @@
+robot_names: ["robot_0","robot_1","robot_2","robot_3"]
+robot_radius: [0.45,0.45,0.45,0.45]

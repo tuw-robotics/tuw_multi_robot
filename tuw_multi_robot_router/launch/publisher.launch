@@ -1,8 +1,0 @@
-<launch>
-	<arg name="robotnr" default="3"/>
-	<arg name="cfg"  default="default" />
-
-  	<node pkg="goal_poses_to_array" type="goal_to_array_node" name="goal_to_array_node" output="screen">
-		<rosparam command="load" file="$(find tuw_global_planner)/cfg/publisher/$(arg cfg)/publisher.yaml" />
-	</node>
-</launch>

@@ -32,10 +32,10 @@
 #include <OGRE/OgreSceneManager.h>
 
 #include <rviz/ogre_helpers/line.h>
+#include <tuw_multi_robot_msgs/Vertex.h>
+#include <tuw_multi_robot_rviz/VoronoiSegmentVisual.h>
 
-#include <tuw_voronoi_rviz/VoronoiSegmentVisual.h>
-
-namespace tuw_voronoi_rviz
+namespace tuw_multi_robot_rviz
 {
 
 VoronoiSegmentVisual::VoronoiSegmentVisual ( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node ) {
@@ -61,7 +61,7 @@ VoronoiSegmentVisual::~VoronoiSegmentVisual() {
     scene_manager_->destroySceneNode ( frame_node_ );
 }
 
-void VoronoiSegmentVisual::setMessage ( const voronoi_segmentation::VoronoiGraph::ConstPtr& msg ) 
+void VoronoiSegmentVisual::setMessage ( const tuw_multi_robot_msgs::VoronoiGraph::ConstPtr& msg ) 
 {
     static double timeOld_;
     if( timeOld_ == msg->header.stamp.toSec() )
@@ -73,7 +73,7 @@ void VoronoiSegmentVisual::setMessage ( const voronoi_segmentation::VoronoiGraph
     pathLine.resize ( msg->segments.size() * 4);
     for( size_t i = 0; i < msg->segments.size(); ++i) 
 	{ 
-		voronoi_segmentation::PathSegment seg = msg->segments[i];
+		tuw_multi_robot_msgs::Vertex seg = msg->segments[i];
 		geometry_msgs::Point p1 = seg.path.front();
 		geometry_msgs::Point p2 = seg.path.back();
 		

@@ -1,23 +1,23 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(tuw_multi_robot_rviz)
 
-## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+## Add support for C++11, supported in ROS Kinetic and newer
+# add_definitions(-std=c++11)
 
+add_compile_options(-std=c++14)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   rviz
-  roscpp
   tuw_geometry_msgs
-  tuw_multi_robot_msgs
   tuw_nav_msgs
+  tuw_multi_robot_msgs
 )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-
+find_package(Eigen3 REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -72,7 +72,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   tuw_geometry_msgs#   tuw_multi_robot_msgs#   tuw_nav_msgs
+#   tuw_geometry_msgs#   tuw_nav_msgs
 # )
 
 ################################################
@@ -100,14 +100,14 @@ find_package(catkin REQUIRED COMPONENTS
 ###################################
 ## The catkin_package macro generates cmake config files for your package
 ## Declare things to be passed to dependent projects
-## INCLUDE_DIRS: uncomment this if your package contains header files
+## INCLUDE_DIRS: uncomment this if you package contains header files
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES tuw_multi_robot_rviz
-#  CATKIN_DEPENDS rviz tuw_geometry_msgs tuw_multi_robot_msgs tuw_nav_msgs
+#  LIBRARIES tuw_voronoi_rviz
+#  CATKIN_DEPENDS rviz tuw_geometry_msgs tuw_nav_msgs voronoi_segmentation
 #  DEPENDS system_lib
 )
 
@@ -117,16 +117,57 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
+# include_directories(include)
 include_directories(
-# include
   ${catkin_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIR} 
+  include
 )
 
-## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/tuw_multi_robot_rviz.cpp
-# )
+link_directories(${catkin_LIBRARY_DIRS})
 
+
+## This setting causes Qt's "MOC" generation to happen automatically.
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+## This plugin includes Qt widgets, so we must include Qt.
+## We'll use the version that rviz used so they are compatible.
+if(rviz_QT_VERSION VERSION_LESS "5")
+  message(STATUS "Using Qt4 based on the rviz_QT_VERSION: ${rviz_QT_VERSION}")
+  find_package(Qt4 ${rviz_QT_VERSION} EXACT REQUIRED QtCore QtGui)
+  ## pull in all required include dirs, define QT_LIBRARIES, etc.
+  include(${QT_USE_FILE})
+else()
+  message(STATUS "Using Qt5 based on the rviz_QT_VERSION: ${rviz_QT_VERSION}")
+  find_package(Qt5 ${rviz_QT_VERSION} EXACT REQUIRED Core Widgets)
+  ## make target_link_libraries(${QT_LIBRARIES}) pull in all required dependencies
+  set(QT_LIBRARIES Qt5::Widgets)
+endif()
+
+## I prefer the Qt signals and slots to avoid defining "emit", "slots",
+## etc because they can conflict with boost signals, so define QT_NO_KEYWORDS here.
+add_definitions(-DQT_NO_KEYWORDS)
+
+## Declare a C++ library
+add_library(${PROJECT_NAME}
+  include/tuw_multi_robot_rviz/VoronoiGraphVisual.h
+  include/tuw_multi_robot_rviz/VoronoiGraphDisplay.h
+  src/VoronoiGraphVisual.cpp
+  src/VoronoiGraphDisplay.cpp
+  include/tuw_multi_robot_rviz/VoronoiSegmentVisual.h
+  include/tuw_multi_robot_rviz/VoronoiSegmentDisplay.h
+  src/VoronoiSegmentVisual.cpp
+  src/VoronoiSegmentDisplay.cpp
+  include/tuw_multi_robot_rviz/MultiRobotGoalSelector.h
+  src/MultiRobotGoalSelector.cpp
+)
+
+## Specify libraries to link a library or executable target against
+target_link_libraries(${PROJECT_NAME}
+  ${QT_LIBRARIES} 
+  ${catkin_LIBRARIES}
+)
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
@@ -135,7 +176,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/tuw_multi_robot_rviz_node.cpp)
+# add_executable(${PROJECT_NAME}_node src/tuw_voronoi_rviz_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -167,11 +208,12 @@ include_directories(
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_node
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+install(TARGETS 
+  ${PROJECT_NAME} 
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
 ## Mark cpp header files for installation
 # install(DIRECTORY include/${PROJECT_NAME}/
@@ -181,18 +223,18 @@ include_directories(
 # )
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
-# install(FILES
-#   # myfile1
-#   # myfile2
-#   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-# )
+install(FILES
+  plugin_description.xml
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+
 
 #############
 ## Testing ##
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_tuw_multi_robot_rviz.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_tuw_voronoi_rviz.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
