@@ -15,7 +15,7 @@
     </description>
     <message_type>voronoi_segmentation/VoronoiGraph</message_type>
   </class>
-  <class name="tuw_multi_robot_goal_selector"
+  <class name="Goal Selector"
          type="tuw_multi_robot_rviz::MultiRobotGoalSelector"
          base_class_type="rviz::Tool">
     <description>

@@ -80,7 +80,7 @@ namespace tuw_multi_robot_rviz
         moving_flag_node_->attachObject(entity);
         moving_flag_node_->setVisible(false);
 
-        nr_robtos_ = new rviz::IntProperty("nr of robtos", 3, "the nr of robots used for planning");
+        nr_robtos_ = new rviz::IntProperty("No. robtos", 3, "the nr of robots used for planning");
         getPropertyContainer()->addChild(nr_robtos_);
     }
 
@@ -106,7 +106,7 @@ namespace tuw_multi_robot_rviz
         {
             moving_flag_node_->setVisible(true);
 
-            current_flag_property_ = new rviz::VectorProperty("Flag " + QString::number(flag_nodes_.size()));
+            current_flag_property_ = new rviz::VectorProperty("Goal " + QString::number(flag_nodes_.size()));
             current_flag_property_->setReadOnly(true);
             getPropertyContainer()->addChild(current_flag_property_);
         }

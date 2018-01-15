@@ -6,7 +6,6 @@
   <arg name="use_map_server"   default="true"            />
   <arg name="use_planner"      default="true"            />
   <arg name="use_controller"   default="true"            />
-  <arg name="use_publisher"    default="true"            />
   <arg name="use_segmentation" default="true"		 />
   <arg name="cfg"	       default="default"	 />
 
@@ -23,7 +22,7 @@
   <!-- start rviz -->
   <group if="$(arg use_rviz)">
 	  <include file="$(find tuw_multi_robot_demo)/launch/rviz.launch">
-		<!--  <arg name="cfg" value="mpn"/> -->
+		<arg name="cfg" value="$(arg cfg)"/> 
 	  </include>
   </group>
 
@@ -46,14 +45,10 @@
 	  </include>
   </group>
 
-  <group if="$(arg use_publisher)">
-	  <include file="$(find tuw_multi_robot_demo)/launch/publisher.launch">
-	    <arg name="cfg" value="$(arg cfg)" />
-	  </include>
-  </group>
 
   <group if="$(arg use_segmentation)">
 	  <include file="$(find tuw_multi_robot_demo)/launch/segmentation.launch">
+	    <arg name="room" value="$(arg room)" />
 	  </include>
   </group>
 
