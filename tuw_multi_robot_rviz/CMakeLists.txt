@@ -10,9 +10,8 @@ project(tuw_multi_robot_rviz)
 find_package(catkin REQUIRED COMPONENTS
   rviz
   roscpp
-  tuw_geometry_msgs
   tuw_multi_robot_msgs
-  tuw_nav_msgs
+  nav_msgs
 )
 
 ## System dependencies are found with CMake's conventions
