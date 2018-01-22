@@ -302,7 +302,7 @@ bool Planner::makePlan(const std::vector< Point >& _goals, const std::vector<flo
 
     if(_goals.size() != goals_.size())
     {
-        ROS_INFO("Wrong nr of goals");
+        ROS_INFO("Wrong nr of goals %lu %lu", _goals.size(), goals_.size());
         return false;
     }
 

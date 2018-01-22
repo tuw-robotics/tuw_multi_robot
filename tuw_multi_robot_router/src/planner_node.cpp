@@ -254,8 +254,20 @@ void Planner_Node::PublishEmpty()
 
 void Planner_Node::Publish()
 {
+	
     if(gotPlan())
     {
+		//ORIGIN ??
+		grid_map::Index origS(0,0);
+		grid_map::Index id(0);
+		grid_map::Position orig;
+		grid_map::Position p_origin;
+		voronoi_map_.getPosition(origS, orig);
+		voronoi_map_.getPosition(id, p_origin);
+		
+		p_origin[0] = voronoi_map_.getSize()[0] * voronoi_map_.getResolution() - p_origin[0] - orig[0];
+		p_origin[1] = voronoi_map_.getSize()[1] * voronoi_map_.getResolution() - p_origin[1] - orig[1];
+		
         for(int i = 0; i < robot_names_.size(); i++)
         {
             nav_msgs::Path ros_path;
@@ -273,8 +285,10 @@ void Planner_Node::Publish()
                 grid_map::Index idx((*it).point.x, (*it).point.y);
                 grid_map::Position pos;
                 voronoi_map_.getPosition(idx, pos);
-                p.pose.position.x = -pos[0];
-                p.pose.position.y = -pos[1];
+                p.pose.position.x = -pos[0] - p_origin[0];
+                p.pose.position.y = -pos[1] - p_origin[1];
+				
+				p.pose.orientation.w = 1;
                 ros_path.poses.push_back(p);
 
             }
@@ -298,16 +312,19 @@ void Planner_Node::Publish()
                 grid_map::Position posS;
                 voronoi_map_.getPosition(idxS, posS);
 
-                s.start.x = -posS[0];
-                s.start.y = -posS[1];
+				
+				
+                s.start.x = -posS[0] - p_origin[0];
+                s.start.y = -posS[1] - p_origin[1];
 
                 grid_map::Index idxE((*it).end.x, (*it).end.y);
                 grid_map::Position posE;
                 voronoi_map_.getPosition(idxE, posE);
-                s.end.x = -posE[0];
-                s.end.y = -posE[1];
+                s.end.x = -posE[0] - p_origin[0];
+                s.end.y = -posE[1] - p_origin[1];
 
                 s.segId = (*it).segId;
+				s.width = graph_[(*it).segId]->getPathSpace() * voronoi_map_.getResolution();	//TODO		(SEG ID WRONG)
 
                 for(int j = 0; j < (*it).preconditions.size(); j++) //auto precond = (*it).preconditions.cbegin(); precond != (*it).preconditions.cend(); precond++)
                 {
