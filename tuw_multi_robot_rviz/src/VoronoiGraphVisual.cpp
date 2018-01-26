@@ -90,18 +90,18 @@ void VoronoiGraphVisual::setMessage ( const tuw_multi_robot_msgs::VoronoiGraph::
 		
 		pathLine[i].reset ( new rviz::Line ( scene_manager_, frame_node_ ) );
 		pathLine[i]->setColor ( colorPath_ );
-		pathLine[i]->setPoints( Ogre::Vector3 ( (p1.x+1)*msg->resolution-msg->origin.position.x, (p1.y+1)*msg->resolution-msg->origin.position.y, p1.z*msg->resolution-msg->origin.position.z ), Ogre::Vector3 ( (p2.x+1)*msg->resolution-msg->origin.position.x, (p2.y+1)*msg->resolution-msg->origin.position.y, p2.z*msg->resolution-msg->origin.position.z )  );
+		pathLine[i]->setPoints( Ogre::Vector3 ( (p1.x)*msg->resolution-msg->origin.position.x, (p1.y)*msg->resolution-msg->origin.position.y, p1.z*msg->resolution-msg->origin.position.z ), Ogre::Vector3 ( (p2.x)*msg->resolution-msg->origin.position.x, (p2.y)*msg->resolution-msg->origin.position.y, p2.z*msg->resolution-msg->origin.position.z )  );
 		pathLine[i]->setScale ( Ogre::Vector3 ( scalePath_, scalePath_, scalePath_ ) );
 			
 		crossingShape[2*i].reset ( new rviz::Shape ( rviz::Shape::Sphere, scene_manager_, frame_node_ ) );
         crossingShape[2*i]->setColor ( colorPath_ );
-        crossingShape[2*i]->setPosition ( Ogre::Vector3 ( (p1.x+1)*msg->resolution-msg->origin.position.x, (p1.y+1)*msg->resolution-msg->origin.position.y, p1.z*msg->resolution-msg->origin.position.z ) );
+        crossingShape[2*i]->setPosition ( Ogre::Vector3 ( (p1.x)*msg->resolution-msg->origin.position.x, (p1.y)*msg->resolution-msg->origin.position.y, p1.z*msg->resolution-msg->origin.position.z ) );
         crossingShape[2*i]->setOrientation ( rotation *rotation2 );
 		crossingShape[2*i]->setScale ( Ogre::Vector3 ( scalePoint_, scalePoint_, scalePoint_ ) );
 		
 		crossingShape[2*i+1].reset ( new rviz::Shape ( rviz::Shape::Sphere, scene_manager_, frame_node_ ) );
         crossingShape[2*i+1]->setColor ( colorPath_ );
-        crossingShape[2*i+1]->setPosition ( Ogre::Vector3 ( (p2.x+1)*msg->resolution-msg->origin.position.x, (p2.y+1)*msg->resolution-msg->origin.position.y, p2.z*msg->resolution-msg->origin.position.z ) );
+        crossingShape[2*i+1]->setPosition ( Ogre::Vector3 ( (p2.x)*msg->resolution-msg->origin.position.x, (p2.y)*msg->resolution-msg->origin.position.y, p2.z*msg->resolution-msg->origin.position.z ) );
         crossingShape[2*i+1]->setOrientation ( rotation *rotation2 );
 		crossingShape[2*i+1]->setScale ( Ogre::Vector3 ( scalePoint_, scalePoint_, scalePoint_ ) );
 		

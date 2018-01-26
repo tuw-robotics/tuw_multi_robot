@@ -68,6 +68,9 @@ Planner_Node::Planner_Node(ros::NodeHandle& _n) :
     pubSegPaths_.resize(robot_names_.size());
     pubVelocityProfile_.resize(robot_names_.size());
 
+	useGoalOnSegment_ = true;
+	n_param_.param("use_segment_as_goal", useGoalOnSegment_, useGoalOnSegment_);
+	
     planner_status_topic_ = "planner_status";
     n_param_.param("planner_status_topic", planner_status_topic_, planner_status_topic_);
 

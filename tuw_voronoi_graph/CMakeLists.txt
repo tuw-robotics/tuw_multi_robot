@@ -24,7 +24,7 @@ find_package(catkin REQUIRED COMPONENTS
 # find_package(Boost REQUIRED COMPONENTS system)
 find_package(OpenCV REQUIRED)
 find_package(Boost COMPONENTS serialization REQUIRED)
-
+find_package(Eigen3 REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -192,6 +192,12 @@ target_link_libraries(tuw_voronoi_map_publisher
   voronoi_map_lib
   ${OpenCV_LIBRARIES}
   ${Boost_SERIALIZATION_LIBRARY}
+)
+
+add_executable(tuw_segment_to_graph_node src/segment_to_graph_node.cpp)
+target_link_libraries(tuw_segment_to_graph_node
+  ${catkin_LIBRARIES}
+  yaml-cpp
 )
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}

@@ -44,6 +44,7 @@
 #include <tuw_global_planner/speed_scheduler.h>
 #include <tuw_global_planner/potential_calculator.h>
 #include <tuw_global_planner/velocity_calculator.h>
+#include <eigen3/Eigen/Dense>
 
 class Planner
 {
@@ -85,7 +86,7 @@ public:			const std::vector<float> &getVelocityProfile(int _robot_id);
 //private:		bool generatePath(std::vector<std::shared_ptr<Segment>> &_path, int _index);	//TODO take care const???
 private:		bool calculateStartPoints(const std::vector<float> _radius, const grid_map::GridMap &_map, const std::vector<std::shared_ptr<Segment>> &_graph);
 private:		bool getPaths(const std::vector<std::shared_ptr<Segment>> &_graph, int &_actualRobot, const std::vector<int> &_priorities, const std::vector<float>& _speedList);
-private:        	bool findSegment (const std::vector< std::shared_ptr< Segment > >& _graph, const Point& _segmentPoint, const Point& _originPoint, float _radius, std::shared_ptr< Segment > &_foundSeg);
+private:        bool resolveSegment (const std::vector< std::shared_ptr< Segment > >& _graph, const std::shared_ptr<Segment>& _seg, const Point& _originPoint, float _radius, std::shared_ptr< Segment > &_foundSeg);
 
 private:		bool gotPlan_;
 private:		std::vector<std::vector< Potential_Point > > paths_;
@@ -93,20 +94,22 @@ private:		std::vector<std::vector< PathSegment > > segPaths_;
 private:		std::vector< Point > goals_;
 private:		std::vector< Point > robot_poses_;
 
+private:		std::vector< Point > realGoals_;
+private:		std::vector< Point > realStart_;
 private:		std::vector< Point > voronoiGoals_;
 private:		std::vector< Point > voronoiStart_;
 private:		std::vector<std::shared_ptr<Segment>> startSegments_;
 private:		std::vector<std::shared_ptr<Segment>> goalSegments_;
 private:		std::vector< int >  radius_;
-private:        	std::vector<std::vector<float>> velocityProfile_;
+private:        std::vector<std::vector<float>> velocityProfile_;
 
 public: 		std::shared_ptr<float> potential_;	//DEBUG PUBLISH
 
-private:        	std::unique_ptr<PointExpander> pointExpander_;
+private:        std::unique_ptr<PointExpander> pointExpander_;
 private:		std::unique_ptr<SegmentExpander> expander_;
 private:		std::unique_ptr<Traceback> traceback_;
-private:        	std::shared_ptr<Path_Coordinator> path_querry_;
-private:        	std::shared_ptr<BacktrackingAvoidResolution> resolution_;
+private:        std::shared_ptr<Path_Coordinator> path_querry_;
+private:        std::shared_ptr<BacktrackingAvoidResolution> resolution_;
 private:		std::shared_ptr<PotentialCalculator> pCalc_;
 private:		std::vector<std::vector<int>> segCounter;
 private:		std::unique_ptr<PathGenerator<Potential_Point>> path_generator_Point_;
@@ -127,6 +130,12 @@ public:			int getOverallPathLength();
 public:			int getLongestPathLength();
 public:			int getPriorityScheduleAttemps();
 public:			int getSpeedScheduleAttemps();
+
+
+private:     	int getSegment(const std::vector<std::shared_ptr<Segment>> &_graph, const Eigen::Vector2d &_odom);
+private:    	float distanceToSegment(std::shared_ptr<Segment> _s, Eigen::Vector2d _p);  
+
+protected:		bool useGoalOnSegment_;
 };
 
 #endif // PLANNER_H

@@ -1,0 +1,8 @@
+start_x:      [      0,        2,   3.2,    5]
+start_y:      [   -1.5,     -1.5,    -2,   -4]
+end_x:        [      2,      3.2,     5,    3]
+end_y:        [   -1.5,       -2,    -4,   -4]
+space:        [    1.0,      1.0,   1.0,  1.0]
+origin_x:     15
+origin_y:     15
+resolution:   0.05

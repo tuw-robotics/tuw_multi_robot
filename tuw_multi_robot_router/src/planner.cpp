@@ -1,4 +1,4 @@
-/*  
+/*
  * Copyright (c) 2017, <copyright holder> <email>
  * All rights reserved.
  *
@@ -81,6 +81,9 @@ void Planner::resize(int _nr_robots)
     voronoiGoals_.resize(_nr_robots);
     voronoiStart_.resize(_nr_robots);
 
+    realGoals_.resize(_nr_robots);
+    realStart_.resize(_nr_robots);
+
     radius_.resize(_nr_robots);
 
     priorityScheduler_->reset(_nr_robots);
@@ -102,89 +105,149 @@ bool Planner::calculateStartPoints(const std::vector<float> _radius, const grid_
         grid_map::Position p(robot_poses_[i].x, robot_poses_[i].y);
         _map.getIndex(p, mapIdx);
         Point start = { (float)(size_x - mapIdx[0]), (float)(size_y - mapIdx[1]) };
+        Eigen::Vector2d s(start.x, start.y);
+
 
         grid_map::Position p2(goals_[i].x, goals_[i].y);
         _map.getIndex(p2, mapIdx);
         Point end = { (float)(size_x - mapIdx[0]), (float)(size_y - mapIdx[1]) };
+        Eigen::Vector2d g(end.x, end.y);
 
         radius_[i] = ((float) _radius[i]) / (float) _map.getResolution();
 
+        realGoals_[i] = end;
+        realStart_[i] = start;
 
-        if(!pointExpander_->findVoronoiEndPoint(start, size_x * size_y * 2, potential_.get(), voronoiStart_[i]))
-        {
+
+        int segId = getSegment(_graph, s);
+
+        if(segId == -1)
             return false;
-        }
 
-        if(!pointExpander_->findVoronoiEndPoint(end, size_x * size_y * 2, potential_.get(), voronoiGoals_[i]))
-        {
+        ROS_INFO("Start %i", segId);
+        startSegments_[i] = _graph[segId];
+        voronoiStart_[i] = Point((_graph[segId]->getStart().x + _graph[segId]->getEnd().x) / 2, (_graph[segId]->getStart().y + _graph[segId]->getEnd().y) / 2);
+
+
+        segId = getSegment(_graph, g);
+
+        if(segId == -1)
             return false;
-        }
 
+        ROS_INFO("Goal %i", segId);
+        goalSegments_[i] = _graph[segId];
+        voronoiGoals_[i] = Point((_graph[segId]->getStart().x + _graph[segId]->getEnd().x) / 2, (_graph[segId]->getStart().y + _graph[segId]->getEnd().y) / 2);
         bool found = false;
 
 
-        if(!findSegment(_graph, voronoiGoals_[i], start, radius_[i], goalSegments_[i]))
+        if(!resolveSegment(_graph, startSegments_[i], start, radius_[i], startSegments_[i]))
         {
+            ROS_INFO("WTF");
             return false;
         }
 
-        if(!findSegment(_graph, voronoiStart_[i], end, radius_[i], startSegments_[i]))
+        if(!resolveSegment(_graph, goalSegments_[i], end, radius_[i], goalSegments_[i]))
         {
+            ROS_INFO("WTF2");
             return false;
         }
+
     }
 
     return true;
 }
 
-bool Planner::findSegment(const std::vector< std::shared_ptr< Segment > >& _graph, const Point& _segmentPoint, const Point& _originPoint, float _radius,  std::shared_ptr< Segment >& _foundSeg)
+//TODO Allow move to segment
+
+int Planner::getSegment(const std::vector<std::shared_ptr<Segment>> &_graph, const Eigen::Vector2d &_odom)
 {
-    for(auto it = _graph.begin(); it != _graph.end(); it++)
+    float minDist = FLT_MAX;
+    int segment = -1;
+
+    for(int i = 0; i < _graph.size(); i++)
     {
-        if((*it)->pointOnSegment(_segmentPoint))
+        ROS_INFO("seg %f %f, s %f %f, g %f %f, w %f", _odom[0], _odom[1], _graph[i]->getStart().x, _graph[i]->getStart().y, _graph[i]->getEnd().x, _graph[i]->getEnd().y, _graph[i]->getPathSpace());
+        float d = distanceToSegment(_graph[i], _odom);
+
+        if(d < minDist && d <= _graph[i]->getPathSpace())
         {
-            _foundSeg = (*it);
+            segment = i;
+            minDist = d;
+        }
+    }
 
-            if((*it)->isEdgeSegment() && (*it)->getPathSpace() < _radius)
-            {
-                Neighbours nbs = (*it)->getPredecessors();
+    return segment;
+}
 
-                if(nbs.size() == 0)
-                {
-                    nbs = (*it)->getSuccessors();
-                }
+float Planner::distanceToSegment(std::shared_ptr<Segment> _s, Eigen::Vector2d _p)
+{
+    Eigen::Vector2d goal(_s->getEnd().x, _s->getEnd().y);
+    Eigen::Vector2d start(_s->getStart().x, _s->getStart().y);
 
-                if(nbs.size() == 0)
-                {
-                    return true;
-                }
+    Eigen::Vector2d n =  goal - start;
+    Eigen::Vector2d pa = start - _p;
 
+    float c = n.dot(pa);
 
+    // Closest point is a
+    if(c > 0.0f)
+        return pa.dot(pa);
 
-                float dist = std::numeric_limits<float>::max();
+    Eigen::Vector2d bp = _p - goal;
 
-                for(auto nb = nbs.cbegin(); nb != nbs.cend(); nb++)
-                {
-                    float ds_x = _originPoint.x - (*nb)->getStart().x;
-                    float ds_y = _originPoint.y - (*nb)->getStart().y;
-                    float de_x = _originPoint.x - (*nb)->getEnd().x;
-                    float de_y = _originPoint.y - (*nb)->getEnd().y;
-                    float d = (std::sqrt(ds_x * ds_x + ds_y * ds_y) + std::sqrt(de_x * de_x + de_y * de_y)) / 2;
+    // Closest point is b
+    if(n.dot(bp) > 0.0f)
+        return bp.dot(bp);
 
-                    if(d < dist)
-                    {
-                        _foundSeg = (*nb);
-                        dist = d;
-                    }
-                }
-
-                return true;
-
-            }
+    // Closest point is between a and b
+    Eigen::Vector2d e = pa - n * (c / n.dot(n));
 
 
+    return std::sqrt(e.dot(e));
+}
+
+bool Planner::resolveSegment(const std::vector< std::shared_ptr< Segment > >& _graph, const std::shared_ptr<Segment>& _seg, const Point& _originPoint, float _radius,  std::shared_ptr< Segment >& _foundSeg)
+{
+
+    if(_seg->isEdgeSegment() && _seg->getPathSpace() < _radius)
+    {
+        Neighbours nbs = _seg->getPredecessors();
+
+        if(nbs.size() == 0)
+        {
+            nbs = _seg->getSuccessors();
+        }
+
+        if(nbs.size() == 0)
+        {
             return true;
         }
+
+
+
+        float dist = std::numeric_limits<float>::max();
+
+        for(auto nb = nbs.cbegin(); nb != nbs.cend(); nb++)
+        {
+            float ds_x = _originPoint.x - (*nb)->getStart().x;
+            float ds_y = _originPoint.y - (*nb)->getStart().y;
+            float de_x = _originPoint.x - (*nb)->getEnd().x;
+            float de_y = _originPoint.y - (*nb)->getEnd().y;
+            float d = (std::sqrt(ds_x * ds_x + ds_y * ds_y) + std::sqrt(de_x * de_x + de_y * de_y)) / 2;
+
+            if(d < dist)
+            {
+                _foundSeg = (*nb);
+                dist = d;
+            }
+        }
+
+        return true;
+
+    }
+    else if(_radius <= _seg->getPathSpace())
+    {
+        return true;
     }
 
     return false;
@@ -238,7 +301,13 @@ bool Planner::getPaths(const std::vector< std::shared_ptr< Segment > >& _graph, 
     }
 
 
-    std::vector<std::vector<Potential_Point>> p =  path_generator_Point_->generatePath(paths, voronoiStart_, voronoiGoals_);
+    std::vector<std::vector<Potential_Point>> p;
+
+    if(useGoalOnSegment_)
+        p = path_generator_Point_->generatePath(paths, voronoiStart_, voronoiGoals_);
+    else
+        p =  path_generator_Point_->generatePath(paths, realStart_, realGoals_);
+
     paths_.clear();
 
     for(auto & genPath : p)
@@ -251,7 +320,13 @@ bool Planner::getPaths(const std::vector< std::shared_ptr< Segment > >& _graph, 
         }
     }
 
-    std::vector<std::vector<PathSegment>> pSegs = path_generator_Segment_->generatePath(paths, voronoiStart_, voronoiGoals_);
+    std::vector<std::vector<PathSegment>> pSegs;
+
+    if(useGoalOnSegment_)
+        pSegs = path_generator_Segment_->generatePath(paths, voronoiStart_, voronoiGoals_);
+    else
+        pSegs = path_generator_Segment_->generatePath(paths, realStart_, realGoals_);
+
     segPaths_.clear();
 
     for(auto & genSeg : pSegs)
