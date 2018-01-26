@@ -53,8 +53,8 @@ bool VelocityCalculator::CalculateProfile(std::vector< std::vector< PathSegment 
         {
             _relativeVelocityProfile[i].push_back(1.0);
 
-            float dist_x = _pathsWithPreconditions[i][j].start.x - _pathsWithPreconditions[i][j].end.x;
-            float dist_y = _pathsWithPreconditions[i][j].start.y - _pathsWithPreconditions[i][j].end.y;
+            float dist_x = _pathsWithPreconditions[i][j].start[0] - _pathsWithPreconditions[i][j].end[0];
+            float dist_y = _pathsWithPreconditions[i][j].start[1] - _pathsWithPreconditions[i][j].end[1];
             float segLength = sqrt(dist_x * dist_x + dist_y * dist_y);
             pathLength += segLength;
 
@@ -101,8 +101,8 @@ bool VelocityCalculator::MovePath(std::vector< PathSegment >& _pathWithPrecondit
 
     for(int i = pathStep_[_pathNr]; i < _pathWithPreconditions.size(); i++)
     {
-        float dist_x = _pathWithPreconditions[i].start.x - _pathWithPreconditions[i].end.x;
-        float dist_y = _pathWithPreconditions[i].start.y - _pathWithPreconditions[i].end.y;
+        float dist_x = _pathWithPreconditions[i].start[0] - _pathWithPreconditions[i].end[0];
+        float dist_y = _pathWithPreconditions[i].start[1] - _pathWithPreconditions[i].end[1];
         float length = sqrt(dist_x * dist_x + dist_y * dist_y);
 
 
@@ -139,8 +139,8 @@ bool VelocityCalculator::MovePathUntil(std::vector< PathSegment >& _pathWithPrec
 
     for(int i = pathStep_[_pathNr]; i < _stepNr; i++)
     {
-        float dist_x = _pathWithPreconditions[i].start.x - _pathWithPreconditions[i].end.x;
-        float dist_y = _pathWithPreconditions[i].start.y - _pathWithPreconditions[i].end.y;
+        float dist_x = _pathWithPreconditions[i].start[0] - _pathWithPreconditions[i].end[0];
+        float dist_y = _pathWithPreconditions[i].start[1] - _pathWithPreconditions[i].end[1];
         float length = sqrt(dist_x * dist_x + dist_y * dist_y);
 
         if(i == 0)

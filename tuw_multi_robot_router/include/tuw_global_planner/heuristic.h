@@ -37,11 +37,11 @@ class Heuristic
 public:
     float calcHeuristic(std::shared_ptr<Segment> _next, std::shared_ptr<Segment> _end)
     {
-        float nx = (_next->getStart().x + _next->getEnd().x) / 2; 
-        float ny = (_next->getStart().y + _next->getEnd().y) / 2; 
+        float nx = (_next->getStart()[0] + _next->getEnd()[0]) / 2; 
+        float ny = (_next->getStart()[1] + _next->getEnd()[1]) / 2; 
         
-        float ex = (_end->getStart().x + _end->getEnd().x) / 2; 
-        float ey = (_end->getStart().y + _end->getEnd().y) / 2;
+        float ex = (_end->getStart()[0] + _end->getEnd()[0]) / 2; 
+        float ey = (_end->getStart()[1] + _end->getEnd()[1]) / 2;
         
         
         float dx = (nx-ex);
@@ -55,11 +55,11 @@ public:
 public:
     float calcHeuristic(Segment _next, Segment _end)
     {
-      float nx = (_next.getStart().x + _next.getEnd().x) / 2; 
-      float ny = (_next.getStart().y + _next.getEnd().y) / 2;
+      float nx = (_next.getStart()[0] + _next.getEnd()[0]) / 2; 
+      float ny = (_next.getStart()[1] + _next.getEnd()[1]) / 2;
       
-      float ex = (_end.getStart().x + _end.getEnd().x) / 2;
-      float ey = (_end.getStart().y + _end.getEnd().y) / 2; 
+      float ex = (_end.getStart()[0] + _end.getEnd()[0]) / 2;
+      float ey = (_end.getStart()[1] + _end.getEnd()[1]) / 2; 
       
       
       float dx = (nx-ex);

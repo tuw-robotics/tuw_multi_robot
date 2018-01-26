@@ -138,13 +138,13 @@ Point PathGenerator<Point>::createElement(const std::shared_ptr<Segment>& _eleme
 
     if(_element->planning.Direction == Segment::start_to_end)
     {
-        pt.x = _element->getStart().x;
-        pt.y = _element->getStart().y;
+        pt[0] = _element->getStart()[0];
+        pt[1] = _element->getStart()[1];
     }
     else
     {
-        pt.x = _element->getEnd().x;
-        pt.y = _element->getEnd().y;
+        pt[0] = _element->getEnd()[0];
+        pt[1] = _element->getEnd()[1];
     }
 
     return pt;
@@ -195,9 +195,7 @@ void PathGenerator<Point>::pushBackPath(const std::vector<std::vector<Point>>& _
 template<>
 Point PathGenerator<Point>::createElementEnd(const std::shared_ptr<Segment>& _element, Point _end)
 {
-    Point pt;
-    pt.x = _end.x;
-    pt.y = _end.y;
+    Point pt(_end);
     return pt;
 }
 template<>
@@ -213,14 +211,14 @@ Potential_Point PathGenerator<Potential_Point>::createElement(const std::shared_
 
     if(_element->planning.Direction == Segment::start_to_end)
     {
-        pt.point.x = _element->getStart().x;
-        pt.point.y = _element->getStart().y;
+        pt.point[0] = _element->getStart()[0];
+        pt.point[1] = _element->getStart()[1];
         pt.potential = _element->planning.Potential;
     }
     else
     {
-        pt.point.x = _element->getEnd().x;
-        pt.point.y = _element->getEnd().y;
+        pt.point[0] = _element->getEnd()[0];
+        pt.point[1] = _element->getEnd()[1];
         pt.potential = _element->planning.Potential;
     }
 
@@ -275,9 +273,8 @@ template<>
 Potential_Point PathGenerator<Potential_Point>::createElementEnd(const std::shared_ptr<Segment>& _element, Point _end)
 {
     Potential_Point p;
-    p.point.x = _end.x;
-    p.point.y = _end.y;
-
+	p.point[0] = _end[0];
+	p.point[1] = _end[1];
     return p;
 }
 template<>
@@ -298,18 +295,18 @@ PathSegment PathGenerator<PathSegment>::createElement(const std::shared_ptr<Segm
     if(_element->planning.Direction == Segment::start_to_end)
     {
         ps.segId = _element->getIndex();
-        ps.end.x = _element->getStart().x;
-        ps.end.y = _element->getStart().y;
-        ps.start.x = _element->getEnd().x;
-        ps.start.y = _element->getEnd().y;
+        ps.end[0] = _element->getStart()[0];
+        ps.end[1] = _element->getStart()[1];
+        ps.start[0] = _element->getEnd()[0];
+        ps.start[1] = _element->getEnd()[1];
     }
     else
     {
         ps.segId = _element->getIndex();
-        ps.end.x = _element->getEnd().x;
-        ps.end.y = _element->getEnd().y;
-        ps.start.x = _element->getStart().x;
-        ps.start.y = _element->getStart().y;
+        ps.end[0] = _element->getEnd()[0];
+        ps.end[1] = _element->getEnd()[1];
+        ps.start[0] = _element->getStart()[0];
+        ps.start[1] = _element->getStart()[1];
     }
 
     return ps;
@@ -319,8 +316,8 @@ template<>
 PathSegment PathGenerator<PathSegment>::createElementEnd(const std::shared_ptr<Segment>& _element, Point _end)
 {
     PathSegment ps = createElement(_element);
-    ps.end.x = _end.x;
-    ps.end.y = _end.y;
+    ps.end[0] = _end[0];
+    ps.end[1] = _end[1];
 
     return ps;
 }
@@ -329,8 +326,8 @@ template<>
 PathSegment PathGenerator<PathSegment>::createElementStart(const std::shared_ptr<Segment>& _element, Point _start)
 {
     PathSegment ps = createElement(_element);
-    ps.start.x = _start.x;
-    ps.start.y = _start.y;
+    ps.start[0] = _start[0];
+    ps.start[1] = _start[1];
 
     return ps;
 }
@@ -339,10 +336,10 @@ template<>
 PathSegment PathGenerator<PathSegment>::createElementStartEnd(const std::shared_ptr<Segment>& _element, Point _start, Point _end)
 {
     PathSegment ps = createElement(_element);
-    ps.start.x = _start.x;
-    ps.start.y = _start.y;
-    ps.end.x = _end.x;
-    ps.end.y = _end.y;
+    ps.start[0] = _start[0];
+    ps.start[1] = _start[1];
+    ps.end[0] = _end[0];
+    ps.end[1] = _end[1];
 
     return ps;
 }

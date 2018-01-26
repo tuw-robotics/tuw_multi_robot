@@ -68,8 +68,11 @@ Planner_Node::Planner_Node(ros::NodeHandle& _n) :
     pubSegPaths_.resize(robot_names_.size());
     pubVelocityProfile_.resize(robot_names_.size());
 
-	useGoalOnSegment_ = true;
+	useGoalOnSegment_ = false;
 	n_param_.param("use_segment_as_goal", useGoalOnSegment_, useGoalOnSegment_);
+	
+	allowEndpointOffSegment_ = true;
+	n_param_.param("allow_endpoint_off_segments", allowEndpointOffSegment_, allowEndpointOffSegment_);
 	
     planner_status_topic_ = "planner_status";
     n_param_.param("planner_status_topic", planner_status_topic_, planner_status_topic_);
@@ -128,8 +131,8 @@ void Planner_Node::odomCallback(const ros::MessageEvent<nav_msgs::Odometry const
     const nav_msgs::Odometry_< std::allocator< void > >::ConstPtr& nav_msg = _event.getMessage();
 
     Point p;
-    p.x = nav_msg->pose.pose.position.x;
-    p.y = nav_msg->pose.pose.position.y;
+    p[0] = nav_msg->pose.pose.position.x;
+    p[1] = nav_msg->pose.pose.position.y;
 
     updateRobotPose(_robot_nr, p);
 }
@@ -183,8 +186,8 @@ void Planner_Node::goalsCallback(const tuw_multi_robot_msgs::PoseIdArray& _goals
     for(auto it = _goals.poses.begin(); it != _goals.poses.end(); it++)
     {
         Point p;
-        p.x = (*it).position.x;
-        p.y = (*it).position.y;
+        p[0] = (*it).position.x;
+        p[1] = (*it).position.y;
         goals.push_back(p);
     }
 
@@ -285,7 +288,7 @@ void Planner_Node::Publish()
                 p.header.seq = 0;
                 p.header.stamp = ros::Time::now();
                 p.header.frame_id = "map";
-                grid_map::Index idx((*it).point.x, (*it).point.y);
+                grid_map::Index idx((*it).point[0], (*it).point[1]);
                 grid_map::Position pos;
                 voronoi_map_.getPosition(idx, pos);
                 p.pose.position.x = -pos[0] - p_origin[0];
@@ -311,7 +314,7 @@ void Planner_Node::Publish()
             {
                 tuw_multi_robot_msgs::PathSegment s;
 
-                grid_map::Index idxS((*it).start.x, (*it).start.y);
+                grid_map::Index idxS((*it).start[0], (*it).start[1]);
                 grid_map::Position posS;
                 voronoi_map_.getPosition(idxS, posS);
 
@@ -320,7 +323,7 @@ void Planner_Node::Publish()
                 s.start.x = -posS[0] - p_origin[0];
                 s.start.y = -posS[1] - p_origin[1];
 
-                grid_map::Index idxE((*it).end.x, (*it).end.y);
+                grid_map::Index idxE((*it).end[0], (*it).end[1]);
                 grid_map::Position posE;
                 voronoi_map_.getPosition(idxE, posE);
                 s.end.x = -posE[0] - p_origin[0];

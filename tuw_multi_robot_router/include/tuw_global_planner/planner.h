@@ -85,7 +85,7 @@ public:			const std::vector<float> &getVelocityProfile(int _robot_id);
 
 //private:		bool generatePath(std::vector<std::shared_ptr<Segment>> &_path, int _index);	//TODO take care const???
 private:		bool calculateStartPoints(const std::vector<float> _radius, const grid_map::GridMap &_map, const std::vector<std::shared_ptr<Segment>> &_graph);
-private:		bool getPaths(const std::vector<std::shared_ptr<Segment>> &_graph, int &_actualRobot, const std::vector<int> &_priorities, const std::vector<float>& _speedList);
+private:		bool getPaths(const std::vector<std::shared_ptr<Segment>> &_graph, int &_actualRobot, const std::vector<int> &_priorities, const std::vector<float>& _speedList, int maxStepsPotExp);
 private:        bool resolveSegment (const std::vector< std::shared_ptr< Segment > >& _graph, const std::shared_ptr<Segment>& _seg, const Point& _originPoint, float _radius, std::shared_ptr< Segment > &_foundSeg);
 
 private:		bool gotPlan_;
@@ -136,6 +136,7 @@ private:     	int getSegment(const std::vector<std::shared_ptr<Segment>> &_graph
 private:    	float distanceToSegment(std::shared_ptr<Segment> _s, Eigen::Vector2d _p);  
 
 protected:		bool useGoalOnSegment_;
+protected:		bool allowEndpointOffSegment_;
 };
 
 #endif // PLANNER_H

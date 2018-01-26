@@ -2,14 +2,9 @@
 #define POINT_H
 
 #include <vector>
+#include <eigen3/Eigen/Dense>
 
-typedef struct Point_t
-{
-    float x;
-    float y;
-    Point_t(float _x, float _y) : x(_x), y(_y) {};
-    Point_t() : x(0), y(0) {};
-} Point;
+using Point = Eigen::Vector2d;
 
 typedef struct Potential_Point_t
 {
@@ -30,9 +25,8 @@ typedef struct PathSegment_t
 {
     int segId;
     std::vector<PathPrecondition> preconditions;
-    Point start;
-    Point end;
+    Point  start;
+    Point  end;
 } PathSegment;
-
 
 #endif

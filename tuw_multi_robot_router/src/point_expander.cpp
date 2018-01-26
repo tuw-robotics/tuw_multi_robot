@@ -65,21 +65,20 @@ void PointExpander::addPotentialExpansionCandidate(PointExpander::Index _current
 
     float dist = 0;
     float pot = potentialPrev + neutral_cost_;
-    float weight = - distance_field_[next.offsetDist(_next_y, _next_x, nx_, ny_).i] - distance_field_[next.offsetDist(-_next_y, -_next_x, nx_, ny_).i];
+    float weight = pot;                         //Dijkstra
 
-
-    if(voronoi_graph_[next.i] >= 0)
-        _potential[next.i] = pot;
-
+    _potential[next.i] = pot;
 
     queue_.push(Index(next.i, weight, dist, pot));
 
 }
 
-PointExpander::Index PointExpander::findVoronoiEndPoint(PointExpander::Index _start, int _cycles, float* _potential)
+PointExpander::Index PointExpander::findGoal(PointExpander::Index _start, int _cycles, float* _potential, const std::map<int, Index> &_goals, int _optimizationSteps, int &segIdx)
 {
     std::fill(_potential, _potential + ns_, POT_HIGH);
     int cycle = 0;
+
+    int _noGoalPoses = _optimizationSteps + 1;
 
     Index current(_start.i, 0, 0, 0);
     _potential[current.i] = 0;
@@ -88,7 +87,10 @@ PointExpander::Index PointExpander::findVoronoiEndPoint(PointExpander::Index _st
     clearpq(queue_);
     queue_.push(current);
 
-    while(!queue_.empty() && voronoi_graph_[current.i] >= 0 && cycle < _cycles)
+    Index currentGoal(-1, -1, -1, -1);
+	segIdx = -1;
+
+    while(!queue_.empty() && _noGoalPoses > 0 && cycle < _cycles)       
     {
         if(queue_.empty())
             return Index(-1, -1, -1, -1);
@@ -96,11 +98,28 @@ PointExpander::Index PointExpander::findVoronoiEndPoint(PointExpander::Index _st
         current = queue_.top();
         queue_.pop();
 
-        //If we have found a max potential return the pixel
-        if(voronoi_graph_[current.i] < 0)
+
+		int segmentIndex = -1;
+        if(isGoal(current, _goals, segmentIndex))
         {
-            _potential[current.i] = current.potential;
-            return current;
+            if(currentGoal.i == -1)
+            {
+                currentGoal = current;
+				segIdx = segmentIndex;
+            }
+            else
+            {
+                if(_potential[current.i] < _potential[currentGoal.i] + current.distance(currentGoal, nx_))
+                {
+                    currentGoal = current;
+					segIdx = segmentIndex;
+                }
+            }
+
+            _noGoalPoses--;
+
+            if(_noGoalPoses == 0)
+                return currentGoal;
         }
 
 
@@ -118,14 +137,39 @@ PointExpander::Index PointExpander::findVoronoiEndPoint(PointExpander::Index _st
         return _start;
 }
 
-bool PointExpander::findVoronoiEndPoint(Point _start, int _cycles, float* _potential, Point& _p)
+bool PointExpander::isGoal(Index _p, const std::map<int, Index> &_goals, int &segIdx)
 {
-    Index startPoint((int)_start.x, (int)_start.y, nx_, 0, 0, 0);
+	segIdx = -1;
+    for(const std::pair<int, Index> & g : _goals)
+    {
+        if(_p.i == g.second.i)
+		{
+			segIdx = g.first;
+            return true;
+		}
+    }
+
+    return false;
+}
+
+
+bool PointExpander::findGoalOnMap(const Point &_start, int _cycles, float* _potential, const std::map<int, Point> &_goals, int _optimizationSteps, Point &_foundPoint, int &_segIdx)
+{
+    Index startPoint((int)_start[0], (int)_start[1], nx_, 0, 0, 0);
     Index foundPoint(-1, -1, -1, -1);
 
-    foundPoint = findVoronoiEndPoint(startPoint, _cycles, _potential);
-    _p.x = ((int)foundPoint.getX(nx_));
-    _p.y = ((int)foundPoint.getY(nx_));
+    std::map<int, Index> goals;
+
+    for(const std::pair<int,Point> & g : _goals)
+    {
+		Index idx((int)g.second[0], (int)g.second[1], nx_, 0, 0, 0);
+		std::pair<int,Index> i(g.first, idx);
+        goals.insert(i);
+    }
+
+    foundPoint = findGoal(startPoint, _cycles, _potential, goals, _optimizationSteps, _segIdx);
+    _foundPoint[0] = ((int)foundPoint.getX(nx_));
+    _foundPoint[1] = ((int)foundPoint.getY(nx_));
 
 
     return (foundPoint.i >= 0);

@@ -83,7 +83,7 @@ bool Segment::pointOnSegment(Point _pt)
 {
     for(const auto & it : points_)
     {
-        if(it.x == _pt.x && it.y == _pt.y)
+        if(it[0] == _pt[0] && it[1] == _pt[1])
             return true;
     }
 
