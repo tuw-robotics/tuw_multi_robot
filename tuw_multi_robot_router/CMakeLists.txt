@@ -10,7 +10,6 @@ add_compile_options(-std=c++14)
 find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
   geometry_msgs
-  grid_map_ros
   nav_msgs
   roscpp
   tf
@@ -19,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
  
 find_package(Eigen3 REQUIRED)
+find_package(OpenCV REQUIRED)
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
@@ -141,7 +141,7 @@ include_directories(
 	src/speed_scheduler.cpp
 	src/velocity_calculator.cpp
  )
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 
 add_executable(tuw_multi_robot_router_node src/planner_node.cpp)
 target_link_libraries(tuw_multi_robot_router_node

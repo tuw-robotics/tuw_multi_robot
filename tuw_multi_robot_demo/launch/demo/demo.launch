@@ -16,6 +16,9 @@
 	  </include>
 	  <include file="$(find tuw_multi_robot_demo)/launch/voronoi_visualization.launch">
 	  </include>
+	  <include file="$(find tuw_multi_robot_demo)/launch/map_server.launch">
+	    <arg name="room" value="$(arg room)" />
+	  </include>
   </group>
 
 

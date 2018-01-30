@@ -31,6 +31,7 @@
 #include <tuw_global_planner/segment.h>
 #include <tuw_multi_robot_msgs/SegmentPath.h>
 #include <chrono>
+#include <boost/functional/hash.hpp>
 
 int main(int argc, char** argv)
 {
@@ -68,12 +69,15 @@ Planner_Node::Planner_Node(ros::NodeHandle& _n) :
     pubSegPaths_.resize(robot_names_.size());
     pubVelocityProfile_.resize(robot_names_.size());
 
-	useGoalOnSegment_ = false;
-	n_param_.param("use_segment_as_goal", useGoalOnSegment_, useGoalOnSegment_);
-	
-	allowEndpointOffSegment_ = true;
-	n_param_.param("allow_endpoint_off_segments", allowEndpointOffSegment_, allowEndpointOffSegment_);
-	
+    useGoalOnSegment_ = false;
+    n_param_.param("use_segment_as_goal", useGoalOnSegment_, useGoalOnSegment_);
+
+    allowEndpointOffSegment_ = true;
+    n_param_.param("allow_endpoint_off_segments", allowEndpointOffSegment_, allowEndpointOffSegment_);
+
+    optimizationSegmentNr_ = 2;
+    n_param_.param("path_optimization_segment_no", optimizationSegmentNr_, optimizationSegmentNr_);
+
     planner_status_topic_ = "planner_status";
     n_param_.param("planner_status_topic", planner_status_topic_, planner_status_topic_);
 
@@ -86,7 +90,7 @@ Planner_Node::Planner_Node(ros::NodeHandle& _n) :
     goal_topic_ = "goals";
     n_param_.param("goal_topic", goal_topic_, goal_topic_);
 
-    map_topic_ = "voronoi_map";
+    map_topic_ = "/map";
     n_param_.param("map_topic", map_topic_, map_topic_);
 
     voronoi_topic_ = "segments";
@@ -110,7 +114,7 @@ Planner_Node::Planner_Node(ros::NodeHandle& _n) :
     }
 
     subGoalSet_ = _n.subscribe(goal_topic_, 1, &Planner_Node::goalsCallback, this);
-    subVoronoiMap_ = _n.subscribe(map_topic_, 1, &Planner_Node::mapCallback, this);
+    subMap_ = _n.subscribe(map_topic_, 1, &Planner_Node::mapCallback, this);
     subVoronoiGraph_ = _n.subscribe(voronoi_topic_, 1, &Planner_Node::graphCallback, this);
 
 
@@ -119,12 +123,39 @@ Planner_Node::Planner_Node(ros::NodeHandle& _n) :
     pubPlannerStatus_ = _n.advertise<tuw_multi_robot_msgs::PlannerStatus> (planner_status_topic_, 1);
 }
 
-void Planner_Node::mapCallback(const grid_map_msgs::GridMap& msg)
-{
-    grid_map::GridMapRosConverter::fromMessage(msg, voronoi_map_);
-    got_map_ = true;
-}
 
+void Planner_Node::mapCallback(const nav_msgs::OccupancyGrid& _map)
+{
+    std::vector<signed char> map = _map.data;
+
+    Point origin;
+    origin[0] = _map.info.origin.position.x;
+    origin[1] = _map.info.origin.position.y;
+
+    size_t new_hash = getHash(map, origin, _map.info.resolution);
+
+    ROS_INFO("map %f %f %f", origin[0], origin[1], _map.info.resolution);
+    
+    if(new_hash != current_map_hash_)
+    {
+        mapOrigin_[0] = _map.info.origin.position.x;
+        mapOrigin_[1] = _map.info.origin.position.y;
+        mapResolution_ = _map.info.resolution;
+
+        cv::Mat m(_map.info.height, _map.info.width, CV_8SC1, map.data());
+
+        m.convertTo(m, CV_8UC1);
+        cv::bitwise_not(m, m);
+
+        cv::threshold(m, m, 40, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
+        cv::distanceTransform(m, distMap_, CV_DIST_L1, 3);
+
+        current_map_hash_ = new_hash;
+        got_map_ = true;
+
+        ROS_INFO("Multi Robot Router: New Map %i %i %lu", _map.info.width, _map.info.height, current_map_hash_);
+    }
+}
 
 void Planner_Node::odomCallback(const ros::MessageEvent<nav_msgs::Odometry const>& _event, int _robot_nr)
 {
@@ -195,32 +226,30 @@ void Planner_Node::goalsCallback(const tuw_multi_robot_msgs::PoseIdArray& _goals
     {
         auto t1 = std::chrono::high_resolution_clock::now();
 
-        if(makePlan(goals, robot_radius_, voronoi_map_, graph_))
+        if(makePlan(goals, robot_radius_, distMap_, mapResolution_, mapOrigin_, graph_))
         {
-            int nx = voronoi_map_.getSize() [0];
-            int ny = voronoi_map_.getSize() [1];
+            int nx = distMap_.cols;     //TODO Verify
+            int ny = distMap_.rows;
 
 
-            double res = voronoi_map_.getResolution();
-            int cx = voronoi_map_.getPosition() [0];
-            int cy = voronoi_map_.getPosition() [1];
+            double res = mapResolution_;
+            int cx = mapOrigin_[0];
+            int cy = mapOrigin_[1];
             //publishPotential(potential_.get(), nx, ny, res, cx, cy);  //Debug
 
             Publish();
-            ROS_INFO("Publishing Plan");
+            ROS_INFO("Multi Robot Router: Publishing Plan");
         }
         else
         {
-            ROS_INFO("No Plan found");
-            int nx = voronoi_map_.getSize() [0];
-            int ny = voronoi_map_.getSize() [1];
+            ROS_INFO("Multi Robot Router: No Plan found");
 
             PublishEmpty();
         }
 
         auto t2 = std::chrono::high_resolution_clock::now();
         int duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
-        ROS_INFO("OverallTime %i ms", duration);
+        ROS_INFO("Multi Robot Router: OverallTime %i ms", duration);
 
         id_++;
     }
@@ -245,7 +274,7 @@ void Planner_Node::PublishEmpty()
         ros_path.header.stamp = ros::Time::now();
         ros_path.header.frame_id = "map";
 
-        pubPaths_[i].publish(ros_path);
+        pubSegPaths_[i].publish(ros_path);
     }
 
     tuw_multi_robot_msgs::PlannerStatus ps;
@@ -260,104 +289,86 @@ void Planner_Node::PublishEmpty()
 
 void Planner_Node::Publish()
 {
-	
-    if(gotPlan())
+    for(int i = 0; i < robot_names_.size(); i++)
     {
-		//ORIGIN ??
-		grid_map::Index origS(0,0);
-		grid_map::Index id(0);
-		grid_map::Position orig;
-		grid_map::Position p_origin;
-		voronoi_map_.getPosition(origS, orig);
-		voronoi_map_.getPosition(id, p_origin);
-		
-		p_origin[0] = voronoi_map_.getSize()[0] * voronoi_map_.getResolution() - p_origin[0] - orig[0];
-		p_origin[1] = voronoi_map_.getSize()[1] * voronoi_map_.getResolution() - p_origin[1] - orig[1];
-		
-        for(int i = 0; i < robot_names_.size(); i++)
+        nav_msgs::Path ros_path;
+        ros_path.header.seq = 0;
+        ros_path.header.stamp = ros::Time::now();
+        ros_path.header.frame_id = "map";
+        const std::vector< Potential_Point >& path = getPath(i);
+
+        for(auto it = path.cbegin(); it != path.cend(); it++)
         {
-            nav_msgs::Path ros_path;
-            ros_path.header.seq = 0;
-            ros_path.header.stamp = ros::Time::now();
-            ros_path.header.frame_id = "map";
-            const std::vector< Potential_Point >& path = getPath(i);
+            geometry_msgs::PoseStamped p;
+            p.header.seq = 0;
+            p.header.stamp = ros::Time::now();
+            p.header.frame_id = "map";
 
-            for(auto it = path.cbegin(); it != path.cend(); it++)
-            {
-                geometry_msgs::PoseStamped p;
-                p.header.seq = 0;
-                p.header.stamp = ros::Time::now();
-                p.header.frame_id = "map";
-                grid_map::Index idx((*it).point[0], (*it).point[1]);
-                grid_map::Position pos;
-                voronoi_map_.getPosition(idx, pos);
-                p.pose.position.x = -pos[0] - p_origin[0];
-                p.pose.position.y = -pos[1] - p_origin[1];
-				
-				p.pose.orientation.w = 1;
-                ros_path.poses.push_back(p);
+            Eigen::Vector2d pos = (*it).point * mapResolution_;
+            p.pose.position.x = pos[0] + mapOrigin_[0];
+            p.pose.position.y = pos[1] + mapOrigin_[1];
 
-            }
+            p.pose.orientation.w = 1;
+            ros_path.poses.push_back(p);
 
-            pubPaths_[i].publish(ros_path);
         }
 
-        for(int i = 0; i < robot_names_.size(); i++)
-        {
-            tuw_multi_robot_msgs::SegmentPath ros_path;
-            ros_path.header.seq = 0;
-            ros_path.header.stamp = ros::Time::now();
-            ros_path.header.frame_id = "map";
-            const std::vector< PathSegment >& path = getPathSeg(i);
-
-            for(auto it = path.cbegin(); it != path.cend(); it++)
-            {
-                tuw_multi_robot_msgs::PathSegment s;
-
-                grid_map::Index idxS((*it).start[0], (*it).start[1]);
-                grid_map::Position posS;
-                voronoi_map_.getPosition(idxS, posS);
-
-				
-				
-                s.start.x = -posS[0] - p_origin[0];
-                s.start.y = -posS[1] - p_origin[1];
-
-                grid_map::Index idxE((*it).end[0], (*it).end[1]);
-                grid_map::Position posE;
-                voronoi_map_.getPosition(idxE, posE);
-                s.end.x = -posE[0] - p_origin[0];
-                s.end.y = -posE[1] - p_origin[1];
-
-                s.segId = (*it).segId;
-				s.width = graph_[(*it).segId]->getPathSpace() * voronoi_map_.getResolution();	//TODO		(SEG ID WRONG)
-
-                for(int j = 0; j < (*it).preconditions.size(); j++) //auto precond = (*it).preconditions.cbegin(); precond != (*it).preconditions.cend(); precond++)
-                {
-                    tuw_multi_robot_msgs::PathPrecondition pc;
-                    pc.robotId = ((*it).preconditions[j]).robot;
-                    pc.stepCondition = ((*it).preconditions[j]).stepCondition;
-                    s.preconditions.push_back(pc);
-                }
-
-                ros_path.poses.push_back(s);
-            }
-
-            pubSegPaths_[i].publish(ros_path);
-        }
-
-
-        tuw_multi_robot_msgs::PlannerStatus ps;
-        ps.id = id_;
-        ps.success = 1;
-        ps.overallPathLength = getOverallPathLength();
-        ps.longestPathLength = getLongestPathLength();
-        ps.prioritySchedulingAttemps = getPriorityScheduleAttemps();
-        ps.speedSchedulingAttemps = getSpeedScheduleAttemps();
-        ps.duration = getDuration_ms();
-
-        pubPlannerStatus_.publish(ps);
+        pubPaths_[i].publish(ros_path);
     }
+
+    for(int i = 0; i < robot_names_.size(); i++)
+    {
+        tuw_multi_robot_msgs::SegmentPath ros_path;
+        ros_path.header.seq = 0;
+        ros_path.header.stamp = ros::Time::now();
+        ros_path.header.frame_id = "map";
+        const std::vector< PathSegment >& path = getPathSeg(i);
+
+        for(auto it = path.cbegin(); it != path.cend(); it++)
+        {
+            tuw_multi_robot_msgs::PathSegment s;
+
+
+
+            Eigen::Vector2d posS = (*it).start * mapResolution_;
+
+            s.start.x = posS[0] + mapOrigin_[0];
+            s.start.y = posS[1] + mapOrigin_[1];
+
+            Eigen::Vector2d posE = (*it).end * mapResolution_;
+
+            s.end.x = posE[0] + mapOrigin_[0];
+            s.end.y = posE[1] + mapOrigin_[1];
+
+            s.segId = (*it).segId;
+            s.width = graph_[(*it).segId]->getPathSpace() * mapResolution_;   //TODO      (SEG ID WRONG)
+
+            for(int j = 0; j < (*it).preconditions.size(); j++) //auto precond = (*it).preconditions.cbegin(); precond != (*it).preconditions.cend(); precond++)
+            {
+                tuw_multi_robot_msgs::PathPrecondition pc;
+                pc.robotId = ((*it).preconditions[j]).robot;
+                pc.stepCondition = ((*it).preconditions[j]).stepCondition;
+                s.preconditions.push_back(pc);
+            }
+
+            ros_path.poses.push_back(s);
+        }
+
+        pubSegPaths_[i].publish(ros_path);
+    }
+
+
+    tuw_multi_robot_msgs::PlannerStatus ps;
+    ps.id = id_;
+    ps.success = 1;
+    ps.overallPathLength = getOverallPathLength();
+    ps.longestPathLength = getLongestPathLength();
+    ps.prioritySchedulingAttemps = getPriorityScheduleAttemps();
+    ps.speedSchedulingAttemps = getSpeedScheduleAttemps();
+    ps.duration = getDuration_ms();
+
+    pubPlannerStatus_.publish(ps);
+
 }
 
 
@@ -416,4 +427,50 @@ void Planner_Node::publishPotential(float* potential, int nx, int ny, double res
     debug_pub_.publish(grid);
 }
 
+void Planner_Node::publishPotential(unsigned char *potential, int nx, int ny, double resolution, int cx, int cy)
+{
+    nav_msgs::OccupancyGrid grid;
+    // Publish Whole Grid
+    grid.header.frame_id = "map";
+    grid.header.stamp = ros::Time::now();
+    grid.info.resolution = resolution;
 
+    grid.info.width = nx;
+    grid.info.height = ny;
+
+    double wx, wy;
+    //costmap_->mapToWorld(0, 0, wx, wy);
+    grid.info.origin.position.x = -nx * resolution / 2 + cx;
+    grid.info.origin.position.y = -ny * resolution / 2 + cy;
+    grid.info.origin.position.z = 0.0;
+    grid.info.origin.orientation.w = 1.0;
+
+    grid.data.resize(nx * ny);
+
+
+    for(unsigned int i = 0; i < grid.data.size(); i++)
+    {
+
+        grid.data[i] = potential[i];
+
+    }
+
+    debug_pub_.publish(grid);
+}
+
+
+size_t Planner_Node::getHash(const std::vector<signed char> &_map, Point _origin, float _resolution)
+{
+    std::size_t seed = 0;
+
+    boost::hash_combine(seed, _origin[0]);
+    boost::hash_combine(seed, _origin[1]);
+    boost::hash_combine(seed, _resolution);
+
+    for(const signed char & val : _map)
+    {
+        boost::hash_combine(seed, val);
+    }
+
+    return seed;
+}

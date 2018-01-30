@@ -69,7 +69,7 @@ namespace velocity_controller
             {
                 if ( pathCounter_ < path_->size() )
                 {
-                    ROS_INFO( "++" );
+                    //ROS_INFO( "++" );
                     pathCounter_++;
 
                     if ( actual_cmd_ == step )

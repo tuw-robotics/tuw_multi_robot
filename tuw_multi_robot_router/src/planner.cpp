@@ -67,6 +67,8 @@ Planner::Planner(int _nr_robots) :
     priorityScheduler_ = std::make_unique<PriorityScheduler> (_nr_robots);
     speedScheduler_ = std::make_unique<SpeedScheduler>(_nr_robots);
     velocityCalc_ = std::make_unique<VelocityCalculator>(_nr_robots);
+    
+    gotPlan_ = true;
 }
 
 void Planner::resize(int _nr_robots)
@@ -93,10 +95,10 @@ void Planner::resize(int _nr_robots)
 }
 
 
-bool Planner::calculateStartPoints(const std::vector<float> _radius, const grid_map::GridMap& _map, const std::vector<std::shared_ptr<Segment>>& _graph)
+bool Planner::calculateStartPoints(const std::vector<float> _radius, const cv::Mat& _map, float resolution, Point origin, const std::vector<std::shared_ptr<Segment>>& _graph)
 {
-    int size_x = _map.getSize() [0];
-    int size_y = _map.getSize() [1];
+    int size_x = _map.cols;
+    int size_y = _map.rows;
 
 
     //Save all segment Points into map to find them using point Expander
@@ -113,22 +115,26 @@ bool Planner::calculateStartPoints(const std::vector<float> _radius, const grid_
     for(int i = 0; i < goals_.size(); i++)
     {
         //Find Start and Goal Poses On the map
-        grid_map::Index mapIdx;
-        grid_map::Position p(robot_poses_[i][0], robot_poses_[i][1]);
-        _map.getIndex(p, mapIdx);
-        realStart_[i] = { (float)(size_x - mapIdx[0]), (float)(size_y - mapIdx[1]) };
+        realStart_[i] = { (robot_poses_[i][0] - origin[0]) / resolution, (robot_poses_[i][1] - origin[1]) / resolution };
+        realGoals_[i] = { (goals_[i][0] - origin[0]) / resolution, (goals_[i][1] - origin[1]) / resolution };
 
+        radius_[i] = ((float) _radius[i]) / resolution;
 
-        grid_map::Position p2(goals_[i][0], goals_[i][1]);
-        _map.getIndex(p2, mapIdx);
-        realGoals_[i] = { (float)(size_x - mapIdx[0]), (float)(size_y - mapIdx[1]) };
-
-        radius_[i] = ((float) _radius[i]) / (float) _map.getResolution();
+        //ROS_INFO("Origin (%f/%f) Resolution: %f", origin[0], origin[1], resolution);
+        //ROS_INFO("Start: (%f/%f), Goal: (%f/%f)", realStart_[i][0], realStart_[i][1], realGoals_[i][0], realGoals_[i][1]);
 
         int segIdStart = -1;
         int segIdGoal = -1;
 
-        if(!allowEndpointOffSegment_)
+        if(allowEndpointOffSegment_)
+        {
+            //find Segment using Dijkstra (less performance but find segment for sure)
+            potential_.reset(new float[size_x * size_y]);
+            pointExpander_->findGoalOnMap(realStart_[i], size_x * size_y, potential_.get(), points, 0, voronoiStart_[i], segIdStart, radius_[i]);
+            potential_.reset(new float[size_x * size_y]);
+            pointExpander_->findGoalOnMap(realGoals_[i], size_x * size_y, potential_.get(), points, 0, voronoiGoals_[i], segIdGoal, radius_[i]);
+        }
+        else
         {
             //Find Start and Goal (with distance to Segment (more performance but robot has to be inside a segment)
             int segIdStart = getSegment(_graph, realStart_[i]);
@@ -136,15 +142,9 @@ bool Planner::calculateStartPoints(const std::vector<float> _radius, const grid_
             voronoiStart_[i] = (_graph[segIdStart]->getStart() + _graph[segIdStart]->getEnd()) / 2;
             voronoiGoals_[i] = (_graph[segIdGoal]->getStart() + _graph[segIdGoal]->getEnd()) / 2;
         }
-        else
-        {
-            //find Segment using Dijkstra (less performance but find segment for sure)
-            potential_.reset(new float[size_x * size_y]);
-            pointExpander_->findGoalOnMap(realStart_[i], size_x * size_y, potential_.get(), points, 0, voronoiStart_[i], segIdStart);
-            potential_.reset(new float[size_x * size_y]);
-            pointExpander_->findGoalOnMap(realGoals_[i], size_x * size_y, potential_.get(), points, 0, voronoiGoals_[i], segIdGoal);
-        }
 
+        //ROS_INFO("SegId G %i; S %i", segIdGoal, segIdStart);
+        
         if(segIdGoal == -1 || segIdStart == -1)
             return false;
 
@@ -269,7 +269,7 @@ bool Planner::getPaths(const std::vector< std::shared_ptr< Segment > >& _graph, 
         pCalc_->SetMultiplier(_speedList[i]);
 
 
-        ROS_INFO("Calculating Path %i...", _actualRobot);
+        ROS_INFO("Multi Robot Router: Calculating Path %i...", _actualRobot);
 
         if(!expander_->calculatePotentials(startSegments_[_actualRobot], goalSegments_[_actualRobot], _graph, radius_[_actualRobot]))
         {
@@ -277,7 +277,7 @@ bool Planner::getPaths(const std::vector< std::shared_ptr< Segment > >& _graph, 
         }
 
 
-        ROS_INFO("Tracing back");
+        ROS_INFO("Multi Robot Router: Tracing back");
 
         std::vector< std::shared_ptr< Segment> > path;
 
@@ -291,11 +291,11 @@ bool Planner::getPaths(const std::vector< std::shared_ptr< Segment > >& _graph, 
 
         //Got the path  Start optimization
         //Find potential Goal nodes for Optimization
-        int optimizationSteps = 4;
+        int optimizationSteps = optimizationSegmentNr_;
 
-        if(path.size() > 1)
+        if(path.size() > 1 && optimizationSteps > 0)
         {
-            ROS_INFO("OPTIMIZATION");
+            ROS_INFO("Multi Robot Router: Optimizing Path %i", optimizationSegmentNr_);
             std::map<int, Point> points;
 
             for(int j = 0; j < path.size(); j++)
@@ -315,11 +315,9 @@ bool Planner::getPaths(const std::vector< std::shared_ptr< Segment > >& _graph, 
 
             int startStep = -1;
             optimizationSteps = std::min<int>(optimizationSteps, (int)path.size() - 1);
-            ROS_INFO("OptiStart (%i): ", optimizationSteps);
             potential_.reset(new float[maxStepsPotExp]);
-            pointExpander_->findGoalOnMap(realStart_[i], maxStepsPotExp, potential_.get(), points, optimizationSteps, voronoiStart_[i], startStep);
+            pointExpander_->findGoalOnMap(realStart_[i], maxStepsPotExp, potential_.get(), points, optimizationSteps, voronoiStart_[i], startStep, radius_[i]);
 
-            ROS_INFO("Start (%i): %lu", startStep, path.size());
 
             //Trim Path
             if(startStep > -1)
@@ -345,27 +343,25 @@ bool Planner::getPaths(const std::vector< std::shared_ptr< Segment > >& _graph, 
 
             int goalStep = -1;
             optimizationSteps = std::min<int>(optimizationSteps, (int)path.size() - 2);
-            ROS_INFO("OptiGoal (%i): ", optimizationSteps);
             potential_.reset(new float[maxStepsPotExp]);
-            pointExpander_->findGoalOnMap(realGoals_[i], maxStepsPotExp, potential_.get(), points, optimizationSteps, voronoiGoals_[i], goalStep);
-
-            ROS_INFO("Goal (%i): %lu", goalStep, path.size());
+            pointExpander_->findGoalOnMap(realGoals_[i], maxStepsPotExp, potential_.get(), points, optimizationSteps, voronoiGoals_[i], goalStep, radius_[i]);
 
             //Trim Path
             if(goalStep > 0)
-                path.erase(std::next(path.begin(), goalStep), path.end());
+                path.erase(std::next(path.begin(), goalStep + 1), path.end());
+
         }
 
 
 
-        ROS_INFO("Checking Path");
+        ROS_INFO("Multi Robot Router: Checking Path");
 
         paths[_actualRobot] = (path);
 
         //Add path to p_querry
         if(!path_querry_->addPath(path , radius_[_actualRobot]))
         {
-            ROS_INFO("Checking Path failed");
+            ROS_INFO("Multi Robot Router: Checking Path failed");
             return false;
         }
 
@@ -441,7 +437,7 @@ bool Planner::getPaths(const std::vector< std::shared_ptr< Segment > >& _graph, 
 
 
 
-bool Planner::makePlan(const std::vector< Point >& _goals, const std::vector<float>& _radius, const grid_map::GridMap& _map, const std::vector<std::shared_ptr<Segment>>& _graph)
+bool Planner::makePlan(const std::vector< Point >& _goals, const std::vector<float>& _radius, const cv::Mat& _map, float _resolution, Point _origin, const std::vector<std::shared_ptr<Segment>>& _graph)
 {
     speedScheduleAttemps_ = 0;
     priorityScheduleAttemps_ = 0;
@@ -450,7 +446,7 @@ bool Planner::makePlan(const std::vector< Point >& _goals, const std::vector<flo
 
     if(_goals.size() != goals_.size())
     {
-        ROS_INFO("Wrong nr of goals %lu %lu", _goals.size(), goals_.size());
+        ROS_INFO("Multi Robot Router: Wrong nr of goals %lu %lu", _goals.size(), goals_.size());
         return false;
     }
 
@@ -458,7 +454,7 @@ bool Planner::makePlan(const std::vector< Point >& _goals, const std::vector<flo
     pointExpander_->initialize(_map);
     goals_ = _goals;                //TODO check if ok
 
-    if(!calculateStartPoints(_radius, _map, _graph))
+    if(!calculateStartPoints(_radius, _map, _resolution, _origin, _graph))
     {
         return false;
     }
@@ -472,14 +468,14 @@ bool Planner::makePlan(const std::vector< Point >& _goals, const std::vector<flo
     do
     {
         ROS_INFO("=========================================================");
-        ROS_INFO("New prority schedule");
+        ROS_INFO("Multi Robot Router: New prority schedule");
         speedScheduler_->reset(_goals.size());
         std::vector<float> speedList = speedScheduler_->getActualSpeeds();
 
         do
         {
             ROS_INFO("=========================================================");
-            ROS_INFO("New speed schedule");
+            ROS_INFO("Multi Robot Router: New speed schedule");
             std::vector<std::shared_ptr<Segment>> graph = _graph;
             path_querry_->reset(graph, goals_.size());
 
@@ -494,7 +490,7 @@ bool Planner::makePlan(const std::vector< Point >& _goals, const std::vector<flo
             }
 
 
-            if(getPaths(graph, lastPlannedRobot, priorityList, speedList,  _map.getSize() [0] *  _map.getSize() [1]))
+            if(getPaths(graph, lastPlannedRobot, priorityList, speedList,  _map.cols *  _map.rows))
             {
                 auto t2 = std::chrono::high_resolution_clock::now();
                 duration_ = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();

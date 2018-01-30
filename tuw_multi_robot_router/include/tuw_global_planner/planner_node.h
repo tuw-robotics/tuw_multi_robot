@@ -37,9 +37,10 @@
 #include <nav_msgs/Path.h>
 #include <tuw_multi_robot_msgs/VoronoiGraph.h>
 #include <memory>
-#include <grid_map_ros/grid_map_ros.hpp>
 #include <nav_msgs/OccupancyGrid.h>     //DEBUG
 #include <tuw_multi_robot_msgs/PlannerStatus.h>
+#include <opencv/cv.hpp>
+#include <std_msgs/Float32MultiArray.h>
 
 #include <tuw_global_planner/planner.h>
 #include <tuw_global_planner/utils.h>
@@ -63,12 +64,15 @@ class Planner_Node :  Planner
 
     private:    std::vector<ros::Subscriber>        subOdom_;
     private:    ros::Subscriber                     subGoalSet_;
-    private:    ros::Subscriber                     subVoronoiMap_;
+    private:    ros::Subscriber                     subMap_;
     private:    ros::Subscriber                     subVoronoiGraph_;
 
 
     private:    std::vector<std::string>            robot_names_;
-    private:    grid_map::GridMap                   voronoi_map_;
+        //private:    std::shared_ptr<unsigned char>      map_;
+    private:    cv::Mat                             distMap_;
+    private:    Eigen::Vector2d                     mapOrigin_;
+    private:    float                               mapResolution_;
     private:    std::vector<float>                  robot_radius_;
     private:    std::string                         segpath_topic_;
     private:    std::string                         odom_topic_;
@@ -86,13 +90,16 @@ class Planner_Node :  Planner
     private:    void odomCallback(const ros::MessageEvent<nav_msgs::Odometry const>& _event, int _topic);
     private:    void graphCallback(const tuw_multi_robot_msgs::VoronoiGraph& msg);
     private:    void goalsCallback(const tuw_multi_robot_msgs::PoseIdArray& _goals);
-    private:    void mapCallback(const grid_map_msgs::GridMap& msg);
+    private:    void mapCallback(const nav_msgs::OccupancyGrid& _map);
 
     private:    static bool sortSegments(std::shared_ptr<Segment> i, std::shared_ptr<Segment> j) {return i->getIndex() < j->getIndex();}
 
     private:    std::vector<std::shared_ptr<Segment>> graph_;
     private:    ros::Publisher debug_pub_;  //DEBUG
     private:    void publishPotential(float* potential, int nx, int ny, double resolution, int cx, int cy); //DEBUG
+    private:    void publishPotential(unsigned char *potential, int nx, int ny, double resolution, int cx, int cy); //DEBUG
+    private:    size_t getHash(const std::vector<signed char> &_map, Point _origin, float _resolution);
+    private:    size_t current_map_hash_;
 };
 
 #endif // PLANNER_NODE_H

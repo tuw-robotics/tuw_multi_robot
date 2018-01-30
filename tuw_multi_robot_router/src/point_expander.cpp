@@ -27,26 +27,20 @@
  */
 
 #include <tuw_global_planner/point_expander.h>
+#include <opencv2/core/mat.hpp>
+#include <ros/ros.h>
 
-void PointExpander::initialize(const grid_map::GridMap& _map)
+void PointExpander::initialize(const cv::Mat& _map)
 {
-    nx_ = _map.getSize()[0];
-    ny_ = _map.getSize()[1];
+    nx_ = _map.cols;
+    ny_ = _map.rows;
     ns_ = nx_ * ny_;
 
-    distance_field_.reset(new float[nx_ * ny_]);
-    voronoi_graph_.reset(new int8_t[nx_ * ny_]);
-    global_map_.reset(new int8_t[nx_ * ny_]);
-
-    float* distance_field = distance_field_.get();
-    int8_t* voronoi_graph = voronoi_graph_.get();
-    int8_t* global_map = global_map_.get();
-
-    getMaps(distance_field, voronoi_graph, global_map, _map);
+    distance_field_ = _map.clone();
 }
 
 
-void PointExpander::addPotentialExpansionCandidate(PointExpander::Index _current, int _next_x, int _next_y, float* _potential)
+void PointExpander::addPotentialExpansionCandidate(PointExpander::Index _current, int _next_x, int _next_y, float* _potential, int _distToObstacle)
 {
     float potentialPrev = _potential[_current.i];
     Index next = _current.offsetDist(_next_x, _next_y, nx_, ny_);
@@ -59,7 +53,7 @@ void PointExpander::addPotentialExpansionCandidate(PointExpander::Index _current
     if(_potential[next.i] < POT_HIGH)
         return;
 
-    if(global_map_[next.i] > 0)
+    if(((float*)distance_field_.data)[next.i] < _distToObstacle)   
         return;
 
 
@@ -73,7 +67,7 @@ void PointExpander::addPotentialExpansionCandidate(PointExpander::Index _current
 
 }
 
-PointExpander::Index PointExpander::findGoal(PointExpander::Index _start, int _cycles, float* _potential, const std::map<int, Index> &_goals, int _optimizationSteps, int &segIdx)
+PointExpander::Index PointExpander::findGoal(PointExpander::Index _start, int _cycles, float* _potential, const std::map<int, Index> &_goals, int _optimizationSteps, int &segIdx, int _radius)
 {
     std::fill(_potential, _potential + ns_, POT_HIGH);
     int cycle = 0;
@@ -123,10 +117,10 @@ PointExpander::Index PointExpander::findGoal(PointExpander::Index _start, int _c
         }
 
 
-        addPotentialExpansionCandidate(current, 1, 0, _potential);
-        addPotentialExpansionCandidate(current, 0, 1, _potential);
-        addPotentialExpansionCandidate(current, -1, 0, _potential);
-        addPotentialExpansionCandidate(current, 0, -1, _potential);
+        addPotentialExpansionCandidate(current, 1, 0, _potential, _radius);
+        addPotentialExpansionCandidate(current, 0, 1, _potential, _radius);
+        addPotentialExpansionCandidate(current, -1, 0, _potential, _radius);
+        addPotentialExpansionCandidate(current, 0, -1, _potential, _radius);
 
         cycle++;
     }
@@ -153,9 +147,11 @@ bool PointExpander::isGoal(Index _p, const std::map<int, Index> &_goals, int &se
 }
 
 
-bool PointExpander::findGoalOnMap(const Point &_start, int _cycles, float* _potential, const std::map<int, Point> &_goals, int _optimizationSteps, Point &_foundPoint, int &_segIdx)
+bool PointExpander::findGoalOnMap(const Point &_start, int _cycles, float* _potential, const std::map<int, Point> &_goals, int _optimizationSteps, Point &_foundPoint, int &_segIdx, int _radius)
 {
     Index startPoint((int)_start[0], (int)_start[1], nx_, 0, 0, 0);
+    if(startPoint.i < 0)
+      return false;
     Index foundPoint(-1, -1, -1, -1);
 
     std::map<int, Index> goals;
@@ -167,7 +163,7 @@ bool PointExpander::findGoalOnMap(const Point &_start, int _cycles, float* _pote
         goals.insert(i);
     }
 
-    foundPoint = findGoal(startPoint, _cycles, _potential, goals, _optimizationSteps, _segIdx);
+    foundPoint = findGoal(startPoint, _cycles, _potential, goals, _optimizationSteps, _segIdx, _radius);
     _foundPoint[0] = ((int)foundPoint.getX(nx_));
     _foundPoint[1] = ((int)foundPoint.getY(nx_));
 
@@ -175,19 +171,3 @@ bool PointExpander::findGoalOnMap(const Point &_start, int _cycles, float* _pote
     return (foundPoint.i >= 0);
 }
 
-void PointExpander::getMaps(float* _distance_field, int8_t* _voronoi_graph, int8_t* _global_map, const grid_map::GridMap& _voronoi_map)
-{
-    auto& distfield = _voronoi_map.get("distfield");
-    auto& voronoi = _voronoi_map.get("voronoi");
-    auto& map = _voronoi_map.get("map");
-
-
-    for(grid_map::GridMapIterator iterator(_voronoi_map); !iterator.isPastEnd(); ++iterator)
-    {
-        const grid_map::Index mapIndex = iterator.getUnwrappedIndex();
-        int arrayIndex = (ny_ - 1 - mapIndex[1]) * nx_ + (nx_ - 1 - mapIndex[0]);
-        _distance_field[arrayIndex] = distfield(iterator.getLinearIndex());
-        _voronoi_graph[arrayIndex] = voronoi(iterator.getLinearIndex());
-        _global_map[arrayIndex] = map(iterator.getLinearIndex());
-    }
-}

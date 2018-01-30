@@ -34,8 +34,9 @@
 #include <memory>
 #include <queue>
 #include <tuw_global_planner/utils.h>
-#include <grid_map_ros/grid_map_ros.hpp>
+#include <opencv/cv.h>
 #include <unordered_set>
+#include <map>
 
 class PointExpander
 {
@@ -106,17 +107,14 @@ private:        class Index
                 int nx_, ny_, ns_;
 
                 
-public:         void initialize(const grid_map::GridMap &_map);
-public:         bool findGoalOnMap(const Point &_start, int _cycles, float* _potential, const std::map<int, Point> &_goals, int _optimizationSteps, Point &_foundPoint, int &_segIdx);
+public:         void initialize(const cv::Mat &_map);
+public:         bool findGoalOnMap(const Point &_start, int _cycles, float* _potential, const std::map<int, Point> &_goals, int _optimizationSteps, Point &_foundPoint, int &_segIdx, int _radius);
 
-private:        void getMaps(float *_distance_field, int8_t *_voronoi_graph, int8_t *_global_map, const grid_map::GridMap &_voronoi_map);
-private:        Index findGoal(Index _start, int _cycles, float* _potential, const std::map<int, Index> &_goals, int _optimizationSteps, int &segIdx);
-private:        void addPotentialExpansionCandidate(Index _current, int _next_x, int _next_y, float* _potential);
+private:        Index findGoal(Index _start, int _cycles, float* _potential, const std::map<int, Index> &_goals, int _optimizationSteps, int &segIdx, int _radius);
+private:        void addPotentialExpansionCandidate(Index _current, int _next_x, int _next_y, float* _potential, int _distToObstacle);
 private:		bool isGoal(Index _p, const std::map<int, Index> &_goals, int &segIdx);
 
-private:        std::unique_ptr<float[]> distance_field_;
-private:        std::unique_ptr<int8_t[]> voronoi_graph_;
-private:        std::unique_ptr<int8_t[]> global_map_;
+private:        cv::Mat distance_field_;
 private:        float neutral_cost_ = 1;
 
 };

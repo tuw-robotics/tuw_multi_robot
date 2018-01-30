@@ -30,7 +30,6 @@
 
 #include <tuw_global_planner/segment_expander.h>
 #include <tuw_global_planner/path_coordinator.h>
-#include <grid_map_ros/grid_map_ros.hpp>
 #define TIME_OVERLAP 1
 
 SegmentExpander::SegmentExpander(std::shared_ptr<Heuristic> _h, std::shared_ptr<PotentialCalculator> _pCalc, std::shared_ptr<Path_Coordinator> _pathCoordinator, std::shared_ptr<CollisionResolution> _cr) : hx_(_h), pCalc_(_pCalc), path_querry_(_pathCoordinator), collision_resolution_(_cr)

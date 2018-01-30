@@ -52,6 +52,8 @@ class PathGenerator
                 std::vector<T> generatedPath;
                 segmentNrs_.emplace_back();
 
+				preparePath(generatedPath, _start[i]);
+				
                 if(_paths[i].size() == 1)
                 {
                     generatedPath.push_back(createElementStartEnd(_paths[i][0], _start[i], _end[i]));
@@ -71,12 +73,10 @@ class PathGenerator
 
                         if(j == 0)
                         {
-                            //ROS_INFO ("Start %i", i);
                             seg = createElementStart(_paths[i][j], _start[i]);
                         }
                         else if(j == _paths[i].size() - 1)
                         {
-                            //ROS_INFO ("End %i", i);
                             seg = createElementEnd(_paths[i][j], _end[i]);
                         }
                         else
@@ -123,6 +123,8 @@ class PathGenerator
         {
             _path.push_back(seg);
         }
+        void preparePath(std::vector<T>& _path, Point _start)
+		{ }
 
     private:
         std::shared_ptr<Path_Coordinator> pathQuerry_;
@@ -153,27 +155,21 @@ Point PathGenerator<Point>::createElement(const std::shared_ptr<Segment>& _eleme
 template<>
 void PathGenerator<Point>::pushBackPath(const std::vector<std::vector<Point>>& _actPath, std::vector<Point>& _path, Point seg, std::shared_ptr<Segment> originalSegment)
 {
-     // ROS_INFO("0");
     if(originalSegment->planning.Collision == -1)
     {
-     // ROS_INFO("A");
         segmentNrs_.back().push_back(originalSegment->getIndex());
         _path.push_back(seg);
     }
     else
     {
-      //ROS_INFO("V");
         int nrIterations = 0;
         int segId = pathQuerry_->findSegNr(originalSegment->planning.Collision, originalSegment->planning.Potential);   //Segment after the collisiton
 
-      //ROS_INFO("C");
 
         if(segId != -1)
         {
-      //ROS_INFO("d");
             for(int i = segmentNrs_[originalSegment->planning.Collision].size() - 1; i >= 0; i--)
             {
-      //ROS_INFO("E");
                 if(segmentNrs_[originalSegment->planning.Collision][i] == segId)
                 {
                     nrIterations = i;
@@ -184,7 +180,6 @@ void PathGenerator<Point>::pushBackPath(const std::vector<std::vector<Point>>& _
 
         do
         {
-      //ROS_INFO("F");
             segmentNrs_.back().push_back(originalSegment->getIndex());
             _path.push_back(seg);
         }
@@ -202,6 +197,22 @@ template<>
 Point PathGenerator<Point>::createElementStartEnd(const std::shared_ptr<Segment>& _element, Point _start, Point _end)
 {
     return createElementEnd(_element, _end);
+}
+
+template<>
+void PathGenerator<Point>::preparePath(std::vector<Point>& _path, Point _start)
+{ 
+	_path.push_back(_start);
+}
+
+template<>
+void PathGenerator<Potential_Point>::preparePath(std::vector<Potential_Point>& _path, Point _start)
+{ 
+    Potential_Point p;
+	p.point[0] = _start[0];
+	p.point[1] = _start[1];
+	
+	_path.push_back(p);
 }
 
 template<>
@@ -228,29 +239,23 @@ Potential_Point PathGenerator<Potential_Point>::createElement(const std::shared_
 template<>
 void PathGenerator<Potential_Point>::pushBackPath(const std::vector<std::vector<Potential_Point>>& _actPath, std::vector<Potential_Point>& _path, Potential_Point seg, std::shared_ptr<Segment> originalSegment)
 {
-      //ROS_INFO("1");
     if(originalSegment->planning.Collision == -1)
     {
-      //ROS_INFO("A");
         segmentNrs_.back().push_back(originalSegment->getIndex());
         _path.push_back(seg);
     }
     else
     {
-      //ROS_INFO("B");
         int nrIterations = 0;
         int segId = pathQuerry_->findSegNr(originalSegment->planning.Collision, originalSegment->planning.Potential);   //Segment after the collisiton
 
 
         if(segId != -1)
         {
-      //ROS_INFO("C");
             for(int i = segmentNrs_[originalSegment->planning.Collision].size() - 1; i >= 0; i--)
             {
-      //ROS_INFO("D");
                 if(segmentNrs_[originalSegment->planning.Collision][i] == segId)
                 {
-      //ROS_INFO("E");
                     nrIterations = i;
                     break;
                 }
@@ -259,7 +264,6 @@ void PathGenerator<Potential_Point>::pushBackPath(const std::vector<std::vector<
 
         do
         {
-      //ROS_INFO("F");
             segmentNrs_.back().push_back(originalSegment->getIndex());
             _path.push_back(seg);
         }
@@ -291,7 +295,6 @@ template<>
 PathSegment PathGenerator<PathSegment>::createElement(const std::shared_ptr<Segment>& _element)
 {
     PathSegment ps;
-
     if(_element->planning.Direction == Segment::start_to_end)
     {
         ps.segId = _element->getIndex();
@@ -318,6 +321,7 @@ PathSegment PathGenerator<PathSegment>::createElementEnd(const std::shared_ptr<S
     PathSegment ps = createElement(_element);
     ps.end[0] = _end[0];
     ps.end[1] = _end[1];
+    
 
     return ps;
 }
@@ -347,7 +351,6 @@ PathSegment PathGenerator<PathSegment>::createElementStartEnd(const std::shared_
 template<>
 void PathGenerator<PathSegment>::addPreconditions(PathSegment& _segment, std::shared_ptr<Segment> _segToFind, int _pathNr, const std::vector<std::vector<std::shared_ptr<Segment>>>& _paths)
 {
-    //ROS_INFO("PC %i %i", _pathNr, _segToFind->getIndex());
     std::vector<std::pair<int, float>> list = pathQuerry_->getListOfRobotsHigherPrioritizedRobots(_pathNr, _segToFind);
     _segment.preconditions.clear();
 

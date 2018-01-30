@@ -26,9 +26,9 @@ void VoronoiGenerator::computeDistanceField(grid_map::GridMap& _gridMap, const s
     {
       const grid_map::Index mapIndex = iterator.getUnwrappedIndex();
       if(layerSrc(iterator.getLinearIndex()) == 0)			//if free space
-	srcMap.at<uint8_t>(mapIndex[1],mapIndex[0]) = 100;
+          srcMap.at<uint8_t>(mapIndex[1],mapIndex[0]) = 100;
       else 
-	srcMap.at<uint8_t>(mapIndex[1],mapIndex[0]) = 0;
+         srcMap.at<uint8_t>(mapIndex[1],mapIndex[0]) = 0;
     }
     
     Mat destMap_f;  

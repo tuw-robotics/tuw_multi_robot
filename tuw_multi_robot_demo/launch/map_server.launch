@@ -1,0 +1,5 @@
+<launch>
+    <arg name="room" default="cave" /> 
+
+    <node pkg="map_server" type="map_server" name="map_server" args="$(find tuw_multi_robot_demo)/cfg/maps/$(arg room)/map.yaml"/>
+</launch>

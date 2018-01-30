@@ -33,7 +33,6 @@
 #include <memory>
 #include <vector>
 #include <tuw_global_planner/segment.h>
-#include <grid_map_ros/grid_map_ros.hpp>
 
 class Path_Coordinator
 {
