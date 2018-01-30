@@ -1,0 +1,13 @@
+<launch>
+
+  <arg name="room" default="cave" /> 
+  <arg name="robot_name" default="r1" />
+  <arg name="cfg"  default="default" />
+  
+<node pkg="tuw_voronoi_graph" type="tuw_voronoi_generator" name="tuw_voronoi_gen" output="screen">
+	<param name="map_topic" value="voronoi_map"/>
+</node>
+
+
+  
+</launch>

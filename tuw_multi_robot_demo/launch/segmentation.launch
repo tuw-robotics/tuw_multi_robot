@@ -2,7 +2,7 @@
 	<arg name="robotnr" default="3"/>
 	<arg name="room"  default="default" />
 
-  	<node  pkg="tuw_voronoi_graph" type="path_segmentation_node" name="segmentation_node" output="screen">
+  	<node pkg="tuw_voronoi_graph" type="path_segmentation_node" name="segmentation_node" output="screen">
 		<rosparam command="load" file="$(find tuw_multi_robot_demo)/cfg/segmentation/$(arg room)/segmentation.yaml" />
 	</node>
 </launch>
