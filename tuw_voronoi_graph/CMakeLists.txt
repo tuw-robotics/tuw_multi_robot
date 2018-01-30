@@ -124,7 +124,7 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-add_definitions(-std=c++11)
+add_definitions(-std=c++14)
 
 include_directories(
  include
@@ -157,6 +157,17 @@ add_library(voronoi_map_lib
   src/serializer.cpp
 )
 target_link_libraries(voronoi_map_lib ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${Boost_SERIALIZATION_LIBRARY})
+
+add_library(voronoi_path_lib
+  src/voronoi_path_generator.cpp
+  src/thinning.cpp
+)
+target_link_libraries(voronoi_path_lib ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${Boost_SERIALIZATION_LIBRARY})
+
+add_executable(tuw_voronoi_graph_node src/voronoi_graph_node.cpp)
+target_link_libraries(tuw_voronoi_graph_node voronoi_path_lib)
+
+
 
 # Libraries 
 add_library(tuw_voronoi_map_ros_sub
