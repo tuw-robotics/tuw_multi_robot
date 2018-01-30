@@ -54,7 +54,7 @@
   <build_depend>nav_msgs</build_depend>
   <run_depend>rviz</run_depend>
   <run_depend>tuw_multi_robot_msgs</run_depend>
-  <run_depend>tnav_msgs</run_depend>
+  <run_depend>nav_msgs</run_depend>
 
 
 
