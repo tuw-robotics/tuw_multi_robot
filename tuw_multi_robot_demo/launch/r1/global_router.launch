@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+
+<launch>
+    <arg name="room"           default="roblab"          />
+    <arg name="cfg"	       default="default"	 />
+
+    
+    <include file="$(find tuw_p3dx)/launch/voronoi_map_server.launch">
+        <arg name="cfg" value="$(arg cfg)" />
+        <arg name="room" value="$(arg room)" />
+    </include>
+    
+    <include file="$(find tuw_p3dx)/launch/multi_robot.launch">
+        <arg name="cfg" value="$(arg cfg)" />
+    </include>
+
+    <include file="$(find tuw_p3dx)/launch/segmentation.launch">
+        <arg name="room" value="$(arg room)" />
+    </include>
+
+    <include file="$(find tuw_p3dx)/launch/path_synchronizer.launch">
+        <arg name="cfg" value="$(arg cfg)" />
+    </include>
+    
+</launch>

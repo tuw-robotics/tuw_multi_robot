@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<!DOCTYPE boost_serialization>
+<boost_serialization signature="serialization::archive" version="12">
+<MapInfo class_id="0" tracking_level="0" version="0">
+	<mapName>map</mapName>
+	<distanceMapName>distfield</distanceMapName>
+	<voronoiMapName>voronoi</voronoiMapName>
+	<resolution>8.889999986e-02</resolution>
+	<cols>1654</cols>
+	<rows>1169</rows>
+	<origin_cols>-1.347970009e+01</origin_cols>
+	<origin_rows>1.896204948e+01</origin_rows>
+</MapInfo>
+</boost_serialization>
+

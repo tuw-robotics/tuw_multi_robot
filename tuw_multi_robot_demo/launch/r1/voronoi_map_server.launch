@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+
+<launch>
+
+  <arg name="room" default="cave" /> <!-- room cave or roblab -->
+  <arg name="cfg"  default="default" />
+
+    <node pkg="tuw_voronoi_map" type="tuw_voronoi_publisher" name="tuw_voronoi_map_publisher" output="screen">
+            <param name="map_topic" value="voronoi_map"/>
+            <param name="mapPath" value="$(find tuw_multi_robot_demo)/cfg/r1/voronoi_map_server/$(arg room)/"/>
+            <param name="mapInfoName" value="vmap.info"/>
+    </node>
+
+  
+</launch>

@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+
+<launch>
+    <arg name="cfg"  default="default" />
+    
+    <node pkg="tuw_multi_robot_router" type="tuw_multi_robot_router_node" name="tuw_robot_router" output="screen">
+            <rosparam command="load" file="$(find tuw_multi_robot_demo)/cfg/r1/multi_robot_planner/$(arg cfg)/multi_robot.yaml" />
+    </node>
+</launch>
+
+	
