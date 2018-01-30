@@ -1,5 +1,5 @@
 <launch>
-  <arg name="robot_name" default="p3dx" />
+  <arg name="robot_name" default="r1" />
   <arg name="cfg"  default="default" />
 
   <group  ns="$(arg robot_name)">
