@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>tuw_multi_robot_rviz</name>
   <version>0.0.0</version>
   <description>The tuw_multi_robot_rviz package</description>
@@ -52,9 +52,9 @@
   <build_depend>rviz</build_depend>
   <build_depend>tuw_multi_robot_msgs</build_depend>
   <build_depend>nav_msgs</build_depend>
-  <run_depend>rviz</run_depend>
-  <run_depend>tuw_multi_robot_msgs</run_depend>
-  <run_depend>nav_msgs</run_depend>
+  <exec_depend>rviz</exec_depend>
+  <exec_depend>tuw_multi_robot_msgs</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
 
 
 
