@@ -11,9 +11,7 @@ add_compile_options(-std=c++14)
 find_package(catkin REQUIRED COMPONENTS
   rviz
   roscpp
-  tuw_geometry_msgs
   tuw_nav_msgs
-  tuw_multi_robot_msgs
   tuw_multi_robot_msgs
 )
 
