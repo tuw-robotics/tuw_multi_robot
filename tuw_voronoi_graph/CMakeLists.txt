@@ -23,7 +23,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 find_package(OpenCV REQUIRED)
-find_package(Boost COMPONENTS serialization REQUIRED)
+find_package(Boost COMPONENTS serialization filesystem REQUIRED)
 find_package(Eigen3 REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -124,7 +124,7 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-add_definitions(-std=c++14)
+add_definitions(-std=c++17)
 
 include_directories(
  include
@@ -132,78 +132,20 @@ include_directories(
 )
 
 
-## Declare a C++ library
-add_library(path_segmentation
-  src/segmentation.cpp
-  src/segment_expander.cpp
-  src/segment.cpp
-  src/crossing.cpp
-)
-target_link_libraries(path_segmentation ${catkin_LIBRARIES})
-
-
-add_executable(path_segmentation_node src/segmentation_node.cpp)
-target_link_libraries(path_segmentation_node
-  ${catkin_LIBRARIES}
-  path_segmentation
-)
-
-
-
-## Declare a C++ library
-add_library(voronoi_map_lib
-  src/generator.cpp
-  src/thinning.cpp
-  src/serializer.cpp
-)
-target_link_libraries(voronoi_map_lib ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${Boost_SERIALIZATION_LIBRARY})
-
 add_library(voronoi_path_lib
   src/voronoi_path_generator.cpp
   src/thinning.cpp
+  src/voronoi_graph_generator.cpp
+  src/segment.cpp
+  src/segment_expander.cpp
+  src/crossing.cpp
+  src/serializer.cpp
 )
 target_link_libraries(voronoi_path_lib ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${Boost_SERIALIZATION_LIBRARY})
 
 add_executable(tuw_voronoi_graph_node src/voronoi_graph_node.cpp)
 target_link_libraries(tuw_voronoi_graph_node voronoi_path_lib)
 
-
-
-# Libraries 
-add_library(tuw_voronoi_map_ros_sub
-  src/voronoi_map_provider.cpp
-)
-target_link_libraries(tuw_voronoi_map_ros_sub ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
-
-## Add cmake target dependencies of the library
-## as an example, code may need to be generated before libraries
-## either from message generation or dynamic reconfigure
-# add_dependencies(testPackage2 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-## Declare a C++ executable
-add_executable(tuw_voronoi_generator src/generator_node.cpp)
-target_link_libraries(tuw_voronoi_generator
-  ${catkin_LIBRARIES}
-  voronoi_map_lib
-  ${OpenCV_LIBRARIES}
-)
-
-add_executable(tuw_voronoi_map_saver src/saver_node.cpp)
-target_link_libraries(tuw_voronoi_map_saver
-  ${catkin_LIBRARIES}
-  voronoi_map_lib
-  ${OpenCV_LIBRARIES}
-  ${Boost_SERIALIZATION_LIBRARY}
-)
-
-
-add_executable(tuw_voronoi_map_publisher src/publisher_node.cpp)
-target_link_libraries(tuw_voronoi_map_publisher
-  ${catkin_LIBRARIES}
-  voronoi_map_lib
-  ${OpenCV_LIBRARIES}
-  ${Boost_SERIALIZATION_LIBRARY}
-)
 
 add_executable(tuw_segment_to_graph_node src/segment_to_graph_node.cpp)
 target_link_libraries(tuw_segment_to_graph_node

@@ -36,14 +36,14 @@
 
 class Crossing
 {
-public:		Crossing(std::shared_ptr<std::vector<std::pair<int,int>>> _segment_points);
+public:		Crossing(const std::vector<Eigen::Vector2d> &_segment_points);
 public:		bool TryAddSegment(std::shared_ptr<Segment> _seg);
-public:		std::pair<float,float> getCenter();
+public:		Eigen::Vector2d getCenter();
 
-private:	std::shared_ptr<std::vector<std::pair<int,int>>> surroundingPoints_;
+private:	std::vector<Eigen::Vector2d> surroundingPoints_;
 private:	std::vector<std::shared_ptr<Segment>> segments_start_;
 private:	std::vector<std::shared_ptr<Segment>> segments_end_;
-private:	std::pair<float, float> center_;
+private:	Eigen::Vector2d center_;
 };
 
 #endif // PLANNER_NODE_H
