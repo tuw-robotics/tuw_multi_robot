@@ -52,7 +52,9 @@
   <!--   <doc_depend>doxygen</doc_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
   <exec_depend>tuw_multi_robot_ctrl</exec_depend>
+  <exec_depend>tuw_multi_robot_demo</exec_depend>
   <exec_depend>tuw_multi_robot_msgs</exec_depend>
+  <exec_depend>tuw_multi_robot_route_to_path</exec_depend>
   <exec_depend>tuw_multi_robot_router</exec_depend>
   <exec_depend>tuw_multi_robot_rviz</exec_depend>
   <exec_depend>tuw_voronoi_graph</exec_depend>

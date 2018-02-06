@@ -19,9 +19,9 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-find_package(OpenCV REQUIRED)
 find_package(Boost COMPONENTS serialization filesystem REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(OpenCV 3 REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -122,7 +122,6 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 add_definitions(-std=c++17)
-
 include_directories(
  include
   ${catkin_INCLUDE_DIRS}
