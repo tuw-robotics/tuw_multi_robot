@@ -10,6 +10,7 @@
   <arg name="use_controller"        default="true"            />
   <arg name="use_graph_generator"   default="true"            />
   <arg name="cfg"                   default="default"         />
+  <arg name="use_path_synchronizer" default="false"           />
 
   <!-- map server -->
   <group if="$(arg use_map_server)">
@@ -52,4 +53,9 @@
 	  </include>
   </group>
 
+  <group if="$(arg use_path_synchronizer)">
+	  <include file="$(find tuw_multi_robot_demo)/launch/path_synchronizer.launch">
+	    <arg name="cfg" value="$(arg cfg)" />
+	  </include>
+  </group>
 </launch>

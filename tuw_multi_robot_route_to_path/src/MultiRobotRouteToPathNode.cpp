@@ -57,6 +57,23 @@ namespace tuw_multi_robot_route_to_path
         robot_names_(std::vector<std::string> ( {"robot_0", "robot_1"}))
     {
         n_param_.param("robot_names", robot_names_, robot_names_);
+        std::string robot_names_string = "";
+        n_param_.param("robot_names_str", robot_names_string, robot_names_string);
+
+        if(robot_names_string.size() > 0)
+        {
+            robot_names_string.erase(std::remove(robot_names_string.begin(), robot_names_string.end(), ' '), robot_names_string.end());
+            std::istringstream stringStr(robot_names_string);
+            std::string result;
+
+            robot_names_.clear();
+
+            while(std::getline(stringStr, result, ','))
+            {
+                robot_names_.push_back(result);
+            }
+        }
+
         no_robots_ = robot_names_.size();
 
         ROS_INFO("Subscribing %i robots", no_robots_);
@@ -107,10 +124,12 @@ namespace tuw_multi_robot_route_to_path
             for(int i = 0; i < no_robots_; i++)
             {
                 std::vector<Eigen::Vector3d> newPath = converter_[i].updateSync(robot_steps_, changed);
-				if(changed)
-				  ROS_INFO("new path found %i %lu", i, newPath.size());
+
                 if(changed)
-                    publishPath(newPath,i);
+                    ROS_INFO("new path found %i %lu", i, newPath.size());
+
+                if(changed)
+                    publishPath(newPath, i);
             }
         }
     }
@@ -131,18 +150,18 @@ namespace tuw_multi_robot_route_to_path
 
             ps.pose.position.x = p[0];
             ps.pose.position.y = p[1];
-			
-			Eigen::Quaternion<float> q;
-			q = Eigen::AngleAxisf(p[2], Eigen::Vector3f::UnitZ());
-			
-			ps.pose.orientation.x = q.x();
-			ps.pose.orientation.y = q.y();
-			ps.pose.orientation.z = q.z();
-			ps.pose.orientation.w = q.w();
+
+            Eigen::Quaternion<float> q;
+            q = Eigen::AngleAxisf(p[2], Eigen::Vector3f::UnitZ());
+
+            ps.pose.orientation.x = q.x();
+            ps.pose.orientation.y = q.y();
+            ps.pose.orientation.z = q.z();
+            ps.pose.orientation.w = q.w();
             path.poses.push_back(ps);
         }
 
-		ROS_INFO("published path %i", _topic);
+        ROS_INFO("published path %i", _topic);
         pubPath_[_topic].publish(path);
     }
 
@@ -171,7 +190,7 @@ namespace tuw_multi_robot_route_to_path
             ps.width = seg.width;               //Its the radius :D
 
             float angle = atan2(seg.end.y - seg.start.y, seg.end.x - seg.start.x);
-            
+
             spp.p[0] = seg.end.x;
             spp.p[1] = seg.end.y;
             spp.p[2] = angle;
@@ -193,11 +212,13 @@ namespace tuw_multi_robot_route_to_path
         converter_[_topic].init(localPath);
         observer_[_topic].init(segPath);
         std::fill(robot_steps_.begin(), robot_steps_.end(), 0);
-		
+
         bool chged = false;
         std::vector<Eigen::Vector3d> newPath = converter_[_topic].updateSync(robot_steps_, chged);
-		if(chged)
-			  ROS_INFO("initial path found %i %lu", _topic, newPath.size());
+
+        if(chged)
+            ROS_INFO("initial path found %i %lu", _topic, newPath.size());
+
         if(chged)
             publishPath(newPath, _topic);
     }
