@@ -112,6 +112,10 @@ namespace voronoi_graph
             {
                 int *succPtr = graph.segments_[i].successors.get();
 
+                
+                int num = succPtr[j];
+                std::shared_ptr<Segment> seg = _segs[succPtr[j]];
+                
                 if(!_segs[i]->ContainsSuccessor(_segs[succPtr[j]]))
                     _segs[i]->AddSuccessor(_segs[succPtr[j]]);
             }

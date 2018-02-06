@@ -1,3 +1,0 @@
-robot_names: ["r1"]
-robot_radius: [0.30]
-path_topic: "path_unsynced"

@@ -30,7 +30,6 @@
 #define VORONOI_GRAPH_GENERATOR_H
 
 #include <ros/ros.h>
-#include <grid_map_ros/grid_map_ros.hpp>
 #include <voronoi_segmentation/segment.h>
 #include <voronoi_segmentation/segment_expander.h>
 

@@ -1,5 +1,6 @@
+<?xml version="1.0"?>
+
 <launch>
 	<arg name="room" default="cave"/>
-
   	<node pkg="stage_ros" type="stageros" name="stageros" args="$(find tuw_multi_robot_demo)/cfg/maps/$(arg room)/stage.world" output="screen"/>
 </launch>

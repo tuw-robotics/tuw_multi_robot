@@ -61,6 +61,22 @@ Planner_Node::Planner_Node(ros::NodeHandle& _n) :
 {
     id_ = 0;
     n_param_.param("robot_names", robot_names_, std::vector<std::string>());
+    
+    std::string robot_names_string = "";
+    n_param_.param("robot_names_str", robot_names_string, robot_names_string);
+
+    if(robot_names_string.size() > 0)
+    {
+        robot_names_string.erase(std::remove(robot_names_string.begin(), robot_names_string.end(), ' '), robot_names_string.end());
+        std::istringstream stringStr(robot_names_string);
+        std::string result;
+
+        robot_names_.clear();
+        while(std::getline(stringStr, result, ','))
+        {
+            robot_names_.push_back(result);
+        }
+    }
 
     resize(robot_names_.size());
 
@@ -103,7 +119,12 @@ Planner_Node::Planner_Node(ros::NodeHandle& _n) :
     n_param_.param("velocity_topic_", velocity_topic_, velocity_topic_);
 
     n_param_.param("robot_radius", robot_radius_, std::vector<float>());
-
+    
+    float default_radius = 1;
+    n_param_.param("robot_default_radius", default_radius, default_radius);
+    
+    robot_radius_.resize(robot_names_.size(), default_radius);
+    
 
     for(size_t i = 0; i < subOdom_.size(); i++)
     {

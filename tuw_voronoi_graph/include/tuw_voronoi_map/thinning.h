@@ -4,7 +4,8 @@
 #include <opencv/cv.h>
 #include <queue>
 
-namespace voronoi_map {
+namespace voronoi_graph
+{
   
   /**
  * @brief Perform one thinning iteration.(Normally you wouldn't call this function directly from your code)

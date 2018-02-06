@@ -47,44 +47,46 @@ namespace voronoi_graph
     {
 
         topicGlobalMap_ = "/map";
-        n.param("map_topic", topicGlobalMap_, topicGlobalMap_);
+        n_param_.param("map_topic", topicGlobalMap_, topicGlobalMap_);
 
         smoothing_ = 15;
-        n.param("map_smoothing", smoothing_, smoothing_);
-        
-        
+        n_param_.param("map_smoothing", smoothing_, smoothing_);
+
+
         topicVoronoiMap_ = "voronoi_map";
-        n.param("voronoi_topic", topicVoronoiMap_, topicVoronoiMap_);
+        n_param_.param("voronoi_topic", topicVoronoiMap_, topicVoronoiMap_);
 
         topicSegments_ = "/segments";
-        n.param("segments_topic", topicSegments_, topicSegments_);
+        n_param_.param("segments_topic", topicSegments_, topicSegments_);
 
         frameGlobalMap_ = "map";
-        n.param("map_frame", frameGlobalMap_, frameGlobalMap_);
+        n_param_.param("map_frame", frameGlobalMap_, frameGlobalMap_);
         frameVoronoiMap_ = "voronoi_map";
-        n.param("voronoi_frame", frameVoronoiMap_, frameVoronoiMap_);
+        n_param_.param("voronoi_frame", frameVoronoiMap_, frameVoronoiMap_);
 
         path_length_ = 0.9;   //meter
         n_param_.param("segment_length", path_length_, path_length_);
 
         crossingOptimization_ = 0.2;
-        n.param("opt_crossings", crossingOptimization_, crossingOptimization_);
-        
+        n_param_.param("opt_crossings", crossingOptimization_, crossingOptimization_);
+
         endSegmentOptimization_ = 0.4;
-        n.param("opt_end_segments", endSegmentOptimization_, endSegmentOptimization_);
+        n_param_.param("opt_end_segments", endSegmentOptimization_, endSegmentOptimization_);
         endSegmentOptimization_ = std::min<float>(endSegmentOptimization_, 0.7 * path_length_);
-        
-        graphPath_ = "./";
-        n.param("graph_path", graphPath_, graphPath_);       
+
+        graphPath_ = "/home/benjamin/temp/testmap/";
+        n_param_.param("graph_path", graphPath_, graphPath_);
+
         if(graphPath_.back() != '/')
             graphPath_ += "/";
+
         
-        
+
         subMap_       = n.subscribe(topicGlobalMap_, 1, &VoronoiGeneratorNode::globalMapCallback, this);
         //pubVoronoiMap_    = n.advertise<nav_msgs::OccupancyGrid>(topicVoronoiMap_, 1);                        //DEBUG
         pubSegments_  = n.advertise<tuw_multi_robot_msgs::VoronoiGraph>(topicSegments_, 1);
 
-        
+
         //ros::Rate(1).sleep();
         ros::spinOnce();
     }
@@ -100,7 +102,7 @@ namespace voronoi_graph
         size_t new_hash = getHash(map, origin, _map->info.resolution);
 
         if(new_hash != current_map_hash_)
-        {          
+        {
             if(!loadGraph(new_hash))
             {
                 ROS_INFO("Graph generator: Graph not found! Generating new one!");
@@ -110,45 +112,51 @@ namespace voronoi_graph
             {
                 ROS_INFO("Graph generator: Graph loaded from memory");
             }
+
             current_map_hash_ = new_hash;
-            
+
             allowPublish = true;
         }
     }
 
     void VoronoiGeneratorNode::createGraph(const nav_msgs::OccupancyGrid::ConstPtr& _map, size_t _map_hash)
     {
-            std::vector<signed char> map = _map->data;
-            
-            ROS_INFO("Graph generator: Computing distance field ...");
-            origin_[0] = _map->info.origin.position.x;
-            origin_[1] = _map->info.origin.position.y;
-            resolution_ = _map->info.resolution;
+        std::vector<signed char> map = _map->data;
 
-            cv::Mat m(_map->info.height, _map->info.width, CV_8SC1, map.data());
-            prepareMap(m, map_, smoothing_);           
-            computeDistanceField(map_, distField_);
-            
-            ROS_INFO("Graph generator: Computing voronoi graph ...");
-            computeVoronoiMap(distField_, voronoiMap_);
+        segments_.clear();
+        Segment::ResetId();
 
-            ROS_INFO("Graph generator: Generating graph ...");
-            potential.reset(new float[m.cols * m.rows]);
-            float pixel_path_length = path_length_ / resolution_;
-            segments_ = calcSegments(m, distField_, voronoiMap_, potential.get(), pixel_path_length, crossingOptimization_ / resolution_, endSegmentOptimization_ / resolution_);
+        ROS_INFO("Graph generator: Computing distance field ...");
+        origin_[0] = _map->info.origin.position.x;
+        origin_[1] = _map->info.origin.position.y;
+        resolution_ = _map->info.resolution;
 
-            //Check Directroy
-            save(graphPath_ + std::to_string(_map_hash) + "/", segments_, origin_, resolution_);    
-            ROS_INFO("Graph generator: Created new Graph %lu", _map_hash);
-            
+        cv::Mat m(_map->info.height, _map->info.width, CV_8SC1, map.data());
+        prepareMap(m, map_, smoothing_);
+        computeDistanceField(map_, distField_);
+
+        ROS_INFO("Graph generator: Computing voronoi graph ...");
+        computeVoronoiMap(distField_, voronoiMap_);
+
+        ROS_INFO("Graph generator: Generating graph ...");
+        potential.reset(new float[m.cols * m.rows]);
+        float pixel_path_length = path_length_ / resolution_;
+        segments_ = calcSegments(m, distField_, voronoiMap_, potential.get(), pixel_path_length, crossingOptimization_ / resolution_, endSegmentOptimization_ / resolution_);
+
+        //Check Directroy
+        save(graphPath_ + std::to_string(_map_hash) + "/", segments_, origin_, resolution_);
+        ROS_INFO("Graph generator: Created new Graph %lu", _map_hash);
+
     }
 
     bool VoronoiGeneratorNode::loadGraph(std::size_t hash)
     {
-            return load(graphPath_ + std::to_string(hash) + "/", segments_, origin_, resolution_);
+        segments_.clear();
+        Segment::ResetId();
+        return load(graphPath_ + std::to_string(hash) + "/", segments_, origin_, resolution_);
     }
 
-    
+
     void VoronoiGeneratorNode::publishSegments()
     {
         tuw_multi_robot_msgs::VoronoiGraph graph;
@@ -202,6 +210,7 @@ namespace voronoi_graph
 
             graph.segments.push_back(seg);
         }
+
         pubSegments_.publish(graph);
     }
 

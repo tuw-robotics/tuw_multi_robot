@@ -2,25 +2,20 @@
 
 <launch>
 
-  <arg name="room"             default="cave"            />
-  <arg name="use_rviz"         default="true"            />
-  <arg name="use_stage"        default="true"            />
-  <arg name="use_map_server"   default="true"            />
-  <arg name="use_planner"      default="true"            />
-  <arg name="use_controller"   default="true"            />
-  <arg name="use_segmentation" default="true"            />
-  <arg name="cfg"              default="default"         />
+  <arg name="room"                  default="cave"            />
+  <arg name="use_rviz"              default="true"            />
+  <arg name="use_stage"             default="true"            />
+  <arg name="use_map_server"        default="true"            />
+  <arg name="use_planner"           default="true"            />
+  <arg name="use_controller"        default="true"            />
+  <arg name="use_graph_generator"   default="true"            />
+  <arg name="cfg"                   default="default"         />
 
   <!-- map server -->
   <group if="$(arg use_map_server)">
-	  <include file="$(find tuw_multi_robot_demo)/launch/voronoi_map_server.launch">
-	    <arg name="room" value="$(arg room)" />
-	  </include>
-	  <include file="$(find tuw_multi_robot_demo)/launch/voronoi_visualization.launch">
-	  </include>
-	  <include file="$(find tuw_multi_robot_demo)/launch/map_server.launch">
-	    <arg name="room" value="$(arg room)" />
-	  </include>
+        <include file="$(find tuw_multi_robot_demo)/launch/map_server.launch">
+        <arg name="room" value="$(arg room)" />
+        </include>
   </group>
 
 
@@ -51,8 +46,8 @@
   </group>
 
 
-  <group if="$(arg use_segmentation)">
-	  <include file="$(find tuw_multi_robot_demo)/launch/segmentation.launch">
+  <group if="$(arg use_graph_generator)">
+	  <include file="$(find tuw_multi_robot_demo)/launch/graph_generator.launch">
 	    <arg name="room" value="$(arg room)" />
 	  </include>
   </group>

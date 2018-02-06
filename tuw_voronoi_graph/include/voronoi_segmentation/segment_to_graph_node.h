@@ -37,36 +37,38 @@
 
 #include <eigen3/Eigen/Dense>
 
-struct PathSeg
+namespace voronoi_graph
 {
-    Eigen::Vector2d start;
-    Eigen::Vector2d end;
-    float width;
-    PathSeg(Eigen::Vector2d _s, Eigen::Vector2d _e, double _w) : start(_s), end(_e), width(_w)  {  }
-};
+    struct PathSeg
+    {
+        Eigen::Vector2d start;
+        Eigen::Vector2d end;
+        float width;
+        PathSeg(Eigen::Vector2d _s, Eigen::Vector2d _e, double _w) : start(_s), end(_e), width(_w)  {  }
+    };
 
-class SegmentToGraphNode
-{
-    public:     SegmentToGraphNode(ros::NodeHandle &n);
+    class SegmentToGraphNode
+    {
+        public:
+            SegmentToGraphNode(ros::NodeHandle &n);
+            void Publish();
+            ros::NodeHandle             n_;      ///< Node handler to the root node
+            ros::NodeHandle             n_param_;///< Node handler to the current node
+            std::unique_ptr<ros::Rate>  rate_;
 
-    public:     void Publish();
-
-    public:     ros::NodeHandle             n_;      ///< Node handler to the root node
-    public:     ros::NodeHandle             n_param_;///< Node handler to the current node
-    public:     std::unique_ptr<ros::Rate>      rate_;
-
-// ROS Publishers
-    private:    ros::Publisher               pubSegments_;
+            
+        private:
+            ros::Publisher               pubSegments_;
 
 
-    private:    std::string             segment_file_;
-    private:    std::string             segment_topic_;
-    private:    double                  path_length_;
+            std::string             segment_file_;
+            std::string             segment_topic_;
+            double                  path_length_;
 
-    private:    tuw_multi_robot_msgs::VoronoiGraph current_graph_;
+            tuw_multi_robot_msgs::VoronoiGraph current_graph_;
 
-    private:    void readSegments();
-    private:    std::vector<int> findNeighbors(std::vector<PathSeg> &_graph, Eigen::Vector2d _point, int _segment);
-};
-
+            void readSegments();
+            std::vector<int> findNeighbors(std::vector<PathSeg> &_graph, Eigen::Vector2d _point, int _segment);
+    };
+}
 #endif // PLANNER_NODE_H

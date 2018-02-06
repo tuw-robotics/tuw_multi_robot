@@ -59,8 +59,8 @@ namespace voronoi_graph
         Mat srcMap = _distField;
         srcMap.convertTo(_voronoiMap, CV_8UC1, 0.0);
 
-        voronoi_map::greyscale_thinning(srcMap, _voronoiMap);
+        voronoi_graph::greyscale_thinning(srcMap, _voronoiMap);
         cv::threshold(_voronoiMap, _voronoiMap, 1, 255, CV_THRESH_BINARY);
-        voronoi_map::sceletonize(_voronoiMap, _voronoiMap);
+        voronoi_graph::sceletonize(_voronoiMap, _voronoiMap);
     }
 }

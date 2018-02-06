@@ -78,7 +78,7 @@ namespace velocity_controller
 
                     if ( pathCounter_ >= path_->size() )
                     {
-                        ROS_INFO( "GOAL REACHED" );
+                        ROS_INFO( "Multi Robot Controller: goal reached" );
                         plan_active = false;
                     }
                 }

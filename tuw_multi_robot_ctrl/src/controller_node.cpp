@@ -125,14 +125,14 @@ namespace velocity_controller
     }
     
     setPath(std::make_shared<std::vector<PathPoint>>(path));
-    ROS_INFO("Got Plan");
+    ROS_INFO("Multi Robot Controller: Got Plan");
   }
 
   void ControllerNode::subCtrlCb(const std_msgs::String _cmd)
   {	
 	std::string s = _cmd.data;
 	
-    ROS_INFO("GOT %s", s.c_str());
+    ROS_INFO("Multi Robot Controller: received %s", s.c_str());
 	if(s.compare("run") == 0)
 	{		
 	  setState(run);

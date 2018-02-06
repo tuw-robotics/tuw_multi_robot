@@ -11,9 +11,6 @@ find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
   cv_bridge
   geometry_msgs
-  grid_map_cv
-  grid_map_msgs
-  grid_map_ros
   nav_msgs
   roscpp
   tf

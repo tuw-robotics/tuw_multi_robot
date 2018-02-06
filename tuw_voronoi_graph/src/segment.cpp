@@ -29,144 +29,183 @@
 #include <voronoi_segmentation/segment.h>
 #include <limits>
 
-int Segment::static_id_ = 0;
+namespace voronoi_graph
+{
+    int Segment::static_id_ = 0;
 
-void Segment::AddPredecessor(const std::shared_ptr<Segment> &_predecessor)
-{
-    predecessor_.push_back(_predecessor);
-}
-void Segment::AddSuccessor(const std::shared_ptr<Segment> &_successor)
-{
-    successor_.push_back(_successor);
-}
-Segment::Segment(const std::vector< Eigen::Vector2d > &_points, float _min_space) : predecessor_(), successor_(), optimizedStart_(false), optimizedEnd_(false)
-{
-    if(_points.size() > 0)
+
+
+    void Segment::cleanNeighbors()
     {
-        start_ = _points.front();
-        end_ = _points.back();
-        length_ = _points.size();
-        min_space_ = _min_space;
-        wayPoints_ = _points;
+        for(int i = 0; i < predecessor_.size(); i++)
+        {
+            if(predecessor_[i]->GetId() < 0)
+            {
+                predecessor_.erase(predecessor_.begin() + i);
+                i--;
+            }
+        }
+        
+        for(int i = 0; i < successor_.size(); i++)
+        {
+            if(successor_[i]->GetId() < 0)
+            {
+                successor_.erase(successor_.begin() + i);
+                i--;
+            }
+        }
     }
 
-    id_ = static_id_++;
-}
-Segment::Segment(int _id, const std::vector< Eigen::Vector2d > &_points, float _min_space) : predecessor_(), successor_(), optimizedStart_(false), optimizedEnd_(false)
-{
-    if(_points.size() > 0)
+    void Segment::AddPredecessor(const std::shared_ptr<Segment> &_predecessor)
     {
-        start_ = _points.front();
-        end_ = _points.back();
-        length_ = _points.size();
-        min_space_ = _min_space;
-        wayPoints_ = _points;
+        predecessor_.push_back(_predecessor);
+    }
+    void Segment::AddSuccessor(const std::shared_ptr<Segment> &_successor)
+    {
+        successor_.push_back(_successor);
+    }
+    Segment::Segment(const std::vector< Eigen::Vector2d > &_points, float _min_space) : predecessor_(), successor_(), optimizedStart_(false), optimizedEnd_(false)
+    {
+        if(_points.size() > 0)
+        {
+            start_ = _points.front();
+            end_ = _points.back();
+            length_ = _points.size();
+            min_space_ = _min_space;
+            wayPoints_ = _points;
+        }
+
+        id_ = static_id_++;
+    }
+    Segment::Segment(int _id, const std::vector< Eigen::Vector2d > &_points, float _min_space) : predecessor_(), successor_(), optimizedStart_(false), optimizedEnd_(false)
+    {
+        if(_points.size() > 0)
+        {
+            start_ = _points.front();
+            end_ = _points.back();
+            length_ = _points.size();
+            min_space_ = _min_space;
+            wayPoints_ = _points;
+        }
+
+        id_ = _id;
+    }
+    void Segment::setStart(Eigen::Vector2d _pt)
+    {
+        if(wayPoints_.size() == 0)
+          wayPoints_.emplace_back(_pt);
+        wayPoints_[0] = _pt;
+        start_ = _pt;
+    }
+    void Segment::setEnd(Eigen::Vector2d _pt)
+    {
+        while(wayPoints_.size() <= 1)
+        {
+          wayPoints_.emplace_back(_pt);
+        }
+        wayPoints_[wayPoints_.size() - 1] = _pt;
+        end_ = _pt;
     }
 
-    id_ = _id;
-}
-void Segment::setStart(Eigen::Vector2d _pt)
-{
-    wayPoints_[0] = _pt;
-    start_ = _pt;
-}
-void Segment::setEnd(Eigen::Vector2d _pt)
-{
-    wayPoints_[wayPoints_.size() - 1] = _pt;
-    end_ = _pt;
-}
-
-int Segment::GetId()
-{
-    return id_;
-}
-
-Eigen::Vector2d Segment::getEnd()
-{
-    return end_;
-}
-
-Eigen::Vector2d Segment::getStart()
-{
-    return start_;
-}
-
-std::vector< std::shared_ptr< Segment > > Segment::GetPredecessors()
-{
-    return predecessor_;
-}
-
-std::vector< std::shared_ptr< Segment > > Segment::GetSuccessors()
-{
-    return successor_;
-}
-
-bool Segment::ContainsPredecessor(std::shared_ptr< Segment > _predecessor)
-{
-    for(const auto &pred : predecessor_)
+    int Segment::GetId()
     {
-        if(pred->GetId() == _predecessor->GetId())
-          return true;
+        return id_;
     }
-    
-    return false;
-}
 
-
-bool Segment::ContainsSuccessor(std::shared_ptr< Segment > _successor)
-{
-    for(const auto &succ : successor_)
+    void Segment::SetId(int _id)
     {
-        if(succ->GetId() == _successor->GetId())
-          return true;
+        id_ = _id;
     }
-    
-    return false;
-}
 
-
-void Segment::ResetId()
-{
-    static_id_ = 0;
-}
-
-std::vector< Eigen::Vector2d > Segment::GetPath()
-{
-    return wayPoints_;
-}
-
-void Segment::SetPath(const std::vector< Eigen::Vector2d >  &_points)
-{
-    if(_points.size() > 0)
+    Eigen::Vector2d Segment::getEnd()
     {
-        start_ = _points.front();
-        end_ = _points.back();
-        length_ = _points.size();
-        wayPoints_ = _points;
+        return end_;
     }
-}
 
-float Segment::GetMinPathSpace()
-{
-    return min_space_;
-}
+    Eigen::Vector2d Segment::getStart()
+    {
+        return start_;
+    }
 
-void Segment::SetMinPathSpace(float _space)
-{
-    min_space_ = _space;
-}
+    std::vector< std::shared_ptr< Segment > > Segment::GetPredecessors()
+    {
+        return predecessor_;
+    }
 
-int Segment::GetLength()
-{
-    return length_;
-}
+    std::vector< std::shared_ptr< Segment > > Segment::GetSuccessors()
+    {
+        return successor_;
+    }
 
-bool &Segment::getOptStart()
-{
-    return optimizedStart_;
-}
+    bool Segment::ContainsPredecessor(std::shared_ptr< Segment > _predecessor)
+    {
+        for(const auto & pred : predecessor_)
+        {
+            if(pred->GetId() == _predecessor->GetId())
+                return true;
+        }
 
-bool &Segment::getOptEnd()
-{
-    return optimizedEnd_;
+        return false;
+    }
+
+
+    bool Segment::ContainsSuccessor(std::shared_ptr< Segment > _successor)
+    {
+        for(int i = 0; i < successor_.size(); i++)
+        {
+            int id2 = _successor->GetId();
+            int id1 = successor_[0]->GetId();
+            if(successor_[i]->GetId() == _successor->GetId())
+                return true;
+        }
+
+        return false;
+    }
+
+
+    void Segment::ResetId()
+    {
+        static_id_ = 0;
+    }
+
+    std::vector< Eigen::Vector2d > Segment::GetPath()
+    {
+        return wayPoints_;
+    }
+
+    void Segment::SetPath(const std::vector< Eigen::Vector2d >  &_points)
+    {
+        if(_points.size() > 0)
+        {
+            start_ = _points.front();
+            end_ = _points.back();
+            length_ = _points.size();
+            wayPoints_ = _points;
+        }
+    }
+
+    float Segment::GetMinPathSpace()
+    {
+        return min_space_;
+    }
+
+    void Segment::SetMinPathSpace(float _space)
+    {
+        min_space_ = _space;
+    }
+
+    int Segment::GetLength()
+    {
+        return length_;
+    }
+
+    bool &Segment::getOptStart()
+    {
+        return optimizedStart_;
+    }
+
+    bool &Segment::getOptEnd()
+    {
+        return optimizedEnd_;
+    }
 }

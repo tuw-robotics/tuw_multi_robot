@@ -5,7 +5,6 @@
 #include <nav_msgs/OccupancyGrid.h>
 #include <memory>
 #include <opencv/cv.h>
-#include <grid_map_ros/grid_map_ros.hpp>
 #include <voronoi_segmentation/segment.h>
 
 #include <fstream>

@@ -35,7 +35,7 @@ namespace velocity_controller
       {
 		if(path_iterator_ != path_->end())
 		{
-		  ROS_INFO("++");
+		  //ROS_INFO("++");
 		  path_iterator_++;
 		  if(actual_cmd_ == step)
 			actual_cmd_ = wait_step;
@@ -43,7 +43,7 @@ namespace velocity_controller
 		  
 		  if(path_iterator_ == path_->end())
 		  {
-			ROS_INFO("GOAL REACHED");
+			ROS_INFO("Multi Robot Controller: goal reached");
 			plan_active = false;
 		  }
 		}

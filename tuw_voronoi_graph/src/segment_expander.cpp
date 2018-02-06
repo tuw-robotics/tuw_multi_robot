@@ -64,6 +64,7 @@ namespace voronoi_graph
         {
             if((_segments[i]->getStart() - _segments[i]->getEnd()).norm() < _maxPixelsEndSegment && (_segments[i]->GetPredecessors().size() == 0 || _segments[i]->GetSuccessors().size() == 0))
             {
+                _segments[i]->SetId(-1);
                 _segments.erase(_segments.begin() + i);
             }
         }
@@ -85,20 +86,33 @@ namespace voronoi_graph
         {
             if((_segments[i]->getStart() - _segments[i]->getEnd()).norm() == 0)
             {
+                _segments[i]->SetId(-1);
                 _segments.erase(_segments.begin() + i);
+                i--;
             }
+        }
+
+        for(int i = 0; i < _segments.size(); i++)
+        {
+            _segments[i]->cleanNeighbors();
+            _segments[i]->SetId(i);
         }
     }
 
 
     void Segment_Expander::optimizeSegmentsAroundPoint(std::vector<std::shared_ptr<Segment>> &_segments, const Eigen::Vector2d &pt, float maxPixels, int startIndex)
     {
+        std::vector<std::shared_ptr<Segment>> connectedSegmnetsStart;
+        std::vector<std::shared_ptr<Segment>> connectedSegmnetsEnd;
+
+
         for(int i = startIndex; i < _segments.size(); i++)
         {
             if(!_segments[i]->getOptStart())
             {
                 if((_segments[i]->getStart() - pt).norm() < maxPixels)
                 {
+                    connectedSegmnetsStart.push_back(_segments[i]);
                     _segments[i]->setStart(pt);
                     _segments[i]->getOptStart() = true;
                 }
@@ -108,11 +122,58 @@ namespace voronoi_graph
             {
                 if((_segments[i]->getEnd() - pt).norm() < maxPixels)
                 {
+                    connectedSegmnetsEnd.push_back(_segments[i]);
                     _segments[i]->setEnd(pt);
                     _segments[i]->getOptEnd() = true;
                 }
             }
         }
+
+
+        for(int i = 0; i < connectedSegmnetsStart.size(); i++)
+        {
+            for(int j = 0; j < connectedSegmnetsStart.size(); j++)
+            {
+                if(i != j)
+                {
+                    if(!connectedSegmnetsStart[i]->ContainsPredecessor(connectedSegmnetsStart[j]))
+                    {
+                        connectedSegmnetsStart[i]->AddPredecessor(connectedSegmnetsStart[j]);
+                    }
+                }
+            }
+
+            for(int j = 0; j < connectedSegmnetsEnd.size(); j++)
+            {
+                if(!connectedSegmnetsStart[i]->ContainsPredecessor(connectedSegmnetsEnd[j]))
+                {
+                    connectedSegmnetsStart[i]->AddPredecessor(connectedSegmnetsEnd[j]);
+                }
+            }
+        }
+
+        for(int i = 0; i < connectedSegmnetsEnd.size(); i++)
+        {
+            for(int j = 0; j < connectedSegmnetsStart.size(); j++)
+            {
+                if(!connectedSegmnetsEnd[i]->ContainsSuccessor(connectedSegmnetsStart[j]))
+                {
+                    connectedSegmnetsEnd[i]->AddSuccessor(connectedSegmnetsStart[j]);
+                }
+            }
+
+            for(int j = 0; j < connectedSegmnetsEnd.size(); j++)
+            {
+                if(i != j)
+                {
+                    if(!connectedSegmnetsEnd[i]->ContainsSuccessor(connectedSegmnetsEnd[j]))
+                    {
+                        connectedSegmnetsEnd[i]->AddSuccessor(connectedSegmnetsEnd[j]);
+                    }
+                }
+            }
+        }
+
     }
 
 
@@ -213,6 +274,9 @@ namespace voronoi_graph
 
     float Segment_Expander::getMinD(const std::vector< Eigen::Vector2d > &_path)
     {
+        if(_path.size() == 0)
+          return 0;
+          
         Index p1(_path[0][0], _path[0][1], nx_, 0, 0, 0);
         float min_d = distance_field_[p1.i];
 
