@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(tuw_voronoi_graph)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+add_compile_options(-std=c++14)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -111,7 +111,7 @@ find_package(OpenCV 3 REQUIRED)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES tuw_voronoi_graph
-#  CATKIN_DEPENDS cv_bridge geometry_msgs grid_map_cv grid_map_msgs grid_map_ros nav_msgs  roscpp tf dynamic_reconfigure
+  CATKIN_DEPENDS dynamic_reconfigure cv_bridge geometry_msgs nav_msgs roscpp tf tuw_multi_robot_msgs
 #  DEPENDS OpenCV
 )
 
@@ -121,7 +121,6 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-add_definitions(-std=c++17)
 include_directories(
  include
   ${catkin_INCLUDE_DIRS}
@@ -156,7 +155,7 @@ target_link_libraries(tuw_segment_to_graph_node
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(voronoi_path_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context

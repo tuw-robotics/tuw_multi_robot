@@ -111,7 +111,7 @@ find_package(OpenCV 3 REQUIRED)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES tuw_multi_robot_router
-#  CATKIN_DEPENDS dynamic_reconfigure geometry_msgs grid_map_ros nav_msgs roscpp tf
+  CATKIN_DEPENDS dynamic_reconfigure geometry_msgs nav_msgs roscpp tf tuw_multi_robot_msgs tuw_voronoi_graph
 #  DEPENDS system_lib
 )
 
