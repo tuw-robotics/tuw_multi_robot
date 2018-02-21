@@ -43,15 +43,11 @@ Segment::Segment() : successors_(-1), predecessors_(-1), points_(0)
     length_ = 0;
 }
 
-Segment::~Segment(void)
-{
-    clear();
-}
 
 void Segment::clear()
 {
-    predecessors_.clear();
-    successors_.clear();
+    //predecessors_.clear();
+    //successors_.clear();
     planning.BacktrackingPredecessor.reset();
     planning.BacktrackingSuccessor.reset();
     Segment::astar_planning planEmpty;
@@ -146,11 +142,6 @@ bool Segment::isSuccessor(std::shared_ptr<Segment> _seg)
     return false;
 }
 
-
-Neighbours::~Neighbours(void)
-{
-    segments_.clear();
-}
 
 void Neighbours::clear()
 {

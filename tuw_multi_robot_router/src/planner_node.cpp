@@ -224,7 +224,7 @@ void Planner_Node::graphCallback(const tuw_multi_robot_msgs::VoronoiGraph& msg)
         }
     }
 
-    clearGraph();   
+    //clearGraph();   
     
     graph_ = graph;
 

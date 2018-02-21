@@ -40,7 +40,6 @@ class Segment;
 class Neighbours
 {
 public:		Neighbours(int _minSpace);
-public:     ~Neighbours(void);
 public:     void clear();
 public:		void addSegment(std::shared_ptr<Segment> _seg);
 public:		bool isCrossing() const;
@@ -77,7 +76,6 @@ public:     typedef struct astar_planning_t
   
 public:     Segment(int _id, float _minSpace, const std::vector< Point > &_points);
 public:     Segment();
-public:     ~Segment(void);
 public:     void clear();
 public:		void addSuccessor(std::shared_ptr<Segment> _succ);
 public:		void addPredecessor(std::shared_ptr<Segment> _pred);

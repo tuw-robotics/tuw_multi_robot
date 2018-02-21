@@ -116,7 +116,7 @@ bool SegmentExpander::calculatePotentials(std::shared_ptr< Segment > _start, std
         seg->planning = planEmpty;
     }
 
-    std::shared_ptr<Segment> foundEnd = expandVoronoi(_start, _end, _graph.size() * 50);
+    std::shared_ptr<Segment> foundEnd = expandVoronoi(_start, _end, _graph.size() * 20);
 
     //Save actual planning status from parallel ends :D
     if(_end != foundEnd)
