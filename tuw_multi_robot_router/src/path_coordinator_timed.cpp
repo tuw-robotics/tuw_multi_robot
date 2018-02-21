@@ -54,10 +54,10 @@ bool Path_Coordinator_Timed::addPath(std::vector< std::shared_ptr< Segment > >& 
         }
 
 
-        if(!timeline_.addSegment(begin, end, _path[i], activeRobot_, radius_pixel, true))
-        {
-            return false;
-        }
+         if(!timeline_.addSegment(begin, end, _path[i], activeRobot_, radius_pixel, true))
+         {
+             return false;
+         }
 
         Neighbours pred = _path[i]->getPredecessors();
 
@@ -171,6 +171,8 @@ bool Path_Coordinator_Timed::checkSegmentSingle(std::shared_ptr< Segment > _next
 
 void Path_Coordinator_Timed::reset(std::vector< std::shared_ptr< Segment > > _graph, int _nrRobots)
 {
+    //timeline_ = new Timeline();
+  
     timeline_.reset(_graph);
     robotCollisions_.resize(_nrRobots);
 
@@ -179,6 +181,19 @@ void Path_Coordinator_Timed::reset(std::vector< std::shared_ptr< Segment > > _gr
         robotNr.clear();
         robotNr.resize(_nrRobots, 0);
     }
+    
+    for(std::shared_ptr<Segment> & seg : goalSegments_)
+    {
+        seg->clear();
+    }
+    
+    for(std::shared_ptr<Segment> & seg : startSegments_)
+    {
+        seg->clear();
+    }
+    
+    goalSegments_.clear();
+    startSegments_.clear();
 }
 
 void Path_Coordinator_Timed::setActive(int _robotNr)
@@ -188,12 +203,26 @@ void Path_Coordinator_Timed::setActive(int _robotNr)
 
 bool Path_Coordinator_Timed::setGoalSegments(const std::vector< std::shared_ptr< Segment > > _goalSegments, const std::vector< int > radius)
 {
+    for(std::shared_ptr<Segment> & seg : goalSegments_)
+    {
+        seg->clear();
+    }
+    
+    
+    goalSegments_.clear();
+    
     goalSegments_ = _goalSegments;
     return true;
 }
 
 bool Path_Coordinator_Timed::setStartSegments(const std::vector< std::shared_ptr< Segment > > _startSegments, const std::vector< int > radius)
 {
+    for(std::shared_ptr<Segment> & seg : startSegments_)
+    {
+        seg->clear();
+    }
+    startSegments_.clear();
+    
     startSegments_ = _startSegments;
     return true;
 }

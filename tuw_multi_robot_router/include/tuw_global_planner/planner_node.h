@@ -100,6 +100,7 @@ class Planner_Node :  Planner
     private:    void publishPotential(unsigned char *potential, int nx, int ny, double resolution, int cx, int cy); //DEBUG
     private:    size_t getHash(const std::vector<signed char> &_map, Point _origin, float _resolution);
     private:    size_t current_map_hash_;
+    private:    void clearGraph();
 };
 
 #endif // PLANNER_NODE_H

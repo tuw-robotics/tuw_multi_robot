@@ -52,6 +52,18 @@ std::vector< std::shared_ptr< Segment > > BacktrackingAvoidResolution::resolve(s
     return retVals;
 }
 
+void BacktrackingAvoidResolution::reset()
+{
+    avoidedSegments_.clear();
+    
+    for(int i = 0; i < createdSegmements_.size(); i++)
+    {
+        createdSegmements_[i]->clear();
+    }
+    createdSegmements_.clear();
+}
+
+
 void BacktrackingAvoidResolution::trackBack(std::shared_ptr< Segment > _current, std::shared_ptr< Segment > _next, std::shared_ptr< Segment > _end, int _collision, int _robot_radius, float _newPot, std::vector< std::shared_ptr< Segment > >& retVals)
 {
     _next->planning.Potential = -1;
@@ -74,6 +86,7 @@ void BacktrackingAvoidResolution::trackBack(std::shared_ptr< Segment > _current,
 
         newCurr->planning.BacktrackingSuccessor = newNext;
         newNext->planning.BacktrackingSuccessor = nullptr;
+        createdSegmements_.push_back(newCurr);
     }
     else
     {
@@ -88,6 +101,10 @@ void BacktrackingAvoidResolution::trackBack(std::shared_ptr< Segment > _current,
 
         newCurr->planning.BacktrackingSuccessor = newNext;
         newNext->planning.BacktrackingSuccessor = _next;
+        
+        
+        createdSegmements_.push_back(newNext);
+        createdSegmements_.push_back(newCurr);
     }
 
     if(!path_querry_->checkSegment(newCurr, (_current->planning.BacktrackingPredecessor)->planning.Potential - timeoverlap_,  newCurr->planning.Potential + timeoverlap_, _robot_radius, _collision))
@@ -121,10 +138,12 @@ void BacktrackingAvoidResolution::avoid(std::shared_ptr< Segment > _current, std
         {
             if((*seg_it)->getIndex() != _next->getIndex())
             {
-                std::shared_ptr<Segment> newCurrent = std::make_shared<Segment>(*_current);
+                std::shared_ptr<Segment> newCurrent = std::make_shared<Segment>(*_current); 
+                createdSegmements_.push_back(newCurrent);               
                 newCurrent->planning.Potential = _current->planning.BacktrackingPredecessor->planning.Potential + pCalc_->CalculatePotential(_current);
 
                 std::shared_ptr<Segment> cross_next = std::make_shared<Segment> (*(*seg_it));
+                createdSegmements_.push_back(cross_next);
                 cross_next->planning.BacktrackingPredecessor = newCurrent;
                 cross_next->planning.Potential = std::max<float>(_newPot, newCurrent->planning.Potential + pCalc_->CalculatePotential(cross_next));
                 cross_next->planning.Collision = -1;
@@ -167,11 +186,13 @@ void  BacktrackingAvoidResolution::moveSegment(std::shared_ptr< Segment > _last,
             {
                 //We can move in this direction without collision
                 std::shared_ptr<Segment> moveToSegment = std::make_shared<Segment>(*_waitSegment);
+                createdSegmements_.push_back(moveToSegment);
 
                 moveToSegment->planning.Potential = _last->planning.Potential + pCalc_->CalculatePotential(moveToSegment) + timeoverlap_;  //Copy wait seg
                 moveToSegment->planning.WaitSeg = false;
 
                 std::shared_ptr<Segment> moveBackSegment = std::make_shared<Segment>(*moveToSegment);
+                createdSegmements_.push_back(moveBackSegment);
                 moveBackSegment->planning.Potential = -1;
                 moveBackSegment->planning.Collision = -1;
                 moveBackSegment->planning.WaitSeg = false;
@@ -182,6 +203,7 @@ void  BacktrackingAvoidResolution::moveSegment(std::shared_ptr< Segment > _last,
                 float pot = std::max<float>(moveToSegment->planning.Potential + pCalc_->CalculatePotential(*seg_w_it) + timeoverlap_, newPot + 2 * timeoverlap_);
 
                 std::shared_ptr<Segment> waitSegmentNew = std::make_shared<Segment>(*(*seg_w_it));
+                createdSegmements_.push_back(waitSegmentNew);
                 waitSegmentNew->planning.Potential = pot;
                 waitSegmentNew->planning.Collision = -1;
                 waitSegmentNew->planning.WaitSeg = true;
@@ -233,13 +255,17 @@ void BacktrackingAvoidResolution::avoidStart(std::shared_ptr< Segment > _current
                 avoidedSegments_.push_back((*seg_it)->getIndex());
 
             std::shared_ptr<Segment> newCurrent = std::make_shared<Segment>(*_current);
+            createdSegmements_.push_back(newCurrent);
             newCurrent->planning.Potential = pCalc_->CalculatePotential(newCurrent);
             std::shared_ptr<Segment> newCurrentBack = std::make_shared<Segment>(*_current);
+            createdSegmements_.push_back(newCurrentBack);
             newCurrentBack->planning.BacktrackingSuccessor = std::make_shared<Segment>(*_next);
+            createdSegmements_.push_back(newCurrentBack->planning.BacktrackingSuccessor);
             newCurrentBack->planning.Potential = -1;
 
 
             std::shared_ptr<Segment> cross_next = std::make_shared<Segment> (*(*seg_it));
+            createdSegmements_.push_back(cross_next);
             cross_next->planning.BacktrackingPredecessor = newCurrent;
             cross_next->planning.Potential = std::max<float>(_newPot, pCalc_->CalculatePotential(_current) + pCalc_->CalculatePotential(cross_next));
             cross_next->planning.Collision = -1;
@@ -291,9 +317,11 @@ void BacktrackingAvoidResolution::avoidEnd(std::shared_ptr< Segment > _current, 
                     avoidedSegments_.push_back((*seg_it)->getIndex());
 
                 std::shared_ptr<Segment> newCurrent = std::make_shared<Segment>(*_next);
+                createdSegmements_.push_back(newCurrent);
                 newCurrent->planning.Potential = _current->planning.BacktrackingPredecessor->planning.Potential + pCalc_->CalculatePotential(_current);
 
                 std::shared_ptr<Segment> cross_next = std::make_shared<Segment> (*(*seg_it));
+                createdSegmements_.push_back(cross_next);
                 cross_next->planning.BacktrackingPredecessor = newCurrent;
                 cross_next->planning.Potential = std::max<float>(_newPot, newCurrent->planning.Potential + pCalc_->CalculatePotential(cross_next));
                 cross_next->planning.Collision = -1;

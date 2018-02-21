@@ -56,11 +56,11 @@ Planner_Node::Planner_Node(ros::NodeHandle& _n) :
     Planner(),
     n_(_n),
     n_param_("~"),
-    robot_names_(std::vector<std::string> ( {"robot0"})),
-             robot_radius_(std::vector<float> ( {1}))
+    robot_names_(std::vector<std::string> ( {"r1"})),
+             robot_radius_(std::vector<float> ( {0.3}))
 {
     id_ = 0;
-    n_param_.param("robot_names", robot_names_, std::vector<std::string>());
+    n_param_.param("robot_names", robot_names_, std::vector<std::string>({"r1"}));
     
     std::string robot_names_string = "";
     n_param_.param("robot_names_str", robot_names_string, robot_names_string);
@@ -100,7 +100,7 @@ Planner_Node::Planner_Node(ros::NodeHandle& _n) :
     odom_topic_ = "odom";
     n_param_.param("odom_topic", odom_topic_, odom_topic_);
 
-    path_topic_ = "path";
+    path_topic_ = "path_unsynced";
     n_param_.param("path_topic", path_topic_, path_topic_);
 
     goal_topic_ = "goals";
@@ -120,7 +120,7 @@ Planner_Node::Planner_Node(ros::NodeHandle& _n) :
 
     n_param_.param("robot_radius", robot_radius_, std::vector<float>());
     
-    float default_radius = 1;
+    float default_radius = 0.3;
     n_param_.param("robot_default_radius", default_radius, default_radius);
     
     robot_radius_.resize(robot_names_.size(), default_radius);
@@ -191,7 +191,7 @@ void Planner_Node::odomCallback(const ros::MessageEvent<nav_msgs::Odometry const
 
 
 void Planner_Node::graphCallback(const tuw_multi_robot_msgs::VoronoiGraph& msg)
-{
+{  
     std::vector<std::shared_ptr<Segment>> graph;
 
     for(int i = 0; i < msg.segments.size(); i++)
@@ -224,9 +224,20 @@ void Planner_Node::graphCallback(const tuw_multi_robot_msgs::VoronoiGraph& msg)
         }
     }
 
+    clearGraph();   
+    
     graph_ = graph;
 
     got_graph_ = true;
+}
+
+void Planner_Node::clearGraph()
+{
+    for(int i = 0; i < graph_.size(); i++)
+    {
+        graph_[i]->clear();
+    }
+    graph_.clear();
 }
 
 

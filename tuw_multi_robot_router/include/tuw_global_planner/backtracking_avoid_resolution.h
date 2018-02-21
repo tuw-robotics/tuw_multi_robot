@@ -37,15 +37,15 @@ class BacktrackingAvoidResolution : public CollisionResolution
 {
 public:     BacktrackingAvoidResolution(std::shared_ptr<Path_Coordinator> _path_querry, std::shared_ptr<PotentialCalculator> _pCalc, int _timeoverlap) : CollisionResolution(_path_querry, _pCalc,_timeoverlap)  { }
 public:     std::vector<std::shared_ptr<Segment>> resolve(std::shared_ptr< Segment > _current, std::shared_ptr< Segment > _next, std::shared_ptr< Segment > _end, int _collision, int _robot_radius);
-public:		void reset() {avoidedSegments_.clear();}; 
+public:		void reset();
 private:	void avoid(std::shared_ptr< Segment > _current, std::shared_ptr< Segment > _next, std::shared_ptr< Segment > _end, float _newPot, int _robot_radius, std::vector<std::shared_ptr<Segment>> &retVal);
 private:	void trackBack(std::shared_ptr< Segment > _current, std::shared_ptr< Segment > _next, std::shared_ptr< Segment > _end, int _collision, int _robot_radius, float _newPot, std::vector<std::shared_ptr<Segment>> &retVal);
 private:	void moveSegment(std::shared_ptr<Segment> newCurrent, std::shared_ptr<Segment> cross_next, int _robot_radius, int _coll, std::vector<std::shared_ptr<Segment>> &retVal);
 private:	void avoidStart(std::shared_ptr< Segment > _current, std::shared_ptr< Segment > _next, float _newPot, int _robot_radius, std::vector<std::shared_ptr<Segment>> &retVal);
 private:	void avoidEnd(std::shared_ptr< Segment > _current, std::shared_ptr< Segment > _next, float _newPot, int _robot_radius, std::vector<std::shared_ptr<Segment>> &retVal, int _collision);
 
-
 private:	std::vector<int> avoidedSegments_;
+private:    std::vector<std::shared_ptr<Segment>> createdSegmements_;
 };
 
 #endif // HEURISTIC_H

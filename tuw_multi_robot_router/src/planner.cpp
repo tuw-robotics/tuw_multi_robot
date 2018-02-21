@@ -275,8 +275,7 @@ bool Planner::getPaths(const std::vector< std::shared_ptr< Segment > >& _graph, 
         {
             return false;
         }
-
-
+        
         ROS_INFO("Multi Robot Router: Tracing back");
 
         std::vector< std::shared_ptr< Segment> > path;
@@ -430,8 +429,6 @@ bool Planner::getPaths(const std::vector< std::shared_ptr< Segment > >& _graph, 
     //ROS_INFO("Overall Path Length: %f\n", length);
     overallPathLength_ = length;
 
-
-
     return true;
 }
 
@@ -456,6 +453,7 @@ bool Planner::makePlan(const std::vector< Point >& _goals, const std::vector<flo
 
     if(!calculateStartPoints(_radius, _map, _resolution, _origin, _graph))
     {
+        ROS_INFO("Multi Robot Router: Failed to find Endpoints");
         return false;
     }
 
