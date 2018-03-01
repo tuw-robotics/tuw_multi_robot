@@ -43,6 +43,7 @@
 	
   <group if="$(arg use_controller)">
 	  <include file="$(find tuw_multi_robot_demo)/launch/controller.launch">
+	    <arg name="cfg" value="$(arg cfg)" />
 	  </include>
   </group>
 

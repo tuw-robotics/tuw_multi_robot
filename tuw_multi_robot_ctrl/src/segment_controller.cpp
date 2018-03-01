@@ -49,7 +49,7 @@ namespace velocity_controller
             {
                 count = actualPreconditions[pc.robot];
             }
-            if(count-1 <= pc.stepCondition)	//??? <= TODO
+            if(count <= pc.stepCondition)	//??? <= TODO
 			{
 				return false;
 			}

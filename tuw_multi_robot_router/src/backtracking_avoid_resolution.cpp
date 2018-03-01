@@ -56,12 +56,18 @@ void BacktrackingAvoidResolution::reset()
 {
     avoidedSegments_.clear();
     
+}
+
+void BacktrackingAvoidResolution::clear()
+{
+    
     for(int i = 0; i < createdSegmements_.size(); i++)
     {
         createdSegmements_[i]->clear();
     }
     createdSegmements_.clear();
 }
+
 
 
 void BacktrackingAvoidResolution::trackBack(std::shared_ptr< Segment > _current, std::shared_ptr< Segment > _next, std::shared_ptr< Segment > _end, int _collision, int _robot_radius, float _newPot, std::vector< std::shared_ptr< Segment > >& retVals)

@@ -436,6 +436,8 @@ bool Planner::getPaths(const std::vector< std::shared_ptr< Segment > >& _graph, 
 
 bool Planner::makePlan(const std::vector< Point >& _goals, const std::vector<float>& _radius, const cv::Mat& _map, float _resolution, Point _origin, const std::vector<std::shared_ptr<Segment>>& _graph)
 {
+    resolution_->clear();
+  
     speedScheduleAttemps_ = 0;
     priorityScheduleAttemps_ = 0;
     auto t1 = std::chrono::high_resolution_clock::now();
@@ -475,7 +477,7 @@ bool Planner::makePlan(const std::vector< Point >& _goals, const std::vector<flo
         {
             reschedule_count++;
             ROS_INFO("=========================================================");
-            ROS_INFO("Multi Robot Router: New speed schedule");
+            ROS_INFO("Multi Robot Router: New speed schedule %f %f", (float)speedList[0], (float)speedList[1]);
             std::vector<std::shared_ptr<Segment>> graph = _graph;
             path_querry_->reset(graph, goals_.size());
 
@@ -506,7 +508,7 @@ bool Planner::makePlan(const std::vector< Point >& _goals, const std::vector<flo
         while(speedScheduler_->rescheduleSpeeds(lastPlannedRobot, collisions, speedList) && reschedule_count < 10);
 
         auto t2 = std::chrono::high_resolution_clock::now();
-        duration = (std::clock() - startcputime);// / (double)CLOCKS_PER_SEC * 1000;
+        duration = (std::clock() - startcputime) / (double)CLOCKS_PER_SEC;// * 1000;
     }
     while(priorityScheduler_->reschedulePriorities(lastPlannedRobot, collisions, priorityList) && duration < 30);
 

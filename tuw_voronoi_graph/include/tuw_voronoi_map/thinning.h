@@ -25,7 +25,7 @@ void sceletonize(const cv::Mat& src, cv::Mat& dst);
  * @param src	the source image containing the distance field (Mat float)
  * @param dst 	the destination image containing 0 for non voronoi graph pixels (else voronoigraph) (Mat uint8_t)
  */
-void greyscale_thinning(cv::Mat& src, cv::Mat& dst);
+void greyscale_thinning(const cv::Mat& src, cv::Mat& dst);
 
 
 class Index

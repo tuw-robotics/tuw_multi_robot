@@ -43,6 +43,7 @@ private:	void trackBack(std::shared_ptr< Segment > _current, std::shared_ptr< Se
 private:	void moveSegment(std::shared_ptr<Segment> newCurrent, std::shared_ptr<Segment> cross_next, int _robot_radius, int _coll, std::vector<std::shared_ptr<Segment>> &retVal);
 private:	void avoidStart(std::shared_ptr< Segment > _current, std::shared_ptr< Segment > _next, float _newPot, int _robot_radius, std::vector<std::shared_ptr<Segment>> &retVal);
 private:	void avoidEnd(std::shared_ptr< Segment > _current, std::shared_ptr< Segment > _next, float _newPot, int _robot_radius, std::vector<std::shared_ptr<Segment>> &retVal, int _collision);
+public:     void clear();
 
 private:	std::vector<int> avoidedSegments_;
 private:    std::vector<std::shared_ptr<Segment>> createdSegmements_;

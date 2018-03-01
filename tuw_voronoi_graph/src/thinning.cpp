@@ -106,7 +106,7 @@ namespace voronoi_graph
     std::queue<Index> q;
 
 
-    void greyscale_thinning(cv::Mat& src, cv::Mat& dst)
+    void greyscale_thinning(const cv::Mat& src, cv::Mat& dst)
     {
         int initCosts = 2;
         int pathCosts = 1;

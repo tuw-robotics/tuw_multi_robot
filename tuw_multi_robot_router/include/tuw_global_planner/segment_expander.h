@@ -58,7 +58,6 @@ public:         bool calculatePotentials(std::shared_ptr<Segment> _start, std::s
 private:        std::shared_ptr<Segment> expandVoronoi(std::shared_ptr<Segment> _start, std::shared_ptr<Segment> _end, int _cycles);
 private:        void addVoronoiExpansoionCandidate(std::shared_ptr<Segment> _current, std::shared_ptr<Segment> _next, std::shared_ptr<Segment> _end);
 private:		void resolveStartCollision(std::shared_ptr<Segment> _start,std::shared_ptr<Segment> _end);
-                
 
 private:        std::priority_queue<std::shared_ptr<Segment>, std::vector<std::shared_ptr<Segment>>, greaterSegmentWrapper> seg_queue_;
 private:        int neutral_cost_ = 1;
