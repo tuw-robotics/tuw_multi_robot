@@ -26,24 +26,18 @@
  * 
  */
 
-#ifndef POINT_EXPANDER_H
-#define POINT_EXPANDER_H
+#ifndef MRR_H
+#define MRR_H
 
-#include <algorithm>
-#include <memory>
-#include <queue>
-#include <tuw_global_planner/utils.h>
-#include <grid_map_ros/grid_map_ros.hpp>
-#include <eigen3/Eigen/Dense>
 #include <tuw_global_planner/segment.h>
 
-class PoseToSegment
+class MultiRobotRouter
 {
-            //special class-member functions.
-	public:     PoseToSegment();
-	public:     int getSegment(const std::vector<std::shared_ptr<Vertex>> &_graph, const Eigen::Vector2d &_odom);
-
-	private:    float distanceToSegment(PathSegment _s, Eigen::Vector2d _p);    
+    public:
+      MultiRobotRouter();
+      std::vector<std::vector<Checkpoint>> getRoutingTable( std::vector<Segment> _graph, std::vector<int> startSegments, std::vector<int> goalSegments );
+    
+    
 };
 
-#endif // VORONOI_EXPANDER_H
+#endif

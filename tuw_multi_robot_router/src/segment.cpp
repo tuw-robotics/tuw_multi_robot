@@ -29,169 +29,103 @@
 #include <tuw_global_planner/segment.h>
 #include <ros/ros.h>
 
-Segment::Segment(int _id, float _minSpace, const std::vector< Point >& _points) : successors_(_minSpace), predecessors_(_minSpace), points_(_points)
+Segment::Segment(int _id, const std::vector<Eigen::Vector2d> &_points, const std::vector<int> &_successors, const std::vector<int> &_predecessors, int _width) : 
+points_(_points),
+successors_(_successors),
+predecessors_(_predecessors)
 {
-    id_ = _id;
-    space_ = _minSpace;
-    length_ = _points.size();
+    segmentId_ = _id;
+    width_ = _width;
+    Eigen::Vector2d p = (_points.back() - _points.front());
+    length_ = sqrt(p[0]*p[0] + p[1]*p[1]);
 }
 
-Segment::Segment() : successors_(-1), predecessors_(-1), points_(0)
-{
-    id_ = -1;
-    space_ = -1;
-    length_ = 0;
-}
-
-
-void Segment::clear()
-{
-    //predecessors_.clear();
-    //successors_.clear();
-    planning.BacktrackingPredecessor.reset();
-    planning.BacktrackingSuccessor.reset();
-    Segment::astar_planning planEmpty;
-    planning = planEmpty;
-}
-
-void Segment::addPredecessor(std::shared_ptr< Segment > _pred)
-{
-    predecessors_.addSegment(_pred);
-}
-
-void Segment::addSuccessor(std::shared_ptr< Segment > _succ)
-{
-    successors_.addSegment(_succ);
-}
-
-int Segment::getIndex()
-{
-    return id_;
-}
-
-float Segment::getLength()
-{
-    return length_;
-}
-
-float Segment::getPathSpace()
-{
-    return space_;
-}
-
-Point Segment::getEnd()
+const Eigen::Vector2d& Segment::getEnd() const
 {
     return points_.back();
 }
 
-Point Segment::getStart()
+const std::vector< Eigen::Vector2d >& Segment::getPoints() const
 {
-    return points_.front();
+    return points_;
 }
 
-bool Segment::pointOnSegment(Point _pt)
-{
-    for(const auto & it : points_)
-    {
-        if(it[0] == _pt[0] && it[1] == _pt[1])
-            return true;
-    }
-
-    return false;
-}
-
-bool Segment::isEdgeSegment()
-{
-    if(predecessors_.size() == 0 || successors_.size() == 0)
-        return true;
-
-    return false;
-}
-
-
-
-const Neighbours& Segment::getPredecessors()
+const std::vector< int >& Segment::getPredecessors() const
 {
     return predecessors_;
 }
 
-const Neighbours& Segment::getSuccessors()
+int Segment::getSegmentId() const
+{
+    return segmentId_;
+}
+const Eigen::Vector2d& Segment::getStart() const
+{
+    return points_.front();
+}
+ 
+const std::vector< int >& Segment::getSuccessors() const
 {
     return successors_;
 }
 
-bool Segment::isPredecessor(std::shared_ptr<Segment> _seg)
+float Segment::length() const
 {
-    for(auto it = predecessors_.cbegin(); it != predecessors_.cend(); it++)
+    return length_;
+}
+
+float Segment::width() const
+{
+    return width_;
+}
+
+
+
+Vertex::Vertex(Segment& _seg) : predecessors_(), successors_(), segment_(_seg)
+{
+    potential = -1;   //Endtime (the time a robot is supposed to leave the segment)
+    collision = -1; 
+    direction = none;
+}
+
+const Segment& Vertex::getSegment()
+{
+    return segment_;
+}
+
+const std::vector< std::reference_wrapper< Vertex > >& Vertex::getPlanningPredecessors() const
+{
+    return predecessors_;
+}
+
+const std::vector< std::reference_wrapper< Vertex > >& Vertex::getPlanningSuccessors() const
+{
+    return successors_;
+}
+
+void Vertex::initNeighbours(std::vector< Vertex >& _sortedVertices)
+{
+    for(const int & vecId : segment_.getPredecessors())
     {
-        if(_seg->getIndex() == (*it)->getIndex())
-            return true;
+        Vertex &vRef = _sortedVertices[vecId];
+        predecessors_.push_back(vRef);
     }
-
-    return false;
-}
-
-bool Segment::isSuccessor(std::shared_ptr<Segment> _seg)
-{
-    for(auto it = successors_.cbegin(); it != successors_.cend(); it++)
+    
+    for(const int & vecId : segment_.getSuccessors())
     {
-        if(_seg->getIndex() == (*it)->getIndex())
-            return true;
+        Vertex &vRef = _sortedVertices[vecId];
+        successors_.push_back(vRef);
     }
-
-    return false;
 }
 
+// bool Vertex::pointOnSegment(Eigen::Vector2d _point)
+// {
+//     for(const Eigen::Vector2d &it : segment_.getPoints())
+//     {
+//         if(it[0] == _point[0] && it[1] == _point[1])
+//             return true;
+//     }
+// 
+//     return false;
+// }
 
-void Neighbours::clear()
-{
-    segments_.clear();
-}
-
-Neighbours::Neighbours(int _minSpace)
-{
-    space_ = _minSpace;
-}
-
-void Neighbours::addSegment(std::shared_ptr< Segment > _seg)
-{
-    segments_.push_back(_seg);
-
-    space_ = std::max<float> (_seg->getPathSpace(), space_);
-}
-
-std::vector< std::shared_ptr< Segment > >::const_iterator Neighbours::cbegin() const
-{
-    return segments_.cbegin();
-}
-
-std::vector< std::shared_ptr< Segment > >::const_iterator Neighbours::cend() const
-{
-    return segments_.cend();
-}
-
-float Neighbours::getSpace() const
-{
-    return space_;
-}
-
-bool Neighbours::isCrossing() const
-{
-    return (segments_.size() > 1);
-}
-
-size_t Neighbours::size() const
-{
-    return segments_.size();
-}
-
-bool Neighbours::contains(std::shared_ptr<Segment> _seg) const
-{
-    for(const auto & seg : segments_)
-    {
-        if(seg->getIndex() == _seg->getIndex())
-            return true;
-    }
-
-    return false;
-}

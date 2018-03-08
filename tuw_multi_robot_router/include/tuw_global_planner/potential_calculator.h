@@ -36,7 +36,7 @@ class PotentialCalculator
 public:		PotentialCalculator();
 public:		PotentialCalculator(int _multiplier);
 public:		void SetMultiplier(int _multiplier);
-public:		float CalculatePotential(std::shared_ptr<Segment> _segment);
+public:		float CalculatePotential(std::shared_ptr<Vertex> _segment);
 
 private:	float multiplier_;
 };

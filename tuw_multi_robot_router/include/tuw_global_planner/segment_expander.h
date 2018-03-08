@@ -46,7 +46,7 @@ private:        template <class T, class S, class C>
                 }
 
 private:        struct greaterSegmentWrapper{
-                    bool operator()(const std::shared_ptr<Segment> & _a, const std::shared_ptr<Segment>& _b) const
+                    bool operator()(const std::shared_ptr<Vertex> & _a, const std::shared_ptr<Vertex>& _b) const
                     {
                       return _a->planning.Weight > _b->planning.Weight;
                     }
@@ -54,12 +54,12 @@ private:        struct greaterSegmentWrapper{
                 
 
 public:         SegmentExpander(std::shared_ptr<Heuristic> _h, std::shared_ptr<PotentialCalculator> _pCalc, std::shared_ptr<Path_Coordinator> _p, std::shared_ptr<CollisionResolution> _cr);
-public:         bool calculatePotentials(std::shared_ptr<Segment> _start, std::shared_ptr<Segment> _end, std::vector< std::shared_ptr<Segment> > _graph, float _radius);
-private:        std::shared_ptr<Segment> expandVoronoi(std::shared_ptr<Segment> _start, std::shared_ptr<Segment> _end, int _cycles);
-private:        void addVoronoiExpansoionCandidate(std::shared_ptr<Segment> _current, std::shared_ptr<Segment> _next, std::shared_ptr<Segment> _end);
-private:		void resolveStartCollision(std::shared_ptr<Segment> _start,std::shared_ptr<Segment> _end);
+public:         bool calculatePotentials(std::shared_ptr<Vertex> _start, std::shared_ptr<Vertex> _end, std::vector< std::shared_ptr<Vertex> > _graph, float _radius);
+private:        std::shared_ptr<Vertex> expandVoronoi(std::shared_ptr<Vertex> _start, std::shared_ptr<Vertex> _end, int _cycles);
+private:        void addVoronoiExpansoionCandidate(std::shared_ptr<Vertex> _current, std::shared_ptr<Vertex> _next, std::shared_ptr<Vertex> _end);
+private:		void resolveStartCollision(std::shared_ptr<Vertex> _start,std::shared_ptr<Vertex> _end);
 
-private:        std::priority_queue<std::shared_ptr<Segment>, std::vector<std::shared_ptr<Segment>>, greaterSegmentWrapper> seg_queue_;
+private:        std::priority_queue<std::shared_ptr<Vertex>, std::vector<std::shared_ptr<Vertex>>, greaterSegmentWrapper> seg_queue_;
 private:        int neutral_cost_ = 1;
 private:        int radius_;
 private:        bool path_optimization_ = false;    //Shorter paths but not good for voronoi global

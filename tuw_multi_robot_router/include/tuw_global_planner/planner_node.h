@@ -57,50 +57,51 @@ class Planner_Node :  Planner
     public:     std::unique_ptr<ros::Rate>      rate_;
 
 // ROS Publishers
-    private:    std::vector<ros::Publisher>         pubPaths_;
-    private:    std::vector<ros::Publisher>         pubSegPaths_;
-    private:    std::vector<ros::Publisher>         pubVelocityProfile_;
-    private:    ros::Publisher                      pubPlannerStatus_;
+    private:
+        std::vector<ros::Publisher>         pubPaths_;
+        std::vector<ros::Publisher>         pubSegPaths_;
+        std::vector<ros::Publisher>         pubVelocityProfile_;
+        ros::Publisher                      pubPlannerStatus_;
 
-    private:    std::vector<ros::Subscriber>        subOdom_;
-    private:    ros::Subscriber                     subGoalSet_;
-    private:    ros::Subscriber                     subMap_;
-    private:    ros::Subscriber                     subVoronoiGraph_;
+        std::vector<ros::Subscriber>        subOdom_;
+        ros::Subscriber                     subGoalSet_;
+        ros::Subscriber                     subMap_;
+        ros::Subscriber                     subVoronoiGraph_;
 
 
-    private:    std::vector<std::string>            robot_names_;
+        std::vector<std::string>            robot_names_;
         //private:    std::shared_ptr<unsigned char>      map_;
-    private:    cv::Mat                             distMap_;
-    private:    Eigen::Vector2d                     mapOrigin_;
-    private:    float                               mapResolution_;
-    private:    std::vector<float>                  robot_radius_;
-    private:    std::string                         segpath_topic_;
-    private:    std::string                         odom_topic_;
-    private:    std::string                         path_topic_;
-    private:    std::string                         goal_topic_;
-    private:    std::string                         map_topic_;
-    private:    std::string                         voronoi_topic_;
-    private:    std::string                         velocity_topic_;
-    private:    std::string                         planner_status_topic_;
-    private:    bool                                got_map_ = false;
-    private:    bool                                got_graph_ = false;
+        cv::Mat                             distMap_;
+        Eigen::Vector2d                     mapOrigin_;
+        float                               mapResolution_;
+        std::vector<float>                  robot_radius_;
+        std::string                         segpath_topic_;
+        std::string                         odom_topic_;
+        std::string                         path_topic_;
+        std::string                         goal_topic_;
+        std::string                         map_topic_;
+        std::string                         voronoi_topic_;
+        std::string                         velocity_topic_;
+        std::string                         planner_status_topic_;
+        bool                                got_map_ = false;
+        bool                                got_graph_ = false;
+        std::vector<Segment>                graph_;
+        size_t                              current_map_hash_;
+        size_t                              current_graph_hash_;
+        int                                 id_;
 
-    private:    int                                 id_;
+        void odomCallback(const ros::MessageEvent<nav_msgs::Odometry const>& _event, int _topic);
+        void graphCallback(const tuw_multi_robot_msgs::VoronoiGraph& msg);
+        void goalsCallback(const tuw_multi_robot_msgs::PoseIdArray& _goals);
+        void mapCallback(const nav_msgs::OccupancyGrid& _map);
 
-    private:    void odomCallback(const ros::MessageEvent<nav_msgs::Odometry const>& _event, int _topic);
-    private:    void graphCallback(const tuw_multi_robot_msgs::VoronoiGraph& msg);
-    private:    void goalsCallback(const tuw_multi_robot_msgs::PoseIdArray& _goals);
-    private:    void mapCallback(const nav_msgs::OccupancyGrid& _map);
+        static bool sortSegments(const Segment &i, const Segment &j) {return i.getSegmentId() < j.getSegmentId();}
 
-    private:    static bool sortSegments(std::shared_ptr<Segment> i, std::shared_ptr<Segment> j) {return i->getIndex() < j->getIndex();}
-
-    private:    std::vector<std::shared_ptr<Segment>> graph_;
-    private:    ros::Publisher debug_pub_;  //DEBUG
-    private:    void publishPotential(float* potential, int nx, int ny, double resolution, int cx, int cy); //DEBUG
-    private:    void publishPotential(unsigned char *potential, int nx, int ny, double resolution, int cx, int cy); //DEBUG
-    private:    size_t getHash(const std::vector<signed char> &_map, Point _origin, float _resolution);
-    private:    size_t current_map_hash_;
-    private:    void clearGraph();
+        ros::Publisher debug_pub_;  //DEBUG
+        void publishPotential(float* potential, int nx, int ny, double resolution, int cx, int cy); //DEBUG
+        void publishPotential(unsigned char *potential, int nx, int ny, double resolution, int cx, int cy); //DEBUG
+        size_t getHash(const std::vector<signed char> &_map, const Eigen::Vector2d &_origin, const float &_resolution);
+        size_t getHash(const std::vector<Segment> &_graph);
 };
 
 #endif // PLANNER_NODE_H

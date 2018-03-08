@@ -29,75 +29,78 @@
 #ifndef SEGMENT_H
 #define SEGMENT_H
 
-#include <tuw_global_planner/utils.h>
 #include <memory>
 #include <vector>
 #include <algorithm>
-#include <ros/ros.h>
-// 
-class Segment;
-
-class Neighbours
-{
-public:		Neighbours(int _minSpace);
-public:     void clear();
-public:		void addSegment(std::shared_ptr<Segment> _seg);
-public:		bool isCrossing() const;
-public:		float getSpace() const;
-public:		std::vector<std::shared_ptr<Segment>>::const_iterator cbegin() const;
-public:		std::vector<std::shared_ptr<Segment>>::const_iterator cend() const;
-public:     size_t size() const;
-public:		bool contains(std::shared_ptr<Segment> _seg) const;
-//public:		std::shared_ptr<Segment> getParent();							//TODO check if necessary
-
-private:	std::vector<std::shared_ptr<Segment>> segments_;
-private:	float space_;
-};
+#include <functional>
+#include <eigen3/Eigen/Dense>
 
 class Segment
-{  
-public:     typedef enum direction_t
-            {
-              none,
-              start_to_end,
-              end_to_start
-            }direction;
-public:     typedef struct astar_planning_t
-            {
-                float Potential;
-                float Weight;
-                int Collision;
-                direction Direction;
-                std::shared_ptr<Segment> BacktrackingPredecessor;  
-                std::shared_ptr<Segment> BacktrackingSuccessor;  
-				bool WaitSeg;
-                astar_planning_t(): Potential(-1), Weight(-1), Collision(-1), Direction(none), WaitSeg(false) {}
-            }astar_planning;
+{
+public:
+  Segment(int _id, const std::vector<Eigen::Vector2d> &_points, const std::vector<int> &_successors, const std::vector<int> &_predecessors, int _width);
+  int getSegmentId() const;
+  float width() const;
+  float length() const;
   
-public:     Segment(int _id, float _minSpace, const std::vector< Point > &_points);
-public:     Segment();
-public:     void clear();
-public:		void addSuccessor(std::shared_ptr<Segment> _succ);
-public:		void addPredecessor(std::shared_ptr<Segment> _pred);
-public:		const Neighbours& getSuccessors();
-public:		const Neighbours& getPredecessors();
-public:		float getPathSpace();
-public:		int getIndex();
-public:		float getLength();
-public:		Point getStart();
-public:		Point getEnd();
-public:     bool pointOnSegment(Point _pt);
-public:     bool isEdgeSegment();
-public:     bool isPredecessor(std::shared_ptr<Segment> _seg);
-public:     bool isSuccessor(std::shared_ptr<Segment> _seg);
-public:     astar_planning planning;
+  const std::vector<Eigen::Vector2d> &getPoints() const;
+  const std::vector<int> &getPredecessors() const;
+  const std::vector<int> &getSuccessors() const;
+  
+  const Eigen::Vector2d &getStart() const;
+  const Eigen::Vector2d &getEnd() const;
+private:
+  int segmentId_;
+  float width_;
+  float length_;
+  std::vector<Eigen::Vector2d> points_;
+  std::vector<int> predecessors_;
+  std::vector<int> successors_;
+};
 
-private:	int id_;
-private:	float length_;
-private:	float space_;
-private:	std::vector<Point> points_;
-private:	Neighbours successors_;
-private:	Neighbours predecessors_;
+
+class Vertex
+{
+public:
+  typedef enum direction_t
+  {
+    none,
+    start_to_end,
+    end_to_start
+  }path_direction;
+  
+  Vertex(Segment &_seg);
+  const std::vector<std::reference_wrapper<Vertex>> &getPlanningSuccessors() const;
+  const std::vector<std::reference_wrapper<Vertex>> &getPlanningPredecessors() const;
+  
+  void initNeighbours(std::vector<Vertex> &_sortedVertices);
+  
+  const Segment &getSegment();
+//   bool pointOnSegment(Eigen::Vector2d _point);  
+  
+  int potential;   //Endtime (the time a robot is supposed to leave the segment)
+  int collision; 
+  path_direction direction;
+private:
+  std::vector<std::reference_wrapper<Vertex>> successors_; 
+  std::vector<std::reference_wrapper<Vertex>> predecessors_;   
+  Segment &segment_;
+};
+
+class Checkpoint
+{
+public:
+  typedef struct Precondition_t
+  {
+      int robotId;
+      int stepCondition;
+  }Precondition;
+  
+  Checkpoint(Segment &_seg);
+  const Segment &getSegment();
+  std::vector<Precondition> preconditions;
+private:
+  Segment &segment_;
 };
 
 

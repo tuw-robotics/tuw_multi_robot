@@ -37,7 +37,7 @@
 class Traceback {
     public:
         Traceback() {}
-        virtual bool getPath(std::shared_ptr<Segment> _startSeg, std::shared_ptr<Segment> _endSeg, std::vector< std::shared_ptr<Segment> > &path);
+        virtual bool getPath(std::shared_ptr<Vertex> _startSeg, std::shared_ptr<Vertex> _endSeg, std::vector< std::shared_ptr<Vertex> > &path);
         
 };
 
