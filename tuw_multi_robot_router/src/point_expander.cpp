@@ -40,7 +40,7 @@ void PointExpander::initialize(const cv::Mat& _map)
 }
 
 
-void PointExpander::addPotentialExpansionCandidate(PointExpander::Index _current, int _next_x, int _next_y, float* _potential, int _distToObstacle)
+void PointExpander::addPotentialExpansionCandidate(PointExpander::Index _current, int32_t _next_x, int32_t _next_y, float* _potential, uint32_t _distToObstacle)
 {
     float potentialPrev = _potential[_current.i];
     Index next = _current.offsetDist(_next_x, _next_y, nx_, ny_);
@@ -67,12 +67,12 @@ void PointExpander::addPotentialExpansionCandidate(PointExpander::Index _current
 
 }
 
-PointExpander::Index PointExpander::findGoal(PointExpander::Index _start, int _cycles, float* _potential, const std::map<int, Index> &_goals, int _optimizationSteps, int &segIdx, int _radius)
+PointExpander::Index PointExpander::findGoal(const PointExpander::Index &_start, const uint32_t &_cycles, float* _potential, const std::map<uint32_t, Index> &_goals, const uint32_t &_optimizationSteps, int32_t &segIdx, const uint32_t &_radius)
 {
     std::fill(_potential, _potential + ns_, POT_HIGH);
-    int cycle = 0;
+    uint32_t cycle = 0;
 
-    int _noGoalPoses = _optimizationSteps + 1;
+    uint32_t _noGoalPoses = _optimizationSteps + 1;
 
     Index current(_start.i, 0, 0, 0);
     _potential[current.i] = 0;
@@ -93,7 +93,7 @@ PointExpander::Index PointExpander::findGoal(PointExpander::Index _start, int _c
         queue_.pop();
 
 
-		int segmentIndex = -1;
+		int32_t segmentIndex = -1;
         if(isGoal(current, _goals, segmentIndex))
         {
             if(currentGoal.i == -1)
@@ -131,10 +131,10 @@ PointExpander::Index PointExpander::findGoal(PointExpander::Index _start, int _c
         return _start;
 }
 
-bool PointExpander::isGoal(Index _p, const std::map<int, Index> &_goals, int &segIdx)
+bool PointExpander::isGoal(Index _p, const std::map<uint32_t, Index> &_goals, int32_t &segIdx)
 {
 	segIdx = -1;
-    for(const std::pair<int, Index> & g : _goals)
+    for(const std::pair<uint32_t, Index> & g : _goals)
     {
         if(_p.i == g.second.i)
 		{
@@ -147,27 +147,34 @@ bool PointExpander::isGoal(Index _p, const std::map<int, Index> &_goals, int &se
 }
 
 
-bool PointExpander::findGoalOnMap(const Point &_start, int _cycles, float* _potential, const std::map<int, Point> &_goals, int _optimizationSteps, Point &_foundPoint, int &_segIdx, int _radius)
+bool PointExpander::findGoalOnMap(const Eigen::Vector2d &_start, const uint32_t &_cycles, float* _potential, const std::map<uint32_t, Eigen::Vector2d> &_goals, const uint32_t &_optimizationSteps, Eigen::Vector2d &_foundPoint, int32_t &_segIdx, const uint32_t &_radius)
 {
-    Index startPoint((int)_start[0], (int)_start[1], nx_, 0, 0, 0);
+    Index startPoint((int32_t)_start[0], (int32_t)_start[1], nx_, 0, 0, 0);
     if(startPoint.i < 0)
       return false;
     Index foundPoint(-1, -1, -1, -1);
 
-    std::map<int, Index> goals;
+    std::map<uint32_t, Index> goals;
 
-    for(const std::pair<int,Point> & g : _goals)
+    for(const std::pair<int,Eigen::Vector2d> & g : _goals)
     {
-		Index idx((int)g.second[0], (int)g.second[1], nx_, 0, 0, 0);
-		std::pair<int,Index> i(g.first, idx);
+		Index idx((int32_t)g.second[0], (int32_t)g.second[1], nx_, 0, 0, 0);
+		std::pair<uint32_t, Index> i(g.first, idx);
         goals.insert(i);
     }
 
     foundPoint = findGoal(startPoint, _cycles, _potential, goals, _optimizationSteps, _segIdx, _radius);
-    _foundPoint[0] = ((int)foundPoint.getX(nx_));
-    _foundPoint[1] = ((int)foundPoint.getY(nx_));
+    _foundPoint[0] = ((int32_t)foundPoint.getX(nx_));
+    _foundPoint[1] = ((int32_t)foundPoint.getY(nx_));
 
 
     return (foundPoint.i >= 0);
 }
+
+float PointExpander::getDistanceToObstacle(const Eigen::Vector2d& _pt)
+{
+    Index point((int32_t)_pt[0], (int32_t)_pt[1], nx_, 0, 0, 0);
+    return ((float*)distance_field_.data)[point.i];
+}
+
 

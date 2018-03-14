@@ -29,255 +29,243 @@
 //TODO give potential...
 
 #include <tuw_global_planner/segment_expander.h>
-#include <tuw_global_planner/path_coordinator.h>
+#include <tuw_global_planner/route_coordinator.h>
 #define TIME_OVERLAP 1
 
-SegmentExpander::SegmentExpander(std::shared_ptr<Heuristic> _h, std::shared_ptr<PotentialCalculator> _pCalc, std::shared_ptr<Path_Coordinator> _pathCoordinator, std::shared_ptr<CollisionResolution> _cr) : hx_(_h), pCalc_(_pCalc), path_querry_(_pathCoordinator), collision_resolution_(_cr)
-{ }
-
-void SegmentExpander::addVoronoiExpansoionCandidate(std::shared_ptr< Segment > _current, std::shared_ptr< Segment > _next, std::shared_ptr< Segment > _end)
+SegmentExpander::SegmentExpander(const Heuristic &_h, const PotentialCalculator &_pCalc)
 {
-    if(_current->planning.Potential == -1)
+    hx_ = std::make_unique<Heuristic>(_h);
+    pCalc_ = std::make_unique<PotentialCalculator>(_pCalc);
+}
+
+void SegmentExpander::reset()
+{
+    collisions_robots_.clear();
+    //TODO Expansion segments
+}
+
+void SegmentExpander::addVoronoiExpansoionCandidate(Vertex &_current, Vertex &_next, Vertex &_end)
+{
+    if(_current.potential == -1)
         return;
 
-    if(_next->planning.Potential >= 0)
+    if(_next.potential >= 0)
         return;
 
 
-    int collision;
+    int32_t collision;
 
-    if(!path_querry_->checkSegment(_next, _current->planning.Potential - TIME_OVERLAP, _current->planning.Potential + pCalc_->CalculatePotential(_next) + TIME_OVERLAP, radius_, collision))
+    if(!path_querry_->checkSegment(_next, _current.potential - TIME_OVERLAP, _current.potential + pCalc_->CalculatePotential(_next) + TIME_OVERLAP, radius_, collision))
     {
         if(collision != -1)
         {
-            std::vector<std::shared_ptr<Segment>> resolutions = collision_resolution_->resolve(_current, _next, _end, collision, radius_);
-
-            if(resolutions.size() == 0)
-            {
-                if(collisions_robots_.size() <= collision)
-                {
-                    collisions_robots_.resize(collision + 1, 0);
-                }
-
-                collisions_robots_[collision] += 100;
-            }
-            else
-            {
-                if(collisions_robots_.size() <= collision)
-                {
-                    collisions_robots_.resize(collision + 1, 0);
-                }
-
-                collisions_robots_[collision] ++;
-            }
-
-
-            for(auto & res : resolutions)
-            {
-                float h = hx_->calcHeuristic(res, _end);
-                res->planning.Weight =  res->planning.Potential + h;
-
-                if(res->getIndex() == _end->getIndex())                 //Should not happen but safety first
-                    res->planning.Weight = 0;
-
-                seg_queue_.push(res);
-            }
+            //TODO HACK
+            if(collisions_robots_.size() <= collision)
+                collisions_robots_.resize(collision + 1, 0);
+            collisions_robots_[collision]++;
+          
+//             std::vector<Vertex> resolutions;// = collision_resolution_->resolve(_current, _next, _end, collision, radius_);
+//
+//             if(resolutions.size() == 0)
+//             {
+//                 if(collisions_robots_.size() <= collision)
+//                 {
+//                     collisions_robots_.resize(collision + 1, 0);
+//                 }
+//
+//                 collisions_robots_[collision] += 100;
+//             }
+//             else
+//             {
+//                 if(collisions_robots_.size() <= collision)
+//                 {
+//                     collisions_robots_.resize(collision + 1, 0);
+//                 }
+//
+//                 collisions_robots_[collision] ++;
+//             }
+//
+//
+//             for(Vertex& res : resolutions)
+//             {
+//                 float h = hx_->calcHeuristic(res, _end);
+//                 res.weight =  res.potential + h;
+//
+//                 if(res.getSegment().getSegmentId() == _end.getSegment().getSegmentId())                 //Should not happen but safety first
+//                     res.weight = 0;
+//
+//                 seg_queue_.push(&res);
+//             }
         }
 
         return;
     }
 
 
-    float pot = _current->planning.Potential + pCalc_->CalculatePotential(_next);
+    float pot = _current.potential + pCalc_->CalculatePotential(_next);
     float h = hx_->calcHeuristic(_next, _end);
     float weight = pot + h;
 
-    _next->planning.Weight = weight;
-    _next->planning.Potential = pot;
+    _next.weight = weight;
+    _next.potential = pot;
 
-    if(!(_next->getIndex() != _end->getIndex()))
-        _next->planning.Weight = 0;
+    if(_next.getSegment().getSegmentId() == _end.getSegment().getSegmentId())
+        _next.weight = 0;
 
-    _next->planning.BacktrackingPredecessor = _current;
-    _next->planning.Collision = -1;
+    _next.predecessor_ = &_current;
+    _next.collision = -1;
 
-    seg_queue_.push(_next);
+    seg_queue_.push(&_next);
 }
 
-bool SegmentExpander::calculatePotentials(std::shared_ptr< Segment > _start, std::shared_ptr< Segment > _end, std::vector< std::shared_ptr< Segment > > _graph, float _radius)
+bool SegmentExpander::calculatePotentials(const RouteCoordinator *_p, Vertex & _start, Vertex &_end, std::vector<Vertex> &_graph, const uint32_t _radius)
 {
+    path_querry_ = _p;
+
     collisions_robots_.clear();
-    collision_resolution_->reset();
+    //collision_resolution_->reset();
     radius_ = _radius;
 
-    for(auto & seg : (_graph))
-    {
-        Segment::astar_planning planEmpty;
-        seg->planning = planEmpty;
-    }
+    Vertex *foundEnd = expandVoronoi(_start, _end, _graph.size() * 20); //TODO Check Size ...
 
-    std::shared_ptr<Segment> foundEnd = expandVoronoi(_start, _end, _graph.size() * 20);
+    if(foundEnd == NULL)
+        return false;
 
     //Save actual planning status from parallel ends :D
-    if(_end != foundEnd)
-        _end->planning = foundEnd->planning;
+    if(&_end != foundEnd)
+        _end.updateVertex(*foundEnd);
 
-    for(int i = 0; i < collisions_robots_.size(); i++)
-    {
-        path_querry_->updateNrOfCollisions(i, collisions_robots_[i]);
-    }
-
-    return (foundEnd->getIndex() == _end->getIndex());
+    return (foundEnd->getSegment().getSegmentId() == _end.getSegment().getSegmentId());
 }
 
-void SegmentExpander::resolveStartCollision(std::shared_ptr< Segment > _start, std::shared_ptr< Segment > _end)
+void SegmentExpander::resolveStartCollision(Vertex &_start, Vertex &_end)
 {
-    int collision = -1;
-    _start->planning.Collision = -1;
-    _start->planning.BacktrackingPredecessor = NULL;
-    _start->planning.Potential = -1;
-
-    clearpq(seg_queue_);
-
-    if(_start->getIndex() == _end->getIndex() && !path_querry_->checkSegment(_start, 0, -1, radius_, collision) && collision != -1)
+//     int collision = -1;
+//     _start.collision = -1;
+//     _start.predecessor_ = NULL;
+//     _start.potential = -1;
+//
+//       clearpq(seg_queue_);
+//
+//     if(_start.getSegment().getSegmentId() == _end.getSegment().getSegmentId() && !path_querry_->checkSegment(_start, 0, -1, radius_, collision) && collision != -1)
+//     {
+//         // If we cant wait on the start point add a intermediate layer
+//         //copy goal
+//         Vertex start(_start);                       //TODO TODO return reference
+//         start.predecessor_ = start;
+//         start->planning.Potential = pCalc_->CalculatePotential(start);         //For having a high startpotential
+//         start->planning.Collision = -1;
+//
+//         Neighbours n_succ = start->getSuccessors();
+//
+//         for(auto it = n_succ.cbegin(); it != n_succ.cend(); it++)
+//         {
+//             if(path_querry_->checkSegment((*it), start->planning.Potential - TIME_OVERLAP, start->planning.Potential + pCalc_->CalculatePotential((*it)) + TIME_OVERLAP, radius_, collision))
+//             {
+//                 float pot = start->planning.Potential + pCalc_->CalculatePotential((*it));
+//                 float h = hx_->calcHeuristic((*it), _end);
+//                 float weight = pot + h;
+//
+//                 (*it)->planning.Weight = weight;
+//                 (*it)->planning.Potential = pot;
+//                 (*it)->planning.BacktrackingPredecessor = start;
+//                 (*it)->planning.BacktrackingSuccessor = _start;
+//                 (*it)->planning.Collision = -1;
+//
+//                 seg_queue_.push((*it));
+//             }
+//         }
+//
+//
+//         Neighbours n_pred = start->getPredecessors();
+//
+//         for(auto it = n_pred.cbegin(); it != n_pred.cend(); it++)
+//         {
+//             if(path_querry_->checkSegment((*it), start->planning.Potential - TIME_OVERLAP, start->planning.Potential + pCalc_->CalculatePotential((*it)) + TIME_OVERLAP, radius_, collision))
+//             {
+//                 float pot = start->planning.Potential + pCalc_->CalculatePotential((*it));
+//                 float h = hx_->calcHeuristic((*it), _end);
+//                 float weight = pot + h;
+//
+//                 (*it)->planning.Weight = weight;
+//                 (*it)->planning.Potential = pot;
+//                 (*it)->planning.BacktrackingPredecessor = start;
+//                 (*it)->planning.BacktrackingSuccessor = _start;
+//                 (*it)->planning.Collision = -1;
+//
+//                 seg_queue_.push((*it));
+//             }
+//         }
+//
+//     }
+//     else
     {
-        // If we cant wait on the start point add a intermediate layer
-        //copy goal
-        std::shared_ptr<Segment> start = std::make_shared<Segment>(*_start);
-        start->planning.BacktrackingPredecessor = start;
-        start->planning.Potential = pCalc_->CalculatePotential(start);         //For having a high startpotential
-        start->planning.Collision = -1;
-
-        Neighbours n_succ = start->getSuccessors();
-
-        for(auto it = n_succ.cbegin(); it != n_succ.cend(); it++)
-        {
-            if(path_querry_->checkSegment((*it), start->planning.Potential - TIME_OVERLAP, start->planning.Potential + pCalc_->CalculatePotential((*it)) + TIME_OVERLAP, radius_, collision))
-            {
-                float pot = start->planning.Potential + pCalc_->CalculatePotential((*it));
-                float h = hx_->calcHeuristic((*it), _end);
-                float weight = pot + h;
-
-                (*it)->planning.Weight = weight;
-                (*it)->planning.Potential = pot;
-                (*it)->planning.BacktrackingPredecessor = start;
-                (*it)->planning.BacktrackingSuccessor = _start;
-                (*it)->planning.Collision = -1;
-
-                seg_queue_.push((*it));
-            }
-        }
-
-
-        Neighbours n_pred = start->getPredecessors();
-
-        for(auto it = n_pred.cbegin(); it != n_pred.cend(); it++)
-        {
-            if(path_querry_->checkSegment((*it), start->planning.Potential - TIME_OVERLAP, start->planning.Potential + pCalc_->CalculatePotential((*it)) + TIME_OVERLAP, radius_, collision))
-            {
-                float pot = start->planning.Potential + pCalc_->CalculatePotential((*it));
-                float h = hx_->calcHeuristic((*it), _end);
-                float weight = pot + h;
-
-                (*it)->planning.Weight = weight;
-                (*it)->planning.Potential = pot;
-                (*it)->planning.BacktrackingPredecessor = start;
-                (*it)->planning.BacktrackingSuccessor = _start;
-                (*it)->planning.Collision = -1;
-
-                seg_queue_.push((*it));
-            }
-        }
-
+        _start.collision = -1;
+        _start.predecessor_ = NULL;
+        _start.potential = pCalc_->CalculatePotential(_start);
+        clearpq(seg_queue_);
+        seg_queue_.push(&_start);
     }
-    else
+}
+bool SegmentExpander::containsVertex(const Vertex& _v, const std::vector< std::reference_wrapper< Vertex > >& _list) const
+{
+    for(const Vertex & v : _list)
     {
-        _start->planning.Collision = -1;
-        _start->planning.BacktrackingPredecessor = _start;
-        _start->planning.Potential = pCalc_->CalculatePotential(_start);
-
-
-
-        seg_queue_.push(_start);
+        if(_v.getSegment().getSegmentId() == v.getSegment().getSegmentId())
+            return true;
     }
+
+    return false;
 }
 
 
-std::shared_ptr< Segment > SegmentExpander::expandVoronoi(std::shared_ptr< Segment > _start, std::shared_ptr< Segment > _end, int _cycles)
+Vertex *SegmentExpander::expandVoronoi(Vertex &_start, Vertex &_end, const uint32_t _cycles)
 {
-    int cycle = 0;                                        //For having a high startpotential
+    uint32_t cycle = 0;                                        //For having a high startpotential
     resolveStartCollision(_start, _end);
 
-    std::shared_ptr<Segment> current = std::make_shared<Segment>();
+    Vertex *current = NULL;
 
-    while(!(seg_queue_.empty())  && (cycle < _cycles) && (_end->getIndex() != current->getIndex()))
+    while(!(seg_queue_.empty())  && (cycle < _cycles) && (current == NULL || _end.getSegment().getSegmentId() != current->getSegment().getSegmentId()))
     {
         if(seg_queue_.empty())
-        {
-            return std::shared_ptr<Segment> (new Segment());
-        }
+            return NULL;
 
         current = seg_queue_.top();
         seg_queue_.pop();
 
-        if(_end->getIndex() == current->getIndex() && current->planning.BacktrackingSuccessor.use_count() == 0)
-        {
-            return current;
-        }
+        const std::vector< std::reference_wrapper< Vertex > >& n_succ = current->getPlanningSuccessors();
 
-
-        if(current->planning.BacktrackingSuccessor.use_count() != 0)
+        if(current->predecessor_ == NULL || !containsVertex(*(current->predecessor_), n_succ))
         {
-            addVoronoiExpansoionCandidate(current, current->planning.BacktrackingSuccessor, _end);
-        }
-        else
-        {
-            Neighbours n_succ = current->getSuccessors();
-
-            if(!n_succ.contains(current->planning.BacktrackingPredecessor))
+            for(Vertex & v : n_succ)
             {
-                for(auto it = n_succ.cbegin(); it != n_succ.cend(); it++)
-                {
-                    if((*it)->isPredecessor(current))
-                        (*it)->planning.Direction = Segment::end_to_start;
-                    else
-                        (*it)->planning.Direction = Segment::start_to_end;
-
-
-                    addVoronoiExpansoionCandidate(current, (*it), _end);
-                }
+                addVoronoiExpansoionCandidate(*current, v, _end);
             }
+        }
 
-            Neighbours n_pred = current->getPredecessors();
+        const std::vector< std::reference_wrapper< Vertex > >& n_pred = current->getPlanningPredecessors();
 
-            if(!n_pred.contains(current->planning.BacktrackingPredecessor))
+        if(current->predecessor_ == NULL || !containsVertex(*(current->predecessor_), n_pred))
+        {
+            for(Vertex & v : n_pred)
             {
-                for(auto it = n_pred.cbegin(); it != n_pred.cend(); it++)
-                {
-                    if((*it)->isPredecessor(current))
-                        (*it)->planning.Direction = Segment::end_to_start;
-                    else
-                        (*it)->planning.Direction = Segment::start_to_end;
-
-
-                    addVoronoiExpansoionCandidate(current, (*it), _end);
-                }
+                addVoronoiExpansoionCandidate(*current, v, _end);
             }
         }
 
         cycle++;
     }
 
-    if((cycle >= _cycles))
-        ROS_INFO("TO LESS CYCLES");
 
-    if(current->getIndex() != _end->getIndex())
-    {
-        return std::shared_ptr<Segment> (new Segment());
-    }
+    if(current == NULL || current->getSegment().getSegmentId() != _end.getSegment().getSegmentId())
+        return NULL;
 
     return current;
 }
 
-
+const std::vector<uint32_t> &SegmentExpander::getRobotCollisions() const
+{
+    return collisions_robots_;
+}
 

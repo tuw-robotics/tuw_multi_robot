@@ -29,30 +29,44 @@
 #include <tuw_global_planner/traceback.h>
 #include <ros/ros.h>
 
-bool Traceback::getPath(std::shared_ptr< Segment > _startSeg, std::shared_ptr< Segment > _endSeg, std::vector< std::shared_ptr< Segment > >& _path)
+bool Traceback::getPath(const Vertex &_startSeg, const Vertex &_endSeg, std::vector<RouteVertex>& _path) const
 {
-    std::shared_ptr<Segment> current = _endSeg;
-    current->planning.Direction = Segment::start_to_end;        //set any direction to not segfault
-    _path.push_back(std::make_shared<Segment>(*current));       //Copy segments to keep values for planning unique...
+    const Vertex *current = &_endSeg;
+    const Vertex* predecessor = current->predecessor_;  
+    
+    //Set moving direction
+    _path.emplace_back(*current);                                                
+    _path.back().direction = RouteVertex::path_direction::end_to_start;  
+    if(predecessor != NULL && isSuccessor(current, predecessor)) 
+        _path.back().direction = RouteVertex::path_direction::start_to_end;  
 
 
-    while(current->getIndex() != _startSeg->getIndex() || (current->planning.BacktrackingPredecessor->getIndex() != _startSeg->getIndex() && current->planning.BacktrackingPredecessor->getIndex() != -1))
+    while(current->predecessor_ != NULL)
     {
-        std::shared_ptr<Segment> pred = std::make_shared<Segment>(*current->planning.BacktrackingPredecessor);
+        const Vertex* pred = current->predecessor_;
 
-        if(pred->getIndex()  == current->getIndex() && current->getIndex() != _startSeg->getIndex())
-            return false;
-
-
-        if(pred->isSuccessor(current))
-            pred->planning.Direction = Segment::end_to_start;   //-1
+        _path.emplace_back(*pred);
+        if(isSuccessor(pred, current)) 
+            _path.back().direction = RouteVertex::path_direction::end_to_start;    //-1
         else
-            pred->planning.Direction = Segment::start_to_end;   //1
-
-        _path.push_back(pred);
+            _path.back().direction = RouteVertex::path_direction::start_to_end;    //1
 
         current = pred;
     }
 
+    if(_path.back().getSegment().getSegmentId() != _startSeg.getSegment().getSegmentId())
+        return false;
+    
     return true;
+}
+
+bool Traceback::isSuccessor(const Vertex *_vertex, const Vertex *_succ) const
+{
+    const std::vector<std::reference_wrapper<Vertex>> succ = _vertex->getPlanningSuccessors();
+    for(const Vertex &s : succ)
+    {
+        if(s.getSegment().getSegmentId() == _succ->getSegment().getSegmentId())
+            return true;
+    }
+    return false;
 }

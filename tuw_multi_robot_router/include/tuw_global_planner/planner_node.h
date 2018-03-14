@@ -43,7 +43,7 @@
 #include <std_msgs/Float32MultiArray.h>
 
 #include <tuw_global_planner/planner.h>
-#include <tuw_global_planner/utils.h>
+#include <tuw_global_planner/mrr_utils.h>
 
 class Planner_Node :  Planner
 {
@@ -97,9 +97,6 @@ class Planner_Node :  Planner
 
         static bool sortSegments(const Segment &i, const Segment &j) {return i.getSegmentId() < j.getSegmentId();}
 
-        ros::Publisher debug_pub_;  //DEBUG
-        void publishPotential(float* potential, int nx, int ny, double resolution, int cx, int cy); //DEBUG
-        void publishPotential(unsigned char *potential, int nx, int ny, double resolution, int cx, int cy); //DEBUG
         size_t getHash(const std::vector<signed char> &_map, const Eigen::Vector2d &_origin, const float &_resolution);
         size_t getHash(const std::vector<Segment> &_graph);
 };

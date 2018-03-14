@@ -28,7 +28,7 @@
 #define POT_HIGH 1.0e10
 
 #include <tuw_global_planner/planner_node.h>
-#include <tuw_global_planner/segment.h>
+#include <tuw_global_planner/srr_utils.h>
 #include <tuw_multi_robot_msgs/SegmentPath.h>
 #include <chrono>
 #include <boost/functional/hash.hpp>
@@ -56,8 +56,8 @@ Planner_Node::Planner_Node(ros::NodeHandle& _n) :
     Planner(),
     n_(_n),
     n_param_("~"),
-    robot_names_(std::vector<std::string> ( {"robot_0", "robot_1"})),
-    robot_radius_(std::vector<float> ( {0.3, 0.3}))
+    robot_names_(std::vector<std::string> ( {"robot_0", "robot_1"})),     //TODO INIT
+    robot_radius_(std::vector<float> ( {0.3,0.3}))
 {
     id_ = 0;
     n_param_.param("robot_names", robot_names_, robot_names_);
@@ -86,14 +86,14 @@ Planner_Node::Planner_Node(ros::NodeHandle& _n) :
     pubSegPaths_.resize(robot_names_.size());
     pubVelocityProfile_.resize(robot_names_.size());
 
-    useGoalOnSegment_ = false;
-    n_param_.param("use_segment_as_goal", useGoalOnSegment_, useGoalOnSegment_);
-
-    allowEndpointOffSegment_ = true;
-    n_param_.param("allow_endpoint_off_segments", allowEndpointOffSegment_, allowEndpointOffSegment_);
-
+//     useGoalOnSegment_ = false;
+//     n_param_.param("use_segment_as_goal", useGoalOnSegment_, useGoalOnSegment_);
+// 
+//     allowEndpointOffSegment_ = true;
+//     n_param_.param("allow_endpoint_off_segments", allowEndpointOffSegment_, allowEndpointOffSegment_);
+/*
     optimizationSegmentNr_ = 2;
-    n_param_.param("path_optimization_segment_no", optimizationSegmentNr_, optimizationSegmentNr_);
+    n_param_.param("path_optimization_segment_no", optimizationSegmentNr_, optimizationSegmentNr_);*/
 
     planner_status_topic_ = "planner_status";
     n_param_.param("planner_status_topic", planner_status_topic_, planner_status_topic_);
@@ -139,9 +139,6 @@ Planner_Node::Planner_Node(ros::NodeHandle& _n) :
     subMap_ = _n.subscribe(map_topic_, 1, &Planner_Node::mapCallback, this);
     subVoronoiGraph_ = _n.subscribe(voronoi_topic_, 1, &Planner_Node::graphCallback, this);
 
-
-    debug_pub_ = _n.advertise<nav_msgs::OccupancyGrid> ("potential", 1);
-
     pubPlannerStatus_ = _n.advertise<tuw_multi_robot_msgs::PlannerStatus> (planner_status_topic_, 1);
 }
 
@@ -150,7 +147,7 @@ void Planner_Node::mapCallback(const nav_msgs::OccupancyGrid& _map)
 {
     std::vector<signed char> map = _map.data;
 
-    Point origin;
+    Eigen::Vector2d origin;
     origin[0] = _map.info.origin.position.x;
     origin[1] = _map.info.origin.position.y;
 
@@ -183,7 +180,7 @@ void Planner_Node::odomCallback(const ros::MessageEvent<nav_msgs::Odometry const
 {
     const nav_msgs::Odometry_< std::allocator< void > >::ConstPtr& nav_msg = _event.getMessage();
 
-    Point p;
+    Eigen::Vector2d p;
     p[0] = nav_msg->pose.pose.position.x;
     p[1] = nav_msg->pose.pose.position.y;
 
@@ -205,14 +202,14 @@ void Planner_Node::graphCallback(const tuw_multi_robot_msgs::VoronoiGraph& msg)
             points.emplace_back(point.x, point.y);
         }
 
-        std::vector<int> successors;
+        std::vector<uint32_t> successors;
 
         for(const auto & succ : segment.successors)
         {
             successors.emplace_back(succ);
         }
 
-        std::vector<int> predecessors;
+        std::vector<uint32_t> predecessors;
 
         for(const auto & pred : segment.predecessor)
         {
@@ -262,11 +259,11 @@ void Planner_Node::graphCallback(const tuw_multi_robot_msgs::VoronoiGraph& msg)
 void Planner_Node::goalsCallback(const tuw_multi_robot_msgs::PoseIdArray& _goals)
 {
     //Goals have to be orderd
-    std::vector<Point> goals;
+    std::vector<Eigen::Vector2d> goals;
 
     for(auto it = _goals.poses.begin(); it != _goals.poses.end(); it++)
     {
-        Point p;
+        Eigen::Vector2d p;
         p[0] = (*it).position.x;
         p[1] = (*it).position.y;
         goals.push_back(p);
@@ -285,7 +282,6 @@ void Planner_Node::goalsCallback(const tuw_multi_robot_msgs::PoseIdArray& _goals
             double res = mapResolution_;
             int cx = mapOrigin_[0];
             int cy = mapOrigin_[1];
-            //publishPotential(potential_.get(), nx, ny, res, cx, cy);  //Debug
 
             Publish();
             ROS_INFO("Multi Robot Router: Publishing Plan");
@@ -339,174 +335,100 @@ void Planner_Node::PublishEmpty()
 
 void Planner_Node::Publish()
 {
-//     for(int i = 0; i < robot_names_.size(); i++)
-//     {
-//         nav_msgs::Path ros_path;
-//         ros_path.header.seq = 0;
-//         ros_path.header.stamp = ros::Time::now();
-//         ros_path.header.frame_id = "map";
-//         //const std::vector< Potential_Point >& path = getPath(i);
-//
-// //         for(auto it = path.cbegin(); it != path.cend(); it++)
-// //         {
-// //             geometry_msgs::PoseStamped p;
-// //             p.header.seq = 0;
-// //             p.header.stamp = ros::Time::now();
-// //             p.header.frame_id = "map";
-// //
-// //             Eigen::Vector2d pos = (*it).point * mapResolution_;
-// //             p.pose.position.x = pos[0] + mapOrigin_[0];
-// //             p.pose.position.y = pos[1] + mapOrigin_[1];
-// //
-// //             p.pose.orientation.w = 1;
-// //             ros_path.poses.push_back(p);
-// //
-// //         }
-//
-//         pubPaths_[i].publish(ros_path);
-//     }
-//
-//     for(int i = 0; i < robot_names_.size(); i++)
-//     {
-//         tuw_multi_robot_msgs::SegmentPath ros_path;
-//         ros_path.header.seq = 0;
-//         ros_path.header.stamp = ros::Time::now();
-//         ros_path.header.frame_id = "map";
-//         const std::vector< PathSegment >& path = getPathSeg(i);
-//
-//         for(auto it = path.cbegin(); it != path.cend(); it++)
-//         {
-//             tuw_multi_robot_msgs::PathSegment s;
-//
-//
-//
-//             Eigen::Vector2d posS = (*it).start * mapResolution_;
-//
-//             s.start.x = posS[0] + mapOrigin_[0];
-//             s.start.y = posS[1] + mapOrigin_[1];
-//
-//             Eigen::Vector2d posE = (*it).end * mapResolution_;
-//
-//             s.end.x = posE[0] + mapOrigin_[0];
-//             s.end.y = posE[1] + mapOrigin_[1];
-//
-//             s.segId = (*it).segId;
-//             s.width = graph_[(*it).segId]->getPathSpace() * mapResolution_;   //TODO      (SEG ID WRONG)
-//
-//             for(int j = 0; j < (*it).preconditions.size(); j++) //auto precond = (*it).preconditions.cbegin(); precond != (*it).preconditions.cend(); precond++)
-//             {
-//                 tuw_multi_robot_msgs::PathPrecondition pc;
-//                 pc.robotId = ((*it).preconditions[j]).robot;
-//                 pc.stepCondition = ((*it).preconditions[j]).stepCondition;
-//                 s.preconditions.push_back(pc);
-//             }
-//
-//             ros_path.poses.push_back(s);
-//         }
-//
-//         pubSegPaths_[i].publish(ros_path);
-//     }
-//
-//
-//     tuw_multi_robot_msgs::PlannerStatus ps;
-//     ps.id = id_;
-//     ps.success = 1;
-//     //ps.overallPathLength = getOverallPathLength();
-//     //ps.longestPathLength = getLongestPathLength();
-//     //ps.prioritySchedulingAttemps = getPriorityScheduleAttemps();
-//     //ps.speedSchedulingAttemps = getSpeedScheduleAttemps();
-//     //ps.duration = getDuration_ms();
-//
-//     pubPlannerStatus_.publish(ps);
+    for(int i = 0; i < robot_names_.size(); i++)
+    {
+        nav_msgs::Path ros_path;
+        ros_path.header.seq = 0;
+        ros_path.header.stamp = ros::Time::now();
+        ros_path.header.frame_id = "map";
+        const std::vector< Checkpoint >& route = getRoute(i);
+
+        //Add first point
+        geometry_msgs::PoseStamped p;
+        p.header.seq = 0;
+        p.header.stamp = ros::Time::now();
+        p.header.frame_id = "map";
+
+        Eigen::Vector2d pos = route[0].start * mapResolution_;
+        p.pose.position.x = pos[0] + mapOrigin_[0];
+        p.pose.position.y = pos[1] + mapOrigin_[1];
+
+        p.pose.orientation.w = 1;
+        ros_path.poses.push_back(p);
+        
+        //Add other points
+        for(const Checkpoint &c : route)
+        {
+            geometry_msgs::PoseStamped p;
+            p.header.seq = 0;
+            p.header.stamp = ros::Time::now();
+            p.header.frame_id = "map";
+
+            Eigen::Vector2d pos = c.end * mapResolution_;
+            p.pose.position.x = pos[0] + mapOrigin_[0];
+            p.pose.position.y = pos[1] + mapOrigin_[1];
+
+            p.pose.orientation.w = 1;
+            ros_path.poses.push_back(p);
+        }
+
+        pubPaths_[i].publish(ros_path);
+    }
+
+    for(int i = 0; i < robot_names_.size(); i++)
+    {
+        tuw_multi_robot_msgs::SegmentPath ros_path;
+        ros_path.header.seq = 0;
+        ros_path.header.stamp = ros::Time::now();
+        ros_path.header.frame_id = "map";
+        const std::vector< Checkpoint >& route = getRoute(i);
+
+        for(const Checkpoint &c : route)
+        {
+            tuw_multi_robot_msgs::PathSegment s;
+
+            Eigen::Vector2d posS = c.start * mapResolution_;
+
+            s.start.x = posS[0] + mapOrigin_[0];
+            s.start.y = posS[1] + mapOrigin_[1];
+
+            Eigen::Vector2d posE = c.end * mapResolution_;
+
+            s.end.x = posE[0] + mapOrigin_[0];
+            s.end.y = posE[1] + mapOrigin_[1];
+
+            s.segId = c.segId;
+            s.width = graph_[c.segId].width() * mapResolution_;   //TODO      (SEG ID WRONG)
+
+            for(int j = 0; j < c.preconditions.size(); j++) //auto precond = (*it).preconditions.cbegin(); precond != (*it).preconditions.cend(); precond++)
+            {
+                tuw_multi_robot_msgs::PathPrecondition pc;
+                pc.robotId = c.preconditions[j].robotId;
+                pc.stepCondition = c.preconditions[j].stepCondition;
+                s.preconditions.push_back(pc);
+            }
+
+            ros_path.poses.push_back(s);
+        }
+
+        pubSegPaths_[i].publish(ros_path);
+    }
+
+
+    tuw_multi_robot_msgs::PlannerStatus ps;
+    ps.id = id_;
+    ps.success = 1;
+    //ps.overallPathLength = getOverallPathLength();
+    //ps.longestPathLength = getLongestPathLength();
+    //ps.prioritySchedulingAttemps = getPriorityScheduleAttemps();
+    //ps.speedSchedulingAttemps = getSpeedScheduleAttemps();
+    //ps.duration = getDuration_ms();
+
+    pubPlannerStatus_.publish(ps);
 
 }
 
 
-void Planner_Node::publishPotential(float* potential, int nx, int ny, double resolution, int cx, int cy)
-{
-    nav_msgs::OccupancyGrid grid;
-    // Publish Whole Grid
-    grid.header.frame_id = "map";
-    grid.header.stamp = ros::Time::now();
-    grid.info.resolution = resolution;
-
-    grid.info.width = nx;
-    grid.info.height = ny;
-
-    double wx, wy;
-    //costmap_->mapToWorld(0, 0, wx, wy);
-    grid.info.origin.position.x = -nx * resolution / 2 + cx;
-    grid.info.origin.position.y = -ny * resolution / 2 + cy;
-    grid.info.origin.position.z = 0.0;
-    grid.info.origin.orientation.w = 1.0;
-
-    grid.data.resize(nx * ny);
-
-    for(unsigned int i = 0; i < grid.data.size(); i++)
-    {
-
-        if(potential[i] == POT_HIGH)
-        {
-            potential[i] = -1;
-        }
-    }
-
-    float max = 0.0;
-
-    for(unsigned int i = 0; i < grid.data.size(); i++)
-    {
-
-        if(potential[i] > max)
-        {
-            max = potential[i];
-        }
-    }
-
-    for(unsigned int i = 0; i < grid.data.size(); i++)
-    {
-        if(potential[i] != -1)
-        {
-            grid.data[i] = 27.0 + potential[i] * 100.0 / max;
-        }
-        else
-        {
-            grid.data[i] = 0;
-        }
-    }
-
-    debug_pub_.publish(grid);
-}
-
-void Planner_Node::publishPotential(unsigned char *potential, int nx, int ny, double resolution, int cx, int cy)
-{
-    nav_msgs::OccupancyGrid grid;
-    // Publish Whole Grid
-    grid.header.frame_id = "map";
-    grid.header.stamp = ros::Time::now();
-    grid.info.resolution = resolution;
-
-    grid.info.width = nx;
-    grid.info.height = ny;
-
-    double wx, wy;
-    //costmap_->mapToWorld(0, 0, wx, wy);
-    grid.info.origin.position.x = -nx * resolution / 2 + cx;
-    grid.info.origin.position.y = -ny * resolution / 2 + cy;
-    grid.info.origin.position.z = 0.0;
-    grid.info.origin.orientation.w = 1.0;
-
-    grid.data.resize(nx * ny);
-
-
-    for(unsigned int i = 0; i < grid.data.size(); i++)
-    {
-
-        grid.data[i] = potential[i];
-
-    }
-
-    debug_pub_.publish(grid);
-}
 
 
 size_t Planner_Node::getHash(const std::vector<signed char> &_map, const Eigen::Vector2d &_origin, const float &_resolution)

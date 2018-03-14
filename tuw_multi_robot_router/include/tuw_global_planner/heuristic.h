@@ -29,19 +29,18 @@
 #ifndef HEURISTIC_H
 #define HEURISTIC_H
 
-#include <tuw_global_planner/utils.h>
-#include <tuw_global_planner/segment.h>
+#include <tuw_global_planner/srr_utils.h>
 
 class Heuristic
 {
 public:
-    float calcHeuristic(std::shared_ptr<Segment> _next, std::shared_ptr<Segment> _end)
+    float calcHeuristic(const Vertex &_next, const Vertex &_end) const
     {
-        float nx = (_next->getStart()[0] + _next->getEnd()[0]) / 2; 
-        float ny = (_next->getStart()[1] + _next->getEnd()[1]) / 2; 
+        float nx = (_next.getSegment().getStart()[0] + _next.getSegment().getEnd()[0]) / 2; 
+        float ny = (_next.getSegment().getStart()[1] + _next.getSegment().getEnd()[1]) / 2; 
         
-        float ex = (_end->getStart()[0] + _end->getEnd()[0]) / 2; 
-        float ey = (_end->getStart()[1] + _end->getEnd()[1]) / 2;
+        float ex = (_end.getSegment().getStart()[0] + _end.getSegment().getEnd()[0]) / 2; 
+        float ey = (_end.getSegment().getStart()[1] + _end.getSegment().getEnd()[1]) / 2;
         
         
         float dx = (nx-ex);
@@ -50,26 +49,7 @@ public:
         
         return std::sqrt(dx*dx + dy*dy);
       //return 0; //Dijkstra expansion
-    }
-    
-public:
-    float calcHeuristic(Segment _next, Segment _end)
-    {
-      float nx = (_next.getStart()[0] + _next.getEnd()[0]) / 2; 
-      float ny = (_next.getStart()[1] + _next.getEnd()[1]) / 2;
-      
-      float ex = (_end.getStart()[0] + _end.getEnd()[0]) / 2;
-      float ey = (_end.getStart()[1] + _end.getEnd()[1]) / 2; 
-      
-      
-      float dx = (nx-ex);
-      float dy = (ny-ey);
-      
-      
-      return std::sqrt(dx*dx + dy*dy);
-     // return 0; //Dijkstra expansion
-    }
-    
+    }   
 };
 
 

@@ -44,7 +44,7 @@ Planner::Planner() : Planner(0)
 }
 
 
-Planner::Planner(int _nr_robots) :
+Planner::Planner(uint32_t _nr_robots) :
 robot_poses_(_nr_robots),
 goals_(_nr_robots),
 pose_received_(_nr_robots,false)
@@ -65,16 +65,17 @@ pose_received_(_nr_robots,false)
 //     expander_ = std::make_unique<SegmentExpander> (heuristic, pCalc_, path_querry_, resolution_);
 //     traceback_ = std::make_unique<Traceback>();
     pointExpander_ = std::make_unique<PointExpander>();
+    std::vector<uint32_t> robotRadius(_nr_robots, 0);
+    multiRobotRouter_ = std::make_unique<MultiRobotRouter>(_nr_robots, robotRadius);
 //     path_generator_Point_ = std::make_unique<PathGenerator<Potential_Point>> (path_querry_);
 //     path_generator_Segment_ = std::make_unique<PathGenerator<PathSegment>> (path_querry_);
-//     priorityScheduler_ = std::make_unique<PriorityScheduler> (_nr_robots);
 //     speedScheduler_ = std::make_unique<SpeedScheduler>(_nr_robots);
 //     velocityCalc_ = std::make_unique<VelocityCalculator>(_nr_robots);
 
 //     gotPlan_ = true;
 }
 
-void Planner::resize(int _nr_robots)
+void Planner::resize(uint32_t _nr_robots)
 {
     robot_nr_ = _nr_robots;
     robot_poses_.resize(_nr_robots);
@@ -98,9 +99,9 @@ void Planner::resize(int _nr_robots)
 }
 
 
-bool Planner::calculateStartPoints(const std::vector<float> &_radius, const cv::Mat& _map, const float &resolution, const Point &origin, const std::vector<Segment>& _graph)
+bool Planner::calculateStartPoints(const std::vector<float> &_radius, const cv::Mat& _map, const float &resolution, const Eigen::Vector2d &origin, const std::vector<Segment>& _graph)
 {
-    for(int i = 0; i < goals_.size(); i++)
+    for(uint32_t i = 0; i < goals_.size(); i++)
     {
         if(!pose_received_[i])
         {
@@ -114,19 +115,43 @@ bool Planner::calculateStartPoints(const std::vector<float> &_radius, const cv::
 
         diameter_[i] = 2 * ((float) _radius[i]) / resolution;
 
-        int segIdStart = -1;
-        int segIdGoal = -1;
+        int32_t segIdStart = -1;
+        int32_t segIdGoal = -1;
 
-        if(allowEndpointOffSegment_)
+        //check if start and goal pose have enough clearance to obstacles
+        uint32_t size_x = _map.cols;
+        uint32_t size_y = _map.rows;
+        
+        if( pointExpander_->getDistanceToObstacle(realStart_[i]) < diameter_[i] / 2)
         {
-            int size_x = _map.cols;
-            int size_y = _map.rows;
+            ROS_INFO("Start of robot %i is to close to an obstacle", i);
+            return false;
+        }
+                
+        if( pointExpander_->getDistanceToObstacle(realGoals_[i]) < diameter_[i] / 2)
+        {
+            ROS_INFO("Goal of robot %i is to close to an obstacle", i);
+            return false;
+        }
+        
+        
+        //No algorithm checks free space to obstacle because it is allready checked
+        if(graphMode_ == graphType::voronoi)                                
+        {
+            //Find Start and Goal (with distance to Segment (more performance but robot has to be inside a segment)
+            segIdStart = getSegment(_graph, realStart_[i]);
+            segIdGoal = getSegment(_graph, realGoals_[i]);
+            voronoiStart_[i] = (_graph[segIdStart].getStart() + _graph[segIdStart].getEnd()) / 2;
+            voronoiGoals_[i] = (_graph[segIdGoal].getStart() + _graph[segIdGoal].getEnd()) / 2;
+        }
+        else// if(graphMode_ == graphType::random)        
+        {
             //Save all segment Points into map to find them using point Expander
-            std::map<int, Point> points;
+            std::map<uint32_t, Eigen::Vector2d> points;
 
             for(const Segment & seg : _graph)
             {
-                std::pair<int, Point> p(seg.getSegmentId(), (seg.getStart() + seg.getEnd()) / 2);
+                std::pair<uint32_t, Eigen::Vector2d> p(seg.getSegmentId(), (seg.getStart() + seg.getEnd()) / 2);
                 points.insert(p);
             }
 
@@ -135,19 +160,12 @@ bool Planner::calculateStartPoints(const std::vector<float> &_radius, const cv::
             float x = voronoiStart_[i][0];
             float y = voronoiStart_[i][1];
             
-            pointExpander_->findGoalOnMap(realStart_[i], size_x * size_y, potential_.get(), points, 0, voronoiStart_[i], segIdStart, diameter_[i]);
+            pointExpander_->findGoalOnMap(realStart_[i], size_x * size_y, potential_.get(), points, 0, voronoiStart_[i], segIdStart, diameter_[i]/2);   //It is allready checked if there is enough free space
             potential_.reset(new float[size_x * size_y]);
-            pointExpander_->findGoalOnMap(realGoals_[i], size_x * size_y, potential_.get(), points, 0, voronoiGoals_[i], segIdGoal, diameter_[i]);
-        }
-        else
-        {
-            //Find Start and Goal (with distance to Segment (more performance but robot has to be inside a segment)
-            int segIdStart = getSegment(_graph, realStart_[i]);
-            int segIdGoal = getSegment(_graph, realGoals_[i]);
-            voronoiStart_[i] = (_graph[segIdStart].getStart() + _graph[segIdStart].getEnd()) / 2;
-            voronoiGoals_[i] = (_graph[segIdGoal].getStart() + _graph[segIdGoal].getEnd()) / 2;
+            pointExpander_->findGoalOnMap(realGoals_[i], size_x * size_y, potential_.get(), points, 0, voronoiGoals_[i], segIdGoal, diameter_[i]/2);   //It is allready checked if there is enough free space
         }
 
+        
         if(segIdStart == -1)
         {
             ROS_INFO("Start of robot %i was not found", i);
@@ -183,13 +201,13 @@ bool Planner::calculateStartPoints(const std::vector<float> &_radius, const cv::
     return true;
 }
 
-int Planner::getSegment(const std::vector<Segment> &_graph, const Eigen::Vector2d &_odom)
+int32_t Planner::getSegment(const std::vector<Segment> &_graph, const Eigen::Vector2d &_odom)
 {
     float minDist = FLT_MAX;
-    int segment = -1;
+    int32_t segment = -1;
 
-    //Select the segment which contains the robot center    //TODO maybe check how much space we have left
-    for(int i = 0; i < _graph.size(); i++)
+    //Select the segment which contains the robot center    
+    for(uint32_t i = 0; i < _graph.size(); i++)
     {
         float d = distanceToSegment(_graph[i], _odom);
         if(d < minDist && d <= _graph[i].width())
@@ -200,7 +218,6 @@ int Planner::getSegment(const std::vector<Segment> &_graph, const Eigen::Vector2
     }
 
     return segment;
-    return 0;
 }
 
 float Planner::distanceToSegment(const Segment &_s, const Eigen::Vector2d &_p)
@@ -212,23 +229,21 @@ float Planner::distanceToSegment(const Segment &_s, const Eigen::Vector2d &_p)
 
     // Closest point is a
     if(c > 0.0f)
-        return pa.dot(pa);
+        return std::sqrt(pa.dot(pa));
 
     Eigen::Vector2d bp = _p - _s.getEnd();
 
     // Closest point is b
     if(n.dot(bp) > 0.0f)
-        return bp.dot(bp);
+        return std::sqrt(bp.dot(bp));
 
     // Closest point is between a and b
     Eigen::Vector2d e = pa - n * (c / n.dot(n));
 
-
     return std::sqrt(e.dot(e));
-    return 0;
 }
 
-bool Planner::resolveSegment(const std::vector< Segment >& _graph, const int &_segId, const Point& _originPoint, const float &_radius,  int& _foundSeg)
+bool Planner::resolveSegment(const std::vector< Segment >& _graph, const uint32_t &_segId, const Eigen::Vector2d& _originPoint, const float &_radius,  uint32_t& _foundSeg)
 {
     const Segment seg = _graph[_segId];
 
@@ -236,7 +251,7 @@ bool Planner::resolveSegment(const std::vector< Segment >& _graph, const int &_s
     {
         //If we are on a leave Segment we are allowed to move the robot one segment in the graph if its radius is to big.
         //Because it can happen, that a leave segment has a triangular shape and thus wrong width value.
-        std::vector<int> neighbours;
+        std::vector<uint32_t> neighbours;
 
         if(seg.getPredecessors().size() != 0)
             neighbours = seg.getPredecessors();
@@ -246,7 +261,7 @@ bool Planner::resolveSegment(const std::vector< Segment >& _graph, const int &_s
         float dist = std::numeric_limits<float>::max();
 
         //Find the closest neighbour
-        for(const int & neighbour : neighbours)
+        for(const uint32_t & neighbour : neighbours)
         {
             float ds_x = _originPoint[0] - _graph[neighbour].getStart()[0];
             float ds_y = _originPoint[1] - _graph[neighbour].getStart()[1];
@@ -481,6 +496,22 @@ bool Planner::makePlan(const std::vector< Eigen::Vector2d > &_goals, const std::
         return false;
     }
 
+    multiRobotRouter_->setRobotNr(robot_nr_);
+    
+    std::vector<uint32_t> diameter;
+    for(int i = 0; i < _radius.size(); i++)
+    {
+        diameter.push_back(2 * ((float) _radius[i]) / _resolution);
+    }
+    
+    multiRobotRouter_->setRobotRadius(diameter);
+    routingTable_.clear();
+    if(!multiRobotRouter_->getRoutingTable(_graph, startSegments_, goalSegments_, routingTable_))
+        return false;
+    
+    postprocessRoutingTable();
+    
+    return true;
 
 //     priorityScheduler_->reset(_goals.size());
 //     int lastPlannedRobot = -1;
@@ -541,7 +572,35 @@ bool Planner::makePlan(const std::vector< Eigen::Vector2d > &_goals, const std::
 }
 
 
-void Planner::updateRobotPose(int _robot_id, const Eigen::Vector2d& _pose)
+void Planner::postprocessRoutingTable()
+{
+    if(goalMode_ == goalMode::use_voronoi_goal)
+    {
+        for(int i = 0; i < routingTable_.size(); i++)
+        {
+            routingTable_[i].front().start = voronoiStart_[i];
+            routingTable_[i].back().end = voronoiGoals_[i];
+        }
+    }
+    else if(goalMode_ == goalMode::use_map_goal)
+    {
+        for(int i = 0; i < routingTable_.size(); i++)
+        {
+            routingTable_[i].front().start = realStart_[i];
+            routingTable_[i].back().end = realGoals_[i];
+        }
+    }
+}
+
+
+
+const std::vector< Checkpoint > &Planner::getRoute(const uint32_t _robot)
+{
+    return routingTable_[_robot];
+}
+
+
+void Planner::updateRobotPose(uint32_t _robot_id, const Eigen::Vector2d& _pose)
 {
     robot_poses_[_robot_id] = _pose;
     pose_received_[_robot_id] = true;

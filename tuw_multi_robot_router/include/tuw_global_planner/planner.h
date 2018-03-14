@@ -32,9 +32,10 @@
 #include <vector>
 #include <memory>
 #include <opencv/cv.h>
-// #include <tuw_global_planner/utils.h>
-#include <tuw_global_planner/segment.h>
+//#include <tuw_global_planner/utils.h>
+//#include <tuw_global_planner/srr_utils.h>
 #include <tuw_global_planner/point_expander.h>
+#include <tuw_global_planner/multi_robot_router.h>
 // #include <tuw_global_planner/segment_expander.h>
 // #include <tuw_global_planner/traceback.h>
 // #include <tuw_global_planner/backtracking_avoid_resolution.h>
@@ -48,14 +49,14 @@
 class Planner
 {
     public:
-        Planner(int _nr_robots);
+        Planner(uint32_t _nr_robots);
         Planner();
-        void updateRobotPose(int _robot_id, const Eigen::Vector2d &_pose);
+        void updateRobotPose(uint32_t _robot_id, const Eigen::Vector2d &_pose);
 
         /**
         * @brief resizes the planner to a different nr of _nr_robots
         */
-        void resize(int _nr_robots);
+        void resize(uint32_t _nr_robots);
         /**
         * @brief updates the robot start positin (normally called from odom r[_robot_id]
         */
@@ -82,16 +83,16 @@ class Planner
 
 //     public:         const std::vector<float> &getVelocityProfile(int _robot_id);
 
-
-
+      const std::vector<Checkpoint> &getRoute(const uint32_t _robot);
+      void postprocessRoutingTable();
      private:        
        bool calculateStartPoints(const std::vector<float> &_radius, const cv::Mat &_map, const float &resolution, const Eigen::Vector2d &origin, const std::vector<Segment> &_graph);
        //Calculate a segment
-       int getSegment(const std::vector<Segment> &_graph, const Eigen::Vector2d &_pose);
+       int32_t getSegment(const std::vector<Segment> &_graph, const Eigen::Vector2d &_pose);
        //Helper dist calculation
        float distanceToSegment(const Segment &_s, const Eigen::Vector2d &_p);
        //Checks if _seg is a leave of the graph and uses the closes neighbor as segment if the width of the leave is to small
-       bool resolveSegment(const std::vector< Segment > &_graph, const int &_segId, const Point &_originPoint, const float &_radius, int &_foundSeg);
+       bool resolveSegment(const std::vector< Segment > &_graph, const uint32_t &_segId, const Eigen::Vector2d &_originPoint, const float &_radius, uint32_t &_foundSeg);
        
 //     private:        bool getPaths(const std::vector<std::shared_ptr<Vertex>> &_graph, int &_actualRobot, const std::vector<int> &_priorities, const std::vector<float>& _speedList, int maxStepsPotExp);
 //     private:        bool resolveSegment(const std::vector< std::shared_ptr< Vertex > >& _graph, const std::shared_ptr<Vertex>& _seg, const Point& _originPoint, float _radius, std::shared_ptr< Vertex > &_foundSeg);
@@ -142,7 +143,18 @@ class Planner
       std::shared_ptr<float> potential_; 
 
     private:
-        int robot_nr_;
+        enum class goalMode
+        {
+            use_segment_goal,
+            use_voronoi_goal,
+            use_map_goal
+        };
+        enum class graphType              
+        {
+            voronoi,
+            random
+        };
+        uint32_t robot_nr_;
         std::vector<bool> pose_received_;
         std::vector<Eigen::Vector2d> robot_poses_;
         std::vector<Eigen::Vector2d> goals_;
@@ -150,16 +162,18 @@ class Planner
         std::vector<Eigen::Vector2d> realStart_;
         std::vector<Eigen::Vector2d> voronoiGoals_;
         std::vector<Eigen::Vector2d> voronoiStart_;
-        std::vector<int> startSegments_;
-        std::vector<int> goalSegments_;
-        std::vector<int>  diameter_;
+        std::vector<uint32_t> startSegments_;
+        std::vector<uint32_t> goalSegments_;
+        std::vector<uint32_t>  diameter_;
         
         std::unique_ptr<PointExpander> pointExpander_;
+        std::unique_ptr<MultiRobotRouter> multiRobotRouter_;
+        std::vector<std::vector<Checkpoint>> routingTable_;
         
     protected:
-        bool useGoalOnSegment_;
-        bool allowEndpointOffSegment_;
-        int optimizationSegmentNr_;
+        graphType graphMode_ = graphType::voronoi;
+        goalMode goalMode_ = goalMode::use_voronoi_goal;
+        uint32_t optimizationSegmentNr_;
 };
 
 #endif // PLANNER_H

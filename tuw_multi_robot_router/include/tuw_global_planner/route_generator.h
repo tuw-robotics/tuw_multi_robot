@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2017, <copyright holder> <email>
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
@@ -12,7 +12,7 @@
  *     * Neither the name of the <organization> nor the
  *     names of its contributors may be used to endorse or promote products
  *     derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY <copyright holder> <email> ''AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -23,36 +23,28 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  */
 
-#ifndef PATH_COORDINATOR_H
-#define PATH_COORDINATOR_H
+#ifndef ROUTE_GENERATOR_H
+#define ROUTE_GENERATOR_H
 
-#include <tuw_global_planner/utils.h>
-#include <memory>
-#include <vector>
-#include <tuw_global_planner/segment.h>
+#include <tuw_global_planner/srr_utils.h>
+#include <tuw_global_planner/mrr_utils.h>
+#include <tuw_global_planner/route_coordinator.h>
+#include <eigen3/Eigen/Dense>
 
-class Path_Coordinator
+class RouteGenerator
 {
-public:
-  virtual void reset(std::vector< std::shared_ptr<Segment> > _graph, int _nrRobots)=0;
-  virtual bool addPath(std::vector<std::shared_ptr<Segment>> &_path, int radius_pixel)=0;
-  virtual bool checkSegment(std::shared_ptr<Segment> _next, int _startTime, int _endTime, int _radius_pixel, int &_collisionRobot, bool ignoreGoal=false)=0;  
-  virtual void setActive(int _robotNr)=0;
-  virtual bool setGoalSegments(const std::vector<std::shared_ptr<Segment>> _goalSegments, const std::vector<int> radius)=0;
-  virtual bool setStartSegments(const std::vector<std::shared_ptr<Segment>> _startSegments, const std::vector<int> radius)=0;
-  virtual bool isGoal(std::shared_ptr<Segment> _seg)=0;
-  virtual std::shared_ptr<Segment>  getStart()=0;
-  virtual std::shared_ptr<Segment>  getEnd()=0;
-  virtual std::vector<std::pair<int,float>> getListOfRobotsHigherPrioritizedRobots(int _robot, std::shared_ptr<Segment>  _segment)=0;
-  virtual const std::vector<int> &getNrOfRobotCollisions(int _robot)=0;
-  virtual void updateNrOfCollisions(int _collisionRobot,int _collisions)=0;
-  
-  
-  virtual int findSegNr(int _robot, int _potential)=0;  //TODO BETTER VERSION
-  virtual int findPotentialUntilRobotOnSegment(int _robot, std::shared_ptr< Segment > _segment)=0;
+    public:
+        std::vector<std::vector<Checkpoint>> generatePath(const std::vector<std::vector<RouteVertex>> &_paths, const RouteCoordinator &routeQuerry_) const;
+
+    private:
+        Checkpoint createElement(const RouteVertex &_element) const;
+        void addPreconditions(Checkpoint &_segment, const RouteVertex &_segToFind, const uint32_t _pathNr, const std::vector<std::vector<RouteVertex>> &_paths, const RouteCoordinator &routeQuerry_) const;
+
 };
 
-#endif // PATH_QUERRY_H
+
+#endif
+

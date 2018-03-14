@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2017, <copyright holder> <email>
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
@@ -12,7 +12,7 @@
  *     * Neither the name of the <organization> nor the
  *     names of its contributors may be used to endorse or promote products
  *     derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY <copyright holder> <email> ''AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -23,25 +23,42 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  */
 
-#ifndef COLLISION_RESOLUTION_H
-#define COLLISION_RESOLUTION_H
+#ifndef SRR_H
+#define SRR_H
 
 #include <tuw_global_planner/srr_utils.h>
 #include <tuw_global_planner/route_coordinator.h>
-#include <tuw_global_planner/potential_calculator.h>
+#include <tuw_global_planner/segment_expander.h>
+#include <tuw_global_planner/traceback.h>
+#include <iostream>
 
-class CollisionResolution
+typedef struct Robot
 {
-public:     CollisionResolution(std::shared_ptr<RouteCoordinator> _path_querry, std::shared_ptr<PotentialCalculator> _pCalc, int _timeoverlap) : path_querry_(_path_querry) , timeoverlap_(_timeoverlap), pCalc_(_pCalc) { }
-public:     virtual std::vector<std::shared_ptr<Segment>> resolve(std::shared_ptr< Segment > _current, std::shared_ptr< Segment > _next, std::shared_ptr< Segment > _end, int _collision, int _robot_radius)=0;
-public:		virtual void reset()=0; 
+    int id;
+    float diameter;
+    float speedMultiplier;
+    Robot(int _id, float _d, float _s) : id(_id), diameter(_d), speedMultiplier(_s){}
+    Robot(int _id, float _d) : Robot(_id, _d, 1){}
+}Robot;
 
-protected:   std::shared_ptr<RouteCoordinator> path_querry_;
-protected:	 std::shared_ptr<PotentialCalculator> pCalc_;
-protected:   int timeoverlap_;
+
+class SingleRobotRouter
+{
+    public:
+        SingleRobotRouter();
+        bool getRouteCandidate(const uint32_t _start, const uint32_t _goal, const RouteCoordinator &path_coordinator, const uint32_t _radius, std::vector<RouteVertex> &path);
+        const std::vector<uint32_t> &getRobotCollisions() const;
+        void initSearchGraph(const std::vector<Segment> &_graph);
+    private:
+        void resetAttempt();
+        std::unique_ptr<SegmentExpander> segment_expander_;
+        std::unique_ptr<Traceback> traceback_;
+        uint32_t radius_;
+        std::vector<Vertex> searchGraph_;
+        
 };
 
-#endif // HEURISTIC_H
+#endif

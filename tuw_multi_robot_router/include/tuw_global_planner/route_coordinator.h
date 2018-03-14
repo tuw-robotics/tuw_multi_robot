@@ -26,24 +26,31 @@
  * 
  */
 
-#ifndef POINT_EXPANDER_H
-#define POINT_EXPANDER_H
+#ifndef ROUTE_COORDINATOR_H
+#define ROUTE_COORDINATOR_H
 
-#include <algorithm>
+#include <tuw_global_planner/mrr_utils.h>
 #include <memory>
-#include <queue>
-#include <tuw_global_planner/utils.h>
-#include <grid_map_ros/grid_map_ros.hpp>
-#include <eigen3/Eigen/Dense>
-#include <tuw_global_planner/segment.h>
+#include <vector>
+#include <tuw_global_planner/srr_utils.h>
 
-class PoseToSegment
+class RouteCoordinator
 {
-            //special class-member functions.
-	public:     PoseToSegment();
-	public:     int getSegment(const std::vector<std::shared_ptr<Vertex>> &_graph, const Eigen::Vector2d &_odom);
-
-	private:    float distanceToSegment(PathSegment _s, Eigen::Vector2d _p);    
+public:
+  virtual void reset(const std::vector<Segment>  &_graph, const uint32_t _nrRobots)=0;
+  virtual bool addRoute(const std::vector< RouteVertex > &_path, const uint32_t _diameterPixel)=0;
+  virtual bool checkSegment(const Vertex &_next, const uint32_t _startTime, const int32_t _endTime, const uint32_t _diameterPixel, int32_t &_collisionRobot, bool _ignoreGoal = false) const =0;  
+  virtual void setActive(const uint32_t _robotNr)=0;
+  virtual bool setGoalSegments(const std::vector<uint32_t> &_goalSegments)=0;
+  virtual bool setStartSegments(const std::vector<uint32_t> &_startSegments)=0;
+  virtual bool isGoal(const Vertex& _seg) const=0;
+  virtual const uint32_t getStart() const=0;
+  virtual const uint32_t getEnd() const=0;
+  virtual std::vector<std::pair<uint32_t, float>> getListOfRobotsHigherPrioritizedRobots(const uint32_t _robot, const uint32_t _segId, const int32_t _potential) const=0;
+  
+  
+  virtual int32_t findSegNr(const uint32_t _robot, const uint32_t _potential) const=0;  //TODO BETTER VERSION
+  virtual int32_t findPotentialUntilRobotOnSegment(const uint32_t _robot, const uint32_t _segId, const int32_t _potential) const=0;
 };
 
-#endif // VORONOI_EXPANDER_H
+#endif // PATH_QUERRY_H

@@ -26,10 +26,10 @@
 *
 */
 
-#include <tuw_global_planner/segment.h>
+#include <tuw_global_planner/srr_utils.h>
 #include <ros/ros.h>
 
-Segment::Segment(int _id, const std::vector<Eigen::Vector2d> &_points, const std::vector<int> &_successors, const std::vector<int> &_predecessors, int _width) : 
+Segment::Segment(const uint32_t &_id, const std::vector<Eigen::Vector2d> &_points, const std::vector<uint32_t> &_successors, const std::vector<uint32_t> &_predecessors, const float &_width) : 
 points_(_points),
 successors_(_successors),
 predecessors_(_predecessors)
@@ -50,12 +50,12 @@ const std::vector< Eigen::Vector2d >& Segment::getPoints() const
     return points_;
 }
 
-const std::vector< int >& Segment::getPredecessors() const
+const std::vector< uint32_t >& Segment::getPredecessors() const
 {
     return predecessors_;
 }
 
-int Segment::getSegmentId() const
+uint32_t Segment::getSegmentId() const
 {
     return segmentId_;
 }
@@ -64,7 +64,7 @@ const Eigen::Vector2d& Segment::getStart() const
     return points_.front();
 }
  
-const std::vector< int >& Segment::getSuccessors() const
+const std::vector< uint32_t >& Segment::getSuccessors() const
 {
     return successors_;
 }
@@ -81,14 +81,10 @@ float Segment::width() const
 
 
 
-Vertex::Vertex(Segment& _seg) : predecessors_(), successors_(), segment_(_seg)
-{
-    potential = -1;   //Endtime (the time a robot is supposed to leave the segment)
-    collision = -1; 
-    direction = none;
-}
+Vertex::Vertex(const Segment& _seg) : predecessors_(), successors_(), segment_(_seg), potential(-1), collision(-1)//, direction(path_direction::none)
+{}
 
-const Segment& Vertex::getSegment()
+const Segment& Vertex::getSegment() const
 {
     return segment_;
 }
@@ -105,27 +101,37 @@ const std::vector< std::reference_wrapper< Vertex > >& Vertex::getPlanningSucces
 
 void Vertex::initNeighbours(std::vector< Vertex >& _sortedVertices)
 {
-    for(const int & vecId : segment_.getPredecessors())
+    for(const uint32_t & vecId : segment_.getPredecessors())
     {
         Vertex &vRef = _sortedVertices[vecId];
         predecessors_.push_back(vRef);
     }
     
-    for(const int & vecId : segment_.getSuccessors())
+    for(const uint32_t & vecId : segment_.getSuccessors())
     {
         Vertex &vRef = _sortedVertices[vecId];
         successors_.push_back(vRef);
     }
 }
 
-// bool Vertex::pointOnSegment(Eigen::Vector2d _point)
-// {
-//     for(const Eigen::Vector2d &it : segment_.getPoints())
-//     {
-//         if(it[0] == _point[0] && it[1] == _point[1])
-//             return true;
-//     }
-// 
-//     return false;
-// }
+void Vertex::updateVertex(const Vertex& _v)
+{
+  potential = _v.potential;
+  collision = _v.collision;
+  weight = _v.weight;
+  //direction = _v.direction;
+  predecessor_ = _v.predecessor_;
+}
 
+
+
+
+
+RouteVertex::RouteVertex(const Vertex& _vertex) : segment_(_vertex.getSegment()), direction(path_direction::none), potential(_vertex.potential), collision(_vertex.collision)
+{}
+RouteVertex::RouteVertex(const RouteVertex& _vertex): segment_(_vertex.getSegment()), direction(_vertex.direction), potential(_vertex.potential), collision(_vertex.collision)
+{}
+const Segment &RouteVertex::getSegment() const
+{   
+    return segment_;
+}

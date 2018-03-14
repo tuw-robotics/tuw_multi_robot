@@ -215,7 +215,7 @@ namespace voronoi_graph
                 if(path.size() > 1 && path.size() <= _max_length)
                 {
                     std::vector<Eigen::Vector2d> p = std::vector<Eigen::Vector2d>(path);
-                    Segment seg(p, min_d);
+                    Segment seg(p, 2 * min_d);
                     segments.push_back(std::make_shared<Segment>(seg));
                 }
                 else if(path.size() > 1 && path.size() > _max_length)
@@ -237,7 +237,7 @@ namespace voronoi_graph
 
                         float mind = getMinD(path_n);
 
-                        Segment nSeg(std::vector<Eigen::Vector2d>(path_n), mind);
+                        Segment nSeg(std::vector<Eigen::Vector2d>(path_n), 2 * mind);
                         new_segs.push_back(std::make_shared<Segment>(nSeg));
 
                         if(i > 0)

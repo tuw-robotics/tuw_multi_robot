@@ -2,7 +2,7 @@
 
 <launch>
 	<arg name="cfg"  default="default" />
-	<arg name="use_gdb"  default="true" />
+	<arg name="use_gdb"  default="false" />
 	
     <group if="$(arg use_gdb)">
 	<node launch-prefix="gdb -ex run --args" pkg="tuw_multi_robot_router" type="tuw_multi_robot_router_node" name="tuw_robot_router" output="screen">

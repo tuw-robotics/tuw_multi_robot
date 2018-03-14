@@ -29,7 +29,7 @@
 #ifndef PRIORITY_SCHEDULER_H
 #define PRIORITY_SCHEDULER_H
 
-#include <tuw_global_planner/segment.h>
+#include <tuw_global_planner/srr_utils.h>
 
 class PriorityScheduler
 {

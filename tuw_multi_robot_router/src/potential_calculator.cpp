@@ -36,9 +36,14 @@ PotentialCalculator::PotentialCalculator(int _multiplier) : multiplier_(_multipl
 {   }
 
 
-float PotentialCalculator::CalculatePotential(std::shared_ptr< Segment > _segment)
+float PotentialCalculator::CalculatePotential(const Vertex &_vertex) const
 {
-    return _segment->getLength() * multiplier_;
+    return CalculatePotential(_vertex.getSegment());
+}
+
+float PotentialCalculator::CalculatePotential(const Segment& _segment) const
+{
+    return _segment.length() * multiplier_;
 }
 
 
