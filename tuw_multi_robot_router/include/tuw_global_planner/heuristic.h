@@ -48,7 +48,8 @@ public:
         
         
         return std::sqrt(dx*dx + dy*dy);
-      //return 0; //Dijkstra expansion
+        
+        //return 0; //Dijkstra expansion
     }   
 };
 

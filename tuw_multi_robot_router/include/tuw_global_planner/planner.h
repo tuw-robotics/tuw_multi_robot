@@ -94,6 +94,7 @@ class Planner
        //Checks if _seg is a leave of the graph and uses the closes neighbor as segment if the width of the leave is to small
        bool resolveSegment(const std::vector< Segment > &_graph, const uint32_t &_segId, const Eigen::Vector2d &_originPoint, const float &_radius, uint32_t &_foundSeg);
        
+       void getTrimedGraph(const std::vector< Segment > &_graph, std::vector< Segment > &_trimmedGraph, const uint32_t minDiameter); 
 //     private:        bool getPaths(const std::vector<std::shared_ptr<Vertex>> &_graph, int &_actualRobot, const std::vector<int> &_priorities, const std::vector<float>& _speedList, int maxStepsPotExp);
 //     private:        bool resolveSegment(const std::vector< std::shared_ptr< Vertex > >& _graph, const std::shared_ptr<Vertex>& _seg, const Point& _originPoint, float _radius, std::shared_ptr< Vertex > &_foundSeg);
 //

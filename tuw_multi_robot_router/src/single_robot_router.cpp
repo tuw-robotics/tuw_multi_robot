@@ -44,12 +44,12 @@ bool SingleRobotRouter::getRouteCandidate(const uint32_t _start, const uint32_t 
     radius_ = _radius;
     resetAttempt();
 
-    if(!segment_expander_->calculatePotentials(&path_coordinator, searchGraph_[_start], searchGraph_[_goal], searchGraph_, radius_))
+    if(!segment_expander_->calculatePotentials(&path_coordinator, *(searchGraph_[_start].get()), *(searchGraph_[_goal].get()), searchGraph_.size() * 20, radius_)) //TODO *LIGHTNING* no fixed numbers :D
         return false;
 
     std::vector<RouteVertex> reversedPath;
 
-    if(!traceback_->getPath(searchGraph_[_start], searchGraph_[_goal], reversedPath))
+    if(!traceback_->getPath(*(searchGraph_[_start].get()), *(searchGraph_[_goal].get()), reversedPath))
         return false;
 
     _path.clear();
@@ -67,27 +67,27 @@ void SingleRobotRouter::resetAttempt()
 {
     segment_expander_->reset();
 
-    for(Vertex & v : searchGraph_)
+    for(std::unique_ptr<Vertex> & v : searchGraph_)
     {
-        v.potential = -1;
-        v.collision = -1;
-        v.weight = 0;
-        v.predecessor_ = NULL;
+        v->potential = -1;
+        v->collision = -1;
+        v->weight = 0;
+        v->predecessor_ = NULL;
     }
 }
 
-void SingleRobotRouter::initSearchGraph(const std::vector< Segment > &_graph)
+void SingleRobotRouter::initSearchGraph(const std::vector< Segment > &_graph, const uint32_t minSegmentWidth_)
 {
     searchGraph_.clear();
 
     for(const Segment & seg : _graph)
     {
-        searchGraph_.emplace_back(seg);
+        searchGraph_.push_back(std::make_unique<Vertex>(seg));
     }
 
-    for(Vertex & v : searchGraph_)
+    for(std::unique_ptr<Vertex> & v : searchGraph_)
     {
-        v.initNeighbours(searchGraph_);
+        v->initNeighbours(searchGraph_, minSegmentWidth_);
     }
 }
 

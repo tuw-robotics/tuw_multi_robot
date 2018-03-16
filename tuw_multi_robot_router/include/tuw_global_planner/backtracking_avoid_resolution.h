@@ -29,24 +29,40 @@
 #ifndef BACKTRACKING_AVOID_RESOLUTION_H
 #define BACKTRACKING_AVOID_RESOLUTION_H
 
-#include <tuw_global_planner/segment.h>
-#include <tuw_global_planner/path_coordinator.h>
+#include <tuw_global_planner/srr_utils.h>
+#include <tuw_global_planner/route_coordinator.h>
 #include <tuw_global_planner/collision_resolution.h>
 
 class BacktrackingAvoidResolution : public CollisionResolution
 {
-public:     BacktrackingAvoidResolution(std::shared_ptr<Path_Coordinator> _path_querry, std::shared_ptr<PotentialCalculator> _pCalc, int _timeoverlap) : CollisionResolution(_path_querry, _pCalc,_timeoverlap)  { }
-public:     std::vector<std::shared_ptr<Segment>> resolve(std::shared_ptr< Segment > _current, std::shared_ptr< Segment > _next, std::shared_ptr< Segment > _end, int _collision, int _robot_radius);
-public:		void reset();
-private:	void avoid(std::shared_ptr< Segment > _current, std::shared_ptr< Segment > _next, std::shared_ptr< Segment > _end, float _newPot, int _robot_radius, std::vector<std::shared_ptr<Segment>> &retVal);
-private:	void trackBack(std::shared_ptr< Segment > _current, std::shared_ptr< Segment > _next, std::shared_ptr< Segment > _end, int _collision, int _robot_radius, float _newPot, std::vector<std::shared_ptr<Segment>> &retVal);
-private:	void moveSegment(std::shared_ptr<Segment> newCurrent, std::shared_ptr<Segment> cross_next, int _robot_radius, int _coll, std::vector<std::shared_ptr<Segment>> &retVal);
-private:	void avoidStart(std::shared_ptr< Segment > _current, std::shared_ptr< Segment > _next, float _newPot, int _robot_radius, std::vector<std::shared_ptr<Segment>> &retVal);
-private:	void avoidEnd(std::shared_ptr< Segment > _current, std::shared_ptr< Segment > _next, float _newPot, int _robot_radius, std::vector<std::shared_ptr<Segment>> &retVal, int _collision);
-public:     void clear();
+public:     
+  BacktrackingAvoidResolution(uint32_t _timeoverlap);
 
-private:	std::vector<int> avoidedSegments_;
-private:    std::vector<std::shared_ptr<Segment>> createdSegmements_;
+  void resetSession(const RouteCoordinator *_route_querry, const PotentialCalculator *_pCalc, const uint32_t _robot_radius);
+  std::vector<std::reference_wrapper<Vertex>> resolve(Vertex &_current, Vertex &_next, int32_t _collision);
+private:	
+  void trackBack(Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential);
+  void avoid(Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential);
+  void moveSegment(Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential);
+  void avoidStart(Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential);
+  void addCollision(const uint32_t robot);
+  //void avoidEnd(std::shared_ptr< Segment > _current, std::shared_ptr< Segment > _next, float _newPot, int _robot_radius, std::vector<std::shared_ptr<Segment>> &retVal, int _collision);
+
+
+//private:	std::vector<int> avoidedSegments_;
+
+
+private:
+  //bool isCrossing(const Vertex& _current, const Vertex& _next) const;
+  const RouteCoordinator *route_querry_;
+  const PotentialCalculator *pCalc_;
+  uint32_t timeoverlap_;
+  uint32_t robotDiameter_;
+  //unique_ptr to keep references of Vertex (Heap), because the list is updated while runtime
+  std::vector<std::vector<std::unique_ptr<Vertex>>> generatedSubgraphs_;        
+  std::vector<std::reference_wrapper<Vertex>> foundSolutions_;
+  std::vector<int> encounteredCollisions_;
+  uint32_t resolutionAttemp_ = 0;
 };
 
 #endif // HEURISTIC_H

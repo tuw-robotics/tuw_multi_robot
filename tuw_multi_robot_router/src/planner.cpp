@@ -506,6 +506,7 @@ bool Planner::makePlan(const std::vector< Eigen::Vector2d > &_goals, const std::
     
     multiRobotRouter_->setRobotRadius(diameter);
     routingTable_.clear();
+    
     if(!multiRobotRouter_->getRoutingTable(_graph, startSegments_, goalSegments_, routingTable_))
         return false;
     

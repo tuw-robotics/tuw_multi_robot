@@ -51,14 +51,14 @@ class SingleRobotRouter
         SingleRobotRouter();
         bool getRouteCandidate(const uint32_t _start, const uint32_t _goal, const RouteCoordinator &path_coordinator, const uint32_t _radius, std::vector<RouteVertex> &path);
         const std::vector<uint32_t> &getRobotCollisions() const;
-        void initSearchGraph(const std::vector<Segment> &_graph);
+        void initSearchGraph(const std::vector<Segment> &_graph, const uint32_t minSegmentWidth_=0);
     private:
         void resetAttempt();
         std::unique_ptr<SegmentExpander> segment_expander_;
         std::unique_ptr<Traceback> traceback_;
         uint32_t radius_;
-        std::vector<Vertex> searchGraph_;
-        
+        //unique_ptr to keep references of Vertex (Heap), because the list is updated while runtime
+        std::vector<std::unique_ptr<Vertex>> searchGraph_;       
 };
 
 #endif

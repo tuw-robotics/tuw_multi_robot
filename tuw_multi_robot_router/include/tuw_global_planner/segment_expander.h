@@ -33,6 +33,7 @@
 #include <tuw_global_planner/heuristic.h>
 #include <tuw_global_planner/route_coordinator.h>
 #include <tuw_global_planner/collision_resolution.h>
+#include <tuw_global_planner/backtracking_avoid_resolution.h>
 #include <algorithm>
 #include <memory>
 #include <queue>
@@ -41,7 +42,7 @@ class SegmentExpander
 {
     public:
         SegmentExpander(const Heuristic &_h, const PotentialCalculator &_pCalc);//, const CollisionResolution &_cr);
-        bool calculatePotentials(const RouteCoordinator *_p, Vertex &_start, Vertex &_end, std::vector<Vertex> &_graph, const uint32_t _radius);
+        bool calculatePotentials(const RouteCoordinator *_p, Vertex &_start, Vertex &_end, const uint32_t _maxIterations, const uint32_t _radius);
         const std::vector<uint32_t> &getRobotCollisions() const;
         void reset();
     private:
@@ -74,7 +75,7 @@ class SegmentExpander
         std::unique_ptr<Heuristic> hx_;
         std::unique_ptr<PotentialCalculator> pCalc_;
         const RouteCoordinator *path_querry_;
-        //std::unique_ptr<CollisionResolution> *collision_resolution_;
+        BacktrackingAvoidResolution collision_resolution_;
 
         std::vector<uint32_t> collisions_robots_;
 };

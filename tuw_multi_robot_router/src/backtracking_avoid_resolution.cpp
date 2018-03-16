@@ -28,150 +28,316 @@
 
 #include <tuw_global_planner/backtracking_avoid_resolution.h>
 
-std::vector< std::shared_ptr< Segment > > BacktrackingAvoidResolution::resolve(std::shared_ptr< Segment > _current, std::shared_ptr< Segment > _next, std::shared_ptr< Segment > _end, int _collision, int _robot_radius)
+BacktrackingAvoidResolution::BacktrackingAvoidResolution(uint32_t _timeoverlap) : timeoverlap_(_timeoverlap)
 {
-    std::vector< std::shared_ptr< Segment > > retVals;
-
-    float newPot = path_querry_->findPotentialUntilRobotOnSegment(_collision, _next);       //Margin of 2
-
-    if(newPot == -1 || newPot == -2)    //Infinity
-        return retVals;
-
-
-    avoidStart(_current, _next, newPot, _robot_radius, retVals);
-    avoidEnd(_current, _next, newPot, _robot_radius, retVals, _collision);
-
-    trackBack(_current, _next, _end, _collision, _robot_radius, newPot, retVals);
-    avoid(_current, _next, _end, newPot, _robot_radius, retVals);
-
-    if(_current->planning.WaitSeg)
-    {
-        moveSegment(_current->planning.BacktrackingPredecessor, _current, _robot_radius, _collision, retVals);
-    }
-
-    return retVals;
 }
 
-void BacktrackingAvoidResolution::reset()
+void BacktrackingAvoidResolution::resetSession(const RouteCoordinator *_route_querry, const PotentialCalculator *_pCalc, const uint32_t _robotDiameter)
 {
-    avoidedSegments_.clear();
-    
-}
-
-void BacktrackingAvoidResolution::clear()
-{
-    
-    for(int i = 0; i < createdSegmements_.size(); i++)
-    {
-        createdSegmements_[i]->clear();
-    }
-    createdSegmements_.clear();
+    route_querry_ = _route_querry;
+    pCalc_ = _pCalc;
+    robotDiameter_ = _robotDiameter;
+    generatedSubgraphs_.clear();
+    encounteredCollisions_.clear();
+    resolutionAttemp_ = 0;
 }
 
 
-
-void BacktrackingAvoidResolution::trackBack(std::shared_ptr< Segment > _current, std::shared_ptr< Segment > _next, std::shared_ptr< Segment > _end, int _collision, int _robot_radius, float _newPot, std::vector< std::shared_ptr< Segment > >& retVals)
+void BacktrackingAvoidResolution::addCollision(const uint32_t robot)
 {
-    _next->planning.Potential = -1;
-    _next->planning.Collision = -1;
+    if(encounteredCollisions_.size() <= robot)
+        encounteredCollisions_.resize(robot + 1, 0);
 
-    std::shared_ptr<Segment> newNext;
-    std::shared_ptr<Segment> newCurr;
+    encounteredCollisions_[robot]++;
+}
 
-    //If no Backtracing possible return
-    if(_current->planning.BacktrackingPredecessor->getIndex() == _current->getIndex())  //TODO
+
+std::vector<std::reference_wrapper<Vertex>> BacktrackingAvoidResolution::resolve(Vertex &_current, Vertex &_next, int32_t _collision)
+{
+    generatedSubgraphs_.emplace_back();
+    foundSolutions_.clear();
+
+    //Triggered when a robot blocks a vertex
+    addCollision(_collision);
+
+    //find the potential when the collision robots leaves the segment
+    float leavePotential = route_querry_->findPotentialUntilRobotOnSegment(_collision, _next.getSegment().getSegmentId());
+
+    //There is no solution if the colliding robot never leaves the segment.
+    //Therefore, do nothing when leavePotential is smaller zero
+    if(leavePotential >= 0)
     {
-        newNext = _next;
-        newNext->planning.Potential = -1;
-        newNext->planning.Collision = -1;
-
-        newCurr = std::make_shared<Segment> ((*_current));
-        newCurr->planning.Potential = _newPot + 2 * timeoverlap_;
-        newCurr->planning.Collision = _collision;
-
-
-        newCurr->planning.BacktrackingSuccessor = newNext;
-        newNext->planning.BacktrackingSuccessor = nullptr;
-        createdSegmements_.push_back(newCurr);
-    }
-    else
-    {
-        newNext = std::make_shared<Segment> ((*_current));
-        newNext->planning.Potential = -1;
-        newNext->planning.Collision = -1;
-
-        newCurr = std::make_shared<Segment> (* (_current->planning.BacktrackingPredecessor));
-        newCurr->planning.Potential = _newPot + 2 * timeoverlap_;
-        newCurr->planning.Collision = _collision;
-
-
-        newCurr->planning.BacktrackingSuccessor = newNext;
-        newNext->planning.BacktrackingSuccessor = _next;
-        
-        
-        createdSegmements_.push_back(newNext);
-        createdSegmements_.push_back(newCurr);
+        trackBack(_current, _next, _collision, leavePotential);
     }
 
-    if(!path_querry_->checkSegment(newCurr, (_current->planning.BacktrackingPredecessor)->planning.Potential - timeoverlap_,  newCurr->planning.Potential + timeoverlap_, _robot_radius, _collision))
+    resolutionAttemp_++;
+    return foundSolutions_;
+}
+
+
+
+
+
+void BacktrackingAvoidResolution::trackBack(Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential)
+{
+    //Free the next Vertex for new expansion
+    _next.potential = -1;
+    _next.collision = -1;
+
+    Vertex *next_n;
+    Vertex *current_n;
+
+    //If backtracking is not possible (we are on the start vertex) try to wait there
+    //Additionally Backtracking beond wait Segments is not allowed to be able to solve
+    //multi robot scenarios (avoiding n robots in a row) 
+    //Anyway backtracking beond wait Segments makes no sense, we will only find allready
+    //found solutions...
+    if(_current.predecessor_ == NULL || _current.isWaitSegment)
     {
-        if(!(_collision == -1 || _current->planning.BacktrackingPredecessor->getIndex() == _current->getIndex()))
+        int32_t collision = -1;
+
+        if(route_querry_->checkSegment(_current, 0,  _freePotential + 2 * timeoverlap_, robotDiameter_, collision))
         {
-            auto vals = resolve(newCurr, newNext, _end, _collision, _robot_radius);
-            retVals.insert(retVals.end(), vals.begin(), vals.end());
+            _next.potential = -1;
+            _next.collision = -1;
+            //_next.successor_ = NULL; //Tell expander to expand the vertex normally
+
+
+            generatedSubgraphs_[resolutionAttemp_].emplace_back(std::make_unique<Vertex>(_current));
+            Vertex &current_n = *(generatedSubgraphs_[resolutionAttemp_].back().get());
+            current_n.potential = _freePotential + 2 * timeoverlap_;
+            current_n.collision = _collision;
+            current_n.successor_ = &_next;    //Tell expander to only expand to next
+
+            foundSolutions_.push_back(current_n);
+        }
+        else
+        {
+            if(_collision != collision)
+                addCollision(collision);
+
+            float leavePotential = route_querry_->findPotentialUntilRobotOnSegment(collision, _next.getSegment().getSegmentId());
+            //avoidStart(current_n, _next, collision, leavePotential);
+        }
+    }
+    else    //we are somewhere on the path
+    {
+        int32_t collision = -1;
+        bool vertexFree = route_querry_->checkSegment(*_current.predecessor_, _current.predecessor_->potential - timeoverlap_,  _freePotential + 2 * timeoverlap_, robotDiameter_, collision);
+
+        if(vertexFree || collision != -1)
+        {
+            generatedSubgraphs_[resolutionAttemp_].emplace_back(std::make_unique<Vertex>(_current));
+            Vertex &next_n = *(generatedSubgraphs_[resolutionAttemp_].back().get());
+            next_n.potential = -1;
+            next_n.collision = -1;
+
+            generatedSubgraphs_[resolutionAttemp_].emplace_back(std::make_unique<Vertex>(*(_current.predecessor_)));
+            Vertex &current_n = *(generatedSubgraphs_[resolutionAttemp_].back().get());
+            current_n.potential = _freePotential + 2 * timeoverlap_;
+            current_n.collision = _collision;
+
+            //Set References
+            current_n.successor_ = &next_n;             //Tell expander to only expand to "new next" (with new Potential)
+            next_n.predecessor_ = &current_n;
+            next_n.successor_ = &_next;         //Tell expander to only expand to next (we are not allowed to leave the backtracked path)
+
+            if(vertexFree)
+            {
+                foundSolutions_.push_back(current_n);
+            }
+            else if(collision != -1)
+            {
+                if(collision != -1 && collision != _collision)
+                    addCollision(collision);
+
+
+                float leavePotential = route_querry_->findPotentialUntilRobotOnSegment(collision, next_n.getSegment().getSegmentId());
+                trackBack(current_n, next_n, collision, leavePotential);
+                avoid(current_n, next_n, collision, leavePotential);
+
+                //Continue Resolving (Avoid Segment, Avoid Crossing, ...)
+            }
         }
 
     }
-    else
-    {
-        retVals.push_back(newCurr);
-    }
 }
 
-
-
-void BacktrackingAvoidResolution::avoid(std::shared_ptr< Segment > _current, std::shared_ptr< Segment > _next, std::shared_ptr< Segment > _end, float _newPot, int _robot_radius, std::vector< std::shared_ptr< Segment > >& retVals)
+void BacktrackingAvoidResolution::avoid(Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential)
 {
-    Neighbours crossing = _current->getPredecessors();
+    if(_current.predecessor_ == NULL)
+        return;
 
-    if(!crossing.contains(_next))
-        crossing = _current->getSuccessors();
+    //We need to find if _next is a successor or a predecessor of current and use this crossing for avoidance
+    bool crossingFound = false;
+    std::vector<std::reference_wrapper<Vertex>> crossing;
 
-
-    if(crossing.contains(_next) && crossing.isCrossing())
+    if(_current.crossingPredecessor)
     {
-        for(auto seg_it = crossing.cbegin(); seg_it != crossing.cend(); seg_it++)
+        crossing = _current.getPlanningPredecessors();
+
+        for(const Vertex & v : crossing)
         {
-            if((*seg_it)->getIndex() != _next->getIndex())
+            if(v.getSegment().getSegmentId() == _next.getSegment().getSegmentId())
             {
-                std::shared_ptr<Segment> newCurrent = std::make_shared<Segment>(*_current); 
-                createdSegmements_.push_back(newCurrent);               
-                newCurrent->planning.Potential = _current->planning.BacktrackingPredecessor->planning.Potential + pCalc_->CalculatePotential(_current);
+                crossingFound = true;
+                break;
+            }
+        }
+    }
 
-                std::shared_ptr<Segment> cross_next = std::make_shared<Segment> (*(*seg_it));
-                createdSegmements_.push_back(cross_next);
-                cross_next->planning.BacktrackingPredecessor = newCurrent;
-                cross_next->planning.Potential = std::max<float>(_newPot, newCurrent->planning.Potential + pCalc_->CalculatePotential(cross_next));
-                cross_next->planning.Collision = -1;
-                cross_next->planning.BacktrackingSuccessor = _next;
-                cross_next->planning.WaitSeg = true;
+    if(!crossingFound && _current.crossingSuccessor)
+    {
+        crossing = _current.getPlanningSuccessors();
 
-                int coll = -1;
+        for(const Vertex & v : crossing)
+        {
+            if(v.getSegment().getSegmentId() == _next.getSegment().getSegmentId())
+            {
+                crossingFound = true;
+                break;
+            }
+        }
+    }
 
-                if(path_querry_->checkSegment(cross_next, newCurrent->planning.Potential - timeoverlap_,  cross_next->planning.Potential + timeoverlap_, _robot_radius, coll))
+
+    if(crossingFound)
+    {
+        for(const Vertex & waitSeg : crossing)
+        {
+            if(waitSeg.getSegment().getSegmentId() != _next.getSegment().getSegmentId())
+            {
+                int32_t collision = -1;
+                bool vertexFree = route_querry_->checkSegment(waitSeg, _current.predecessor_->potential + pCalc_->CalculatePotential(_current) - timeoverlap_, std::max<float>(_freePotential, _current.potential + pCalc_->CalculatePotential(waitSeg)) + timeoverlap_, robotDiameter_, collision);
+
+                if(vertexFree || collision != -1)
                 {
-                    //Will not happen
-                    retVals.push_back(cross_next);
-                }
-                else if(coll != -1)
-                {
-                    moveSegment(newCurrent, cross_next, _robot_radius, coll, retVals);
+                    //Copy the current Vertex and set smallest possible potential (everithing else stays the same)
+                    generatedSubgraphs_[resolutionAttemp_].emplace_back(std::make_unique<Vertex>(_current));
+                    Vertex &current_n = *(generatedSubgraphs_[resolutionAttemp_].back().get());
+                    current_n.potential = current_n.predecessor_->potential + pCalc_->CalculatePotential(current_n);
+
+                    //Copy the wait vertex insert it in the path and assign the right potential
+                    generatedSubgraphs_[resolutionAttemp_].emplace_back(std::make_unique<Vertex>(waitSeg));
+                    Vertex &wait_seg_n = *(generatedSubgraphs_[resolutionAttemp_].back().get());
+                    wait_seg_n.potential = std::max<float>(_freePotential, current_n.potential + pCalc_->CalculatePotential(wait_seg_n));           //Set the potential as max of the next segment is free, and the minimum Vertex potential the robot can achive
+                    wait_seg_n.collision = -1;
+                    wait_seg_n.isWaitSegment = true;
+
+                    wait_seg_n.successor_ = &_next;
+                    wait_seg_n.predecessor_ = &current_n;
+
+                    current_n.successor_ = &wait_seg_n;
+                    //Reset _next to be ready for expansion (should be allready done in trackback, but safety first :D)
+                    _next.potential = -1;
+                    _next.collision = -1;
+
+                    if(vertexFree)
+                    {
+                        foundSolutions_.push_back(wait_seg_n);
+                    }
+                    else if(collision != -1)
+                    {
+                        if(collision != _collision)
+                            addCollision(collision);
+
+                        float leavePotential = route_querry_->findPotentialUntilRobotOnSegment(collision, wait_seg_n.getSegment().getSegmentId());
+                        moveSegment(current_n, wait_seg_n, collision, leavePotential);
+                    }
                 }
             }
         }
     }
 }
 
+void BacktrackingAvoidResolution::moveSegment(Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential)
+{
+    //We need to find the neighborhood where _current is not present
+    std::vector<std::reference_wrapper<Vertex>> crossing;
+    crossing = _next.getPlanningPredecessors();
+
+    for(const Vertex & v : crossing)
+    {
+        if(v.getSegment().getSegmentId() == _current.getSegment().getSegmentId())
+        {
+            crossing = _next.getPlanningSuccessors();
+            break;
+        }
+    }
+
+    int collision = -1;
+    //Check if we have enough time to move through the segment
+    if(route_querry_->checkSegment(_next, _current.potential - timeoverlap_,  _current.potential + pCalc_->CalculatePotential(_next) + timeoverlap_, robotDiameter_, collision))
+    {
+        for(const Vertex & waitSeg : crossing)
+        {
+            float moveFwdTime = _current.potential + pCalc_->CalculatePotential(_next) + timeoverlap_;
+            float waitTime = std::max<float>(moveFwdTime + pCalc_->CalculatePotential(waitSeg) + timeoverlap_, _freePotential + 2 * timeoverlap_);
+            bool vertexIsFree = route_querry_->checkSegment(waitSeg, moveFwdTime - timeoverlap_, waitTime, robotDiameter_, collision);
+
+            if(vertexIsFree || collision != -1)
+            {
+                //We need one Vertex for moving forward (next), one for waiting (waitSeg) and one for moving backward (next).
+                //(We have to copy all three Vertex because every Vertex in the crossing is considered (backtracking...))
+
+                //Copy Vertex used for moving away
+                generatedSubgraphs_[resolutionAttemp_].emplace_back(std::make_unique<Vertex>(_next));
+                Vertex &move_fwd_n = *(generatedSubgraphs_[resolutionAttemp_].back().get());
+                move_fwd_n.potential = moveFwdTime;
+                move_fwd_n.isWaitSegment = false;
+                move_fwd_n.collision = -1;
+
+                //Copy the Vertex for waiting
+                generatedSubgraphs_[resolutionAttemp_].emplace_back(std::make_unique<Vertex>(waitSeg));
+                Vertex &wait_n = *(generatedSubgraphs_[resolutionAttemp_].back().get());
+                wait_n.potential = waitTime;
+                wait_n.isWaitSegment = true;
+                wait_n.collision = -1;
+
+
+                //Copy Vertex used for moving back
+                generatedSubgraphs_[resolutionAttemp_].emplace_back(std::make_unique<Vertex>(_next));
+                Vertex &move_bwd_n = *(generatedSubgraphs_[resolutionAttemp_].back().get());
+                move_bwd_n.potential = -1;
+                move_bwd_n.isWaitSegment = false;
+                move_bwd_n.collision = -1;
+
+                move_fwd_n.successor_ = &wait_n;
+                //pred allready set (curr)
+
+                wait_n.successor_ = &move_bwd_n;
+                wait_n.predecessor_ = &move_fwd_n;
+
+                move_bwd_n.predecessor_ = &wait_n;
+                move_bwd_n.successor_ = _next.successor_;
+
+
+                if(vertexIsFree)
+                {
+                    foundSolutions_.push_back(wait_n);
+                }
+                else if(collision != -1)
+                {
+                    if(collision != _collision)
+                        addCollision(collision);
+
+                    float leavePotential = route_querry_->findPotentialUntilRobotOnSegment(collision, wait_n.getSegment().getSegmentId());
+                    moveSegment(move_fwd_n, wait_n, robotDiameter_, leavePotential);
+                }
+            }
+
+        }
+    }
+    else if(collision != -1)
+    {
+        if(collision != _collision)
+            addCollision(collision);
+
+    }
+
+}
+
+/*
 void  BacktrackingAvoidResolution::moveSegment(std::shared_ptr< Segment > _last,  std::shared_ptr< Segment > _waitSegment, int _robot_radius, int _coll, std::vector< std::shared_ptr< Segment > >& retVals)
 {
     float newPot = path_querry_->findPotentialUntilRobotOnSegment(_coll, _waitSegment);       //Margin of 2
@@ -353,4 +519,4 @@ void BacktrackingAvoidResolution::avoidEnd(std::shared_ptr< Segment > _current, 
         }
 
     }
-}
+}*/

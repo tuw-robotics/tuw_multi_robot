@@ -33,6 +33,14 @@
 #include <chrono>
 #include <boost/functional/hash.hpp>
 
+//TODO Namespace
+//TODO Dynreconf
+//TODO Vars
+//TODO Graph is Voronoi?
+//TODO Astar Dijkstra
+//TODO add Weights from robots...
+//TODO multithreaded
+
 int main(int argc, char** argv)
 {
 
@@ -56,8 +64,8 @@ Planner_Node::Planner_Node(ros::NodeHandle& _n) :
     Planner(),
     n_(_n),
     n_param_("~"),
-    robot_names_(std::vector<std::string> ( {"robot_0", "robot_1"})),     //TODO INIT
-    robot_radius_(std::vector<float> ( {0.3,0.3}))
+    robot_names_(std::vector<std::string> ( {"robot_0", "robot_1", "robot_2"})),     //TODO INIT
+    robot_radius_(std::vector<float> ( {0.3,0.3, 0.3}))
 {
     id_ = 0;
     n_param_.param("robot_names", robot_names_, robot_names_);

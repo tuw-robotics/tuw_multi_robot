@@ -67,15 +67,19 @@ class Vertex
         const std::vector<std::reference_wrapper<Vertex>> &getPlanningSuccessors() const;
         const std::vector<std::reference_wrapper<Vertex>> &getPlanningPredecessors() const;
 
-        void initNeighbours(std::vector<Vertex> &_sortedVertices);
-
+        void initNeighbours(std::vector<std::unique_ptr<Vertex>> &_sortedVertices, const uint32_t _minSegmentWidth=0);
+        
         const Segment &getSegment() const;
         void updateVertex(const Vertex &_v);
 
         int32_t potential = 0;            //Endtime (the time a robot is supposed to leave the segment)
         int32_t collision = 0;
         int32_t weight = 0;
-        Vertex *predecessor_;
+        bool crossingPredecessor = false;
+        bool crossingSuccessor = false;
+        bool isWaitSegment = false;
+        Vertex *predecessor_=NULL;
+        Vertex *successor_=NULL;
     private:
         std::vector<std::reference_wrapper<Vertex>> successors_;
         std::vector<std::reference_wrapper<Vertex>> predecessors_;
@@ -98,6 +102,8 @@ class RouteVertex
 
         int32_t potential = 0;
         int32_t collision = 0;
+        bool overlapPredecessor = false;
+        bool overlapSuccessor = false;
         path_direction direction;
         const Segment &segment_;
 };

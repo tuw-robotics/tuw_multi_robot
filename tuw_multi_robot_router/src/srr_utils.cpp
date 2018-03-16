@@ -80,9 +80,9 @@ float Segment::width() const
 }
 
 
-
-Vertex::Vertex(const Segment& _seg) : predecessors_(), successors_(), segment_(_seg), potential(-1), collision(-1)//, direction(path_direction::none)
+Vertex::Vertex(const Segment& _seg) : predecessors_(), successors_(), segment_(_seg), potential(-1), collision(-1), crossingPredecessor(false), crossingSuccessor(false), isWaitSegment(false)
 {}
+
 
 const Segment& Vertex::getSegment() const
 {
@@ -99,18 +99,34 @@ const std::vector< std::reference_wrapper< Vertex > >& Vertex::getPlanningSucces
     return successors_;
 }
 
-void Vertex::initNeighbours(std::vector< Vertex >& _sortedVertices)
+void Vertex::initNeighbours(std::vector<std::unique_ptr<Vertex>>& _sortedVertices, const uint32_t _minSegmentWidth)
 {
     for(const uint32_t & vecId : segment_.getPredecessors())
     {
-        Vertex &vRef = _sortedVertices[vecId];
-        predecessors_.push_back(vRef);
+        //Use only segments which can be used by any robot
+        if(_sortedVertices[vecId]->getSegment().width() >= _minSegmentWidth)
+        {
+            Vertex &vRef = *(_sortedVertices[vecId].get());
+            predecessors_.push_back(vRef);
+        }
+    }
+    if(predecessors_.size() > 1)
+    {
+        crossingPredecessor = true;
     }
     
     for(const uint32_t & vecId : segment_.getSuccessors())
     {
-        Vertex &vRef = _sortedVertices[vecId];
-        successors_.push_back(vRef);
+        //Use only segments which can be used by any robot
+        if(_sortedVertices[vecId]->getSegment().width() >= _minSegmentWidth)
+        {
+            Vertex &vRef = *(_sortedVertices[vecId]);
+            successors_.push_back(vRef);
+        }
+    }
+    if(successors_.size() > 1)
+    {
+        crossingSuccessor = true;
     }
 }
 
@@ -127,9 +143,9 @@ void Vertex::updateVertex(const Vertex& _v)
 
 
 
-RouteVertex::RouteVertex(const Vertex& _vertex) : segment_(_vertex.getSegment()), direction(path_direction::none), potential(_vertex.potential), collision(_vertex.collision)
+RouteVertex::RouteVertex(const Vertex& _vertex) : segment_(_vertex.getSegment()), direction(path_direction::none), potential(_vertex.potential), collision(_vertex.collision), overlapPredecessor(_vertex.crossingPredecessor), overlapSuccessor(_vertex.crossingSuccessor)
 {}
-RouteVertex::RouteVertex(const RouteVertex& _vertex): segment_(_vertex.getSegment()), direction(_vertex.direction), potential(_vertex.potential), collision(_vertex.collision)
+RouteVertex::RouteVertex(const RouteVertex& _vertex): segment_(_vertex.getSegment()), direction(_vertex.direction), potential(_vertex.potential), collision(_vertex.collision), overlapPredecessor(_vertex.overlapPredecessor), overlapSuccessor(_vertex.overlapSuccessor)
 {}
 const Segment &RouteVertex::getSegment() const
 {   

@@ -46,7 +46,8 @@ class MultiRobotRouter : RouteGenerator
         std::unique_ptr<PriorityScheduler> priority_scheduler_;
         std::unique_ptr<RouteCoordinator> route_coordinator_;
         
-        int nr_robots_;
+        uint32_t nr_robots_;
+        uint32_t min_diameter_;
         std::vector<uint32_t> robotDiameter_;
         std::vector<std::vector<uint32_t>> robotCollisions_;
         

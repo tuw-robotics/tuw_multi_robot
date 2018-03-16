@@ -57,7 +57,7 @@ class RouteCoordinatorTimed :  public RouteCoordinator
             public:
                 Timeline();
 
-                void reset(const std::vector< Segment > &_graph);
+                void reset(const std::vector< Segment > &_graph, const uint32_t _nrRobots);
                 bool addSegment(const uint32_t _startTime, const int32_t _endTime, const uint32_t _segId, const uint32_t _robotNr, const uint32_t _robotSize, bool _mainSeg);
                 bool checkSegment(const uint32_t _startTime, const int32_t _endTime, const uint32_t _segId, const uint32_t _robotNr, const uint32_t _robotSize, int32_t &_lastCollisionRobot) const;
                 bool addCrossingSegment(const uint32_t _startTime, const int32_t _endTime, const uint32_t _segId, const uint32_t _robotNr, const uint32_t _robotSize, const bool &_mainSeg);
@@ -72,6 +72,7 @@ class RouteCoordinatorTimed :  public RouteCoordinator
                 std::vector<std::vector<uint32_t>> robotSegments_;
                 std::vector<float> segmentSpace_;
                 uint32_t maxTime_ = 0;
+                uint32_t nrRobots_ = 0;
         };
 
 
@@ -87,7 +88,7 @@ class RouteCoordinatorTimed :  public RouteCoordinator
         const uint32_t getStart() const;
         const uint32_t  getEnd() const;
         int32_t findSegNr(const uint32_t _robot, const uint32_t _potential) const;
-        int32_t findPotentialUntilRobotOnSegment(const uint32_t _robot, const uint32_t _segId, const int32_t _potential) const;        //-1 means forever
+        int32_t findPotentialUntilRobotOnSegment(const uint32_t _robot, const uint32_t _segId) const;        //-1 means forever
         std::vector<std::pair<uint32_t, float>> getListOfRobotsHigherPrioritizedRobots(const uint32_t _robot, const uint32_t _segId, const int32_t _potential) const;
     private:
         bool checkSegmentSingle(const Vertex &_next, const uint32_t _startTime, const int32_t _endTime, const uint32_t _diameterPixel, int32_t &_collisionRobot, const bool &_ignoreGoal) const;

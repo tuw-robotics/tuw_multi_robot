@@ -61,9 +61,8 @@ bool RouteCoordinatorTimed::addRoute(const std::vector< RouteVertex > &_path, co
 
         std::vector<uint32_t> pred = _path[i].getSegment().getPredecessors();
 
-        if(pred.size() > 1)
+        if(_path[i].overlapPredecessor)
         {
-            //for(auto it = pred.cbegin(); it != pred.cend(); it++)
             for(const uint32_t  idx : pred)
             {
                 if(!timeline_.addCrossingSegment(begin, end, idx, activeRobot_, _diameterPixel, false))
@@ -76,9 +75,8 @@ bool RouteCoordinatorTimed::addRoute(const std::vector< RouteVertex > &_path, co
 
         std::vector<uint32_t>  succ = _path[i].getSegment().getSuccessors();
 
-        if(succ.size() > 1)
+        if(_path[i].overlapSuccessor)
         {
-            //for(auto it = succ.cbegin(); it != succ.cend(); it++)
             for(const uint32_t  idx : succ)
             {
                 if(!timeline_.addCrossingSegment(begin, end, idx, activeRobot_, _diameterPixel, false))
@@ -119,38 +117,7 @@ bool RouteCoordinatorTimed::checkSegment(const Vertex &_next, const uint32_t _st
     {
         return false;
     }
-
-//     const std::vector<uint32_t> pred = _next.getSegment().getPredecessors();
-// 
-//     if(pred.size() > 1)
-//     {
-//         //for(auto it = pred.cbegin(); it != pred.cend(); it++)
-//         for(const uint32_t idx : pred)
-//         {
-//             if(!timeline_.checkCrossingSegment(_startTime, _endTime, idx, activeRobot_, _diameterPixel, _collisionRobot))
-//             {
-//                 return false;
-//             }
-// 
-//         }
-//     }
-// 
-//     std::vector<uint32_t> succ = _next.getSegment().getSuccessors();
-// 
-//     if(succ.size() > 1)
-//     {
-//         //for(auto it = succ.cbegin(); it != succ.cend(); it++)
-//         for(const uint32_t idx : succ)
-//         {
-//             if(!timeline_.checkCrossingSegment(_startTime, _endTime, idx, activeRobot_, _diameterPixel, _collisionRobot))
-//             {
-//                 return false;
-//             }
-// 
-//         }
-//     }
-
-
+    //Checking neighbours not used because if it is a crossing the segment is allready occupied... (computation time improvement)
     return true;
 }
 
@@ -170,7 +137,7 @@ bool RouteCoordinatorTimed::checkSegmentSingle(const Vertex &_next, const uint32
 
 void RouteCoordinatorTimed::reset(const std::vector<Segment>  &_graph, const uint32_t _nrRobots)
 {
-    timeline_.reset(_graph);
+    timeline_.reset(_graph, _nrRobots);
 
     goalSegments_.clear();
     startSegments_.clear();
@@ -212,7 +179,7 @@ int32_t RouteCoordinatorTimed::findSegNr(const uint32_t _robot, const  uint32_t 
 }
 
 
-int32_t RouteCoordinatorTimed::findPotentialUntilRobotOnSegment(const uint32_t _robot, const uint32_t _segId, const int32_t _potential) const
+int32_t RouteCoordinatorTimed::findPotentialUntilRobotOnSegment(const uint32_t _robot, const uint32_t _segId) const
 {
     return timeline_.getTimeUntilRobotOnSegment(_robot, _segId);
 }
@@ -263,8 +230,9 @@ RouteCoordinatorTimed::Timeline::Timeline()
 {
 }
 
-void RouteCoordinatorTimed::Timeline::reset(const std::vector< Segment > &_graph)
+void RouteCoordinatorTimed::Timeline::reset(const std::vector< Segment > &_graph, const uint32_t _nrRobots)
 {
+    nrRobots_ = _nrRobots;
     timeline_.clear();
     segmentSpace_.clear();
     maxTime_ = 0;
@@ -299,37 +267,7 @@ bool RouteCoordinatorTimed::Timeline::addSegment(const uint32_t _startTime, cons
     }
 
     robotSegments_[_robotNr].push_back(_segId);
-    
-    bool found = false;
-    for(seg_occupation &element : timeline_[_segId])
-    {
-        if(element.robot == _robotNr)
-        {
-            if(_startTime <= element.endTime && _startTime >= element.startTime)
-            {
-                //Segment is after existing one
-                found = true;
-                if(_endTime > element.endTime)
-                    element.endTime == _endTime;
-            }
-            else if(_endTime <= element.endTime && _endTime >= element.startTime)
-            {
-                //Segment is after existing one
-                found = true;
-                if(_startTime < element.startTime)
-                    element.startTime == _startTime;
-            }
-            else if(_endTime > element.endTime && _startTime < element.startTime)
-            {
-                found = true;
-                element.startTime = _startTime;
-                element.endTime = _endTime;
-            }
-        }
-    }
-    
-    if(!found)
-        timeline_[_segId].emplace_back(_robotNr, (float) _robotSize, _startTime, _endTime, _mainSeg);
+    timeline_[_segId].emplace_back(_robotNr, (float) _robotSize, _startTime, _endTime, _mainSeg);
 
     return true;
 }
@@ -369,9 +307,10 @@ bool RouteCoordinatorTimed::Timeline::checkSegment(const uint32_t _startTime, co
         return false;
     }
 
+    std::vector<bool> checkedRobots_(nrRobots_, false);    
     for(const seg_occupation & occupation : timeline_[_segId])
     {
-        if(occupation.robot != _robotNr)
+        if(occupation.robot != _robotNr && !checkedRobots_[occupation.robot])
         {
             if(_endTime == TIME_INFINITY || occupation.endTime == TIME_INFINITY)
             {
@@ -379,6 +318,7 @@ bool RouteCoordinatorTimed::Timeline::checkSegment(const uint32_t _startTime, co
                 {
                     freeSpace -= occupation.spaceOccupied;
                     _lastCollisionRobot = occupation.robot;
+                    checkedRobots_[occupation.robot]=true;
 
                     if(freeSpace < _robotSize)
                     {
@@ -389,6 +329,7 @@ bool RouteCoordinatorTimed::Timeline::checkSegment(const uint32_t _startTime, co
                 {
                     freeSpace -= occupation.spaceOccupied;
                     _lastCollisionRobot = occupation.robot;
+                    checkedRobots_[occupation.robot]=true;
 
                     if(freeSpace < _robotSize)
                     {
@@ -399,6 +340,7 @@ bool RouteCoordinatorTimed::Timeline::checkSegment(const uint32_t _startTime, co
                 {
                     freeSpace -= occupation.spaceOccupied;
                     _lastCollisionRobot = occupation.robot;
+                    checkedRobots_[occupation.robot]=true;
 
                     if(freeSpace < _robotSize)
                     {
@@ -413,6 +355,7 @@ bool RouteCoordinatorTimed::Timeline::checkSegment(const uint32_t _startTime, co
                 {
                     freeSpace -= occupation.spaceOccupied;
                     _lastCollisionRobot = occupation.robot;
+                    checkedRobots_[occupation.robot]=true;
 
                     if(freeSpace < _robotSize)
                     {
@@ -423,6 +366,7 @@ bool RouteCoordinatorTimed::Timeline::checkSegment(const uint32_t _startTime, co
                 {
                     freeSpace -= occupation.spaceOccupied;
                     _lastCollisionRobot = occupation.robot;
+                    checkedRobots_[occupation.robot]=true;
 
                     if(freeSpace < _robotSize)
                     {
@@ -467,7 +411,7 @@ int32_t RouteCoordinatorTimed::Timeline::findSegId(const int32_t _robot, const u
 
 int32_t RouteCoordinatorTimed::Timeline::getTimeUntilRobotOnSegment(const int32_t _robotNr, const uint32_t _segId) const
 {
-    int32_t ret = -2;
+    int32_t ret = -1;
 
     for(const auto & occupation : timeline_[_segId])
     {

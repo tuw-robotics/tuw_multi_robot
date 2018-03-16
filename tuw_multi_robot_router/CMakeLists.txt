@@ -129,7 +129,7 @@ include_directories(
 ## Declare a C++ library
  add_library(${PROJECT_NAME}
 	src/planner.cpp
-	src/segment.cpp
+	src/srr_utils.cpp
 	src/point_expander.cpp
 	src/multi_robot_router.cpp
 	src/single_robot_router.cpp
@@ -138,7 +138,7 @@ include_directories(
 	src/traceback.cpp
 	src/route_generator.cpp
 #	src/backtracking_resolution.cpp
-#	src/backtracking_avoid_resolution.cpp
+	src/backtracking_avoid_resolution.cpp
 	src/priority_scheduler.cpp
 	src/potential_calculator.cpp
 #	src/speed_scheduler.cpp

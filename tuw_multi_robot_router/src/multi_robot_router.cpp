@@ -49,6 +49,12 @@ void MultiRobotRouter::setRobotRadius(const std::vector< uint32_t > &_diameter)
 {
     robotDiameter_.clear();
     robotDiameter_ = _diameter;
+    min_diameter_ = std::numeric_limits<uint32_t>::max();
+
+    for(const uint32_t d : robotDiameter_)
+    {
+        min_diameter_ = std::min(min_diameter_, d);
+    }
 }
 
 void MultiRobotRouter::resetAttempt(const std::vector< Segment > &_graph)
@@ -69,7 +75,7 @@ bool MultiRobotRouter::getRoutingTable(const std::vector<Segment> &_graph, const
     //TODO Speed Rescheduling
 
     SingleRobotRouter srr;
-    srr.initSearchGraph(_graph);
+    srr.initSearchGraph(_graph, min_diameter_);
 
     std::vector<std::vector<RouteVertex>> routeCandidates;
     routeCandidates.resize(nr_robots_);
@@ -87,17 +93,17 @@ bool MultiRobotRouter::getRoutingTable(const std::vector<Segment> &_graph, const
             return false;
 
         //DEBUG
-//         ROS_INFO("Route Candidate");
-//         for(const RouteVertex & rv : routeCandidates[i])
-//         {
-//             ROS_INFO("Vertex %i: pot: %i", rv.getSegment().getSegmentId(), rv.potential);
-//         }
-//
-//         ROS_INFO("Collisions");
-//         for(const uint32_t & vec : robotCollisions_[i])
-//         {
-//             ROS_INFO("Coll %u", vec);
-//         }
+        ROS_INFO("Route Candidate");
+        for(const RouteVertex & rv : routeCandidates[i])
+        {
+            ROS_INFO("Vertex %i: pot: %i", rv.getSegment().getSegmentId(), rv.potential);
+        }
+
+        ROS_INFO("Collisions");
+        for(const uint32_t & vec : robotCollisions_[i])
+        {
+            ROS_INFO("Coll %u", vec);
+        }
     }
 
     routingTable = generatePath(routeCandidates, *(route_coordinator_.get()));

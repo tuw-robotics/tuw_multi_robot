@@ -32,16 +32,18 @@
 #include <tuw_global_planner/srr_utils.h>
 #include <tuw_global_planner/route_coordinator.h>
 #include <tuw_global_planner/potential_calculator.h>
+//TODO
+//remember Vertex
+//remember Collisions
+
+
 
 class CollisionResolution
 {
-public:     CollisionResolution(std::shared_ptr<RouteCoordinator> _path_querry, std::shared_ptr<PotentialCalculator> _pCalc, int _timeoverlap) : path_querry_(_path_querry) , timeoverlap_(_timeoverlap), pCalc_(_pCalc) { }
-public:     virtual std::vector<std::shared_ptr<Segment>> resolve(std::shared_ptr< Segment > _current, std::shared_ptr< Segment > _next, std::shared_ptr< Segment > _end, int _collision, int _robot_radius)=0;
-public:		virtual void reset()=0; 
+public:     
+  virtual void resetSession(const RouteCoordinator *_route_querry, const PotentialCalculator *_pCalc, const uint32_t _robot_radius)=0;
+  virtual std::vector<std::reference_wrapper<Vertex>> resolve(Vertex &_current, Vertex &_next, int32_t _collision)=0;
 
-protected:   std::shared_ptr<RouteCoordinator> path_querry_;
-protected:	 std::shared_ptr<PotentialCalculator> pCalc_;
-protected:   int timeoverlap_;
 };
 
 #endif // HEURISTIC_H

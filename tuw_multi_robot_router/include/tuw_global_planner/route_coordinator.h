@@ -50,7 +50,7 @@ public:
   
   
   virtual int32_t findSegNr(const uint32_t _robot, const uint32_t _potential) const=0;  //TODO BETTER VERSION
-  virtual int32_t findPotentialUntilRobotOnSegment(const uint32_t _robot, const uint32_t _segId, const int32_t _potential) const=0;
+  virtual int32_t findPotentialUntilRobotOnSegment(const uint32_t _robot, const uint32_t _segId) const=0;
 };
 
 #endif // PATH_QUERRY_H
