@@ -36,24 +36,21 @@
 class BacktrackingAvoidResolution : public CollisionResolution
 {
 public:     
-  BacktrackingAvoidResolution(uint32_t _timeoverlap);
+  BacktrackingAvoidResolution(uint32_t _timeoverlap, const uint32_t _maxSearchDepth);
 
   void resetSession(const RouteCoordinator *_route_querry, const PotentialCalculator *_pCalc, const uint32_t _robot_radius);
   std::vector<std::reference_wrapper<Vertex>> resolve(Vertex &_current, Vertex &_next, int32_t _collision);
 private:	
   void trackBack(Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential);
   void avoid(Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential);
-  void moveSegment(Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential);
+  void moveSegment(Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential, const uint32_t _maxSearchDepth);      //TODO use breadth first search here
   void avoidStart(Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential);
+  void avoidGoal(Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential);
   void addCollision(const uint32_t robot);
-  //void avoidEnd(std::shared_ptr< Segment > _current, std::shared_ptr< Segment > _next, float _newPot, int _robot_radius, std::vector<std::shared_ptr<Segment>> &retVal, int _collision);
 
-
-//private:	std::vector<int> avoidedSegments_;
 
 
 private:
-  //bool isCrossing(const Vertex& _current, const Vertex& _next) const;
   const RouteCoordinator *route_querry_;
   const PotentialCalculator *pCalc_;
   uint32_t timeoverlap_;
@@ -63,6 +60,9 @@ private:
   std::vector<std::reference_wrapper<Vertex>> foundSolutions_;
   std::vector<int> encounteredCollisions_;
   uint32_t resolutionAttemp_ = 0;
+  bool avoidStartSuccessorDone_ = false;
+  bool avoidStartPredecessorDone_ = false;
+  uint32_t maxSearchDepth_ = 0;
 };
 
 #endif // HEURISTIC_H

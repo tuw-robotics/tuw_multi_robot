@@ -141,8 +141,12 @@ bool Planner::calculateStartPoints(const std::vector<float> &_radius, const cv::
             //Find Start and Goal (with distance to Segment (more performance but robot has to be inside a segment)
             segIdStart = getSegment(_graph, realStart_[i]);
             segIdGoal = getSegment(_graph, realGoals_[i]);
-            voronoiStart_[i] = (_graph[segIdStart].getStart() + _graph[segIdStart].getEnd()) / 2;
-            voronoiGoals_[i] = (_graph[segIdGoal].getStart() + _graph[segIdGoal].getEnd()) / 2;
+            
+            if(segIdStart != -1 && segIdGoal != -1)
+            {
+                voronoiStart_[i] = (_graph[segIdStart].getStart() + _graph[segIdStart].getEnd()) / 2;
+                voronoiGoals_[i] = (_graph[segIdGoal].getStart() + _graph[segIdGoal].getEnd()) / 2;
+            }
         }
         else// if(graphMode_ == graphType::random)        
         {
@@ -157,8 +161,6 @@ bool Planner::calculateStartPoints(const std::vector<float> &_radius, const cv::
 
             //find Segment using Dijkstra (less performance but find segment for sure)
             potential_.reset(new float[size_x * size_y]);
-            float x = voronoiStart_[i][0];
-            float y = voronoiStart_[i][1];
             
             pointExpander_->findGoalOnMap(realStart_[i], size_x * size_y, potential_.get(), points, 0, voronoiStart_[i], segIdStart, diameter_[i]/2);   //It is allready checked if there is enough free space
             potential_.reset(new float[size_x * size_y]);

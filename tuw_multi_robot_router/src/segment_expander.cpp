@@ -31,8 +31,9 @@
 #include <tuw_global_planner/segment_expander.h>
 #include <tuw_global_planner/route_coordinator.h>
 #define TIME_OVERLAP 1
+#define SEARCH_DEPTH 20 //TODO settings
 
-SegmentExpander::SegmentExpander(const Heuristic &_h, const PotentialCalculator &_pCalc) : collision_resolution_(TIME_OVERLAP)
+SegmentExpander::SegmentExpander(const Heuristic &_h, const PotentialCalculator &_pCalc) : collision_resolution_(TIME_OVERLAP, SEARCH_DEPTH)
 {
     hx_ = std::make_unique<Heuristic>(_h);
     pCalc_ = std::make_unique<PotentialCalculator>(_pCalc);
@@ -54,7 +55,7 @@ void SegmentExpander::addVoronoiExpansoionCandidate(Vertex &_current, Vertex &_n
 
 
     int32_t collision; 
-    if(!path_querry_->checkSegment(_next, _current.potential - TIME_OVERLAP, _current.potential + pCalc_->CalculatePotential(_next) + TIME_OVERLAP, radius_, collision))
+    if(!route_querry_->checkSegment(_next, _current.potential - TIME_OVERLAP, _current.potential + pCalc_->CalculatePotential(_next) + TIME_OVERLAP, diameter_, collision))
     {
         if(collision != -1)
         {
@@ -92,13 +93,13 @@ void SegmentExpander::addVoronoiExpansoionCandidate(Vertex &_current, Vertex &_n
     seg_queue_.push(&_next);
 }
 
-bool SegmentExpander::calculatePotentials(const RouteCoordinator *_p, Vertex & _start, Vertex &_end, const uint32_t _maxIterations, const uint32_t _radius)
+bool SegmentExpander::calculatePotentials(const RouteCoordinator *_p, Vertex & _start, Vertex &_end, const uint32_t _maxIterations, const uint32_t _diameter)
 {
-    path_querry_ = _p;
+    route_querry_ = _p;
 
     collisions_robots_.clear();
-    collision_resolution_.resetSession(_p, pCalc_.get(), _radius);
-    radius_ = _radius;
+    collision_resolution_.resetSession(_p, pCalc_.get(), _diameter);
+    diameter_ = _diameter;
 
     Vertex *foundEnd = expandVoronoi(_start, _end, _maxIterations);
 
@@ -178,7 +179,9 @@ void SegmentExpander::resolveStartCollision(Vertex &_start, Vertex &_end)
         _start.predecessor_ = NULL;
         _start.potential = pCalc_->CalculatePotential(_start);
         clearpq(seg_queue_);
-        seg_queue_.push(&_start);
+        int32_t collision = -1;
+        if(route_querry_->checkSegment(_start, 0, _start.potential + TIME_OVERLAP, diameter_, collision))
+            seg_queue_.push(&_start);
     }
 }
 bool SegmentExpander::containsVertex(const Vertex& _v, const std::vector< std::reference_wrapper< Vertex > >& _list) const

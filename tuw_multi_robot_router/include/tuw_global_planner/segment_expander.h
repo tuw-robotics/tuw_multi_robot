@@ -69,12 +69,12 @@ class SegmentExpander
         
         std::priority_queue<Vertex*, std::vector<Vertex*>, greaterSegmentWrapper> seg_queue_;
         uint32_t neutral_cost_ = 1;
-        uint32_t radius_;
+        uint32_t diameter_;
 
 
         std::unique_ptr<Heuristic> hx_;
         std::unique_ptr<PotentialCalculator> pCalc_;
-        const RouteCoordinator *path_querry_;
+        const RouteCoordinator *route_querry_;
         BacktrackingAvoidResolution collision_resolution_;
 
         std::vector<uint32_t> collisions_robots_;
