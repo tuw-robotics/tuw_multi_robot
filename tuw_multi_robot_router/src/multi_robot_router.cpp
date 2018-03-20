@@ -94,25 +94,22 @@ bool MultiRobotRouter::getRoutingTable(const std::vector<Segment> &_graph, const
             ROS_INFO("new Speed");
             //Find first schedule to replan if speed rescheduling was active 
             //(used for removing from path coordinator)
-//             if(firstRobot != -1)
-//             {
-//                 for(uint32_t i = 0; i < priorityList.size(); i++)
-//                 {
-//                     if(priorityList[i] == firstRobot)
-//                         firstSchedule = i;
-//                 }
-//             }
-//           
-//           
-//             //Remove only schedules (robots) which have to be replanned
-//             for(uint32_t i = firstSchedule; i < nr_robots_; i++)
-//             {
-//                 robot = priorityList[i];
-//                 route_coordinator_->removeRobot(robot);
-//             }
-            route_coordinator_->reset(_graph,nr_robots_);
-            firstRobot = 0;
-            firstSchedule = 0;
+            if(firstRobot != -1)
+            {
+                for(uint32_t i = 0; i < priorityList.size(); i++)
+                {
+                    if(priorityList[i] == firstRobot)
+                        firstSchedule = i;
+                }
+            }
+          
+          
+            //Remove only schedules (robots) which have to be replanned
+            for(uint32_t i = firstSchedule; i < nr_robots_; i++)
+            {
+                robot = priorityList[i];
+                route_coordinator_->removeRobot(robot);
+            }
             
             //Find a plan for each robot with no plan
             for(uint32_t i = firstSchedule; i < nr_robots_; i++)
