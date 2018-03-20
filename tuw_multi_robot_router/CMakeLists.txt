@@ -137,8 +137,9 @@ include_directories(
 	src/route_coordinator_timed.cpp
 	src/traceback.cpp
 	src/route_generator.cpp
-#	src/backtracking_resolution.cpp
+	src/backtracking_resolution.cpp
 	src/backtracking_avoid_resolution.cpp
+	src/avoidance_resolution.cpp
 	src/priority_scheduler.cpp
 	src/potential_calculator.cpp
 	src/speed_scheduler.cpp

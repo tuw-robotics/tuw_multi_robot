@@ -41,7 +41,7 @@
 //TODO add Weights from robots...
 //TODO multithreaded
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
 
     ros::init(argc, argv, "tuw_nav_costmap_node");     /// initializes the ros node with default name
@@ -60,12 +60,12 @@ int main(int argc, char** argv)
 }
 
 //TODO REMOV DEFAULT ROBOTS
-Planner_Node::Planner_Node(ros::NodeHandle& _n) :
+Planner_Node::Planner_Node(ros::NodeHandle &_n) :
     Planner(),
     n_(_n),
     n_param_("~"),
-    robot_names_(std::vector<std::string> ( )),     //TODO INIT
-    robot_radius_(std::vector<float> ( ))
+    robot_names_(std::vector<std::string> ( {"robot_0", "robot_1", "robot_2"})),    //TODO INIT
+             robot_radius_(std::vector<float> ( {0.3, 0.3, 0.3}))
 {
     id_ = 0;
     n_param_.param("robot_names", robot_names_, robot_names_);
@@ -96,12 +96,12 @@ Planner_Node::Planner_Node(ros::NodeHandle& _n) :
 
 //     useGoalOnSegment_ = false;
 //     n_param_.param("use_segment_as_goal", useGoalOnSegment_, useGoalOnSegment_);
-// 
+//
 //     allowEndpointOffSegment_ = true;
 //     n_param_.param("allow_endpoint_off_segments", allowEndpointOffSegment_, allowEndpointOffSegment_);
-/*
-    optimizationSegmentNr_ = 2;
-    n_param_.param("path_optimization_segment_no", optimizationSegmentNr_, optimizationSegmentNr_);*/
+    /*
+        optimizationSegmentNr_ = 2;
+        n_param_.param("path_optimization_segment_no", optimizationSegmentNr_, optimizationSegmentNr_);*/
 
     planner_status_topic_ = "planner_status";
     n_param_.param("planner_status_topic", planner_status_topic_, planner_status_topic_);
@@ -151,7 +151,7 @@ Planner_Node::Planner_Node(ros::NodeHandle& _n) :
 }
 
 
-void Planner_Node::mapCallback(const nav_msgs::OccupancyGrid& _map)
+void Planner_Node::mapCallback(const nav_msgs::OccupancyGrid &_map)
 {
     std::vector<signed char> map = _map.data;
 
@@ -184,9 +184,9 @@ void Planner_Node::mapCallback(const nav_msgs::OccupancyGrid& _map)
     }
 }
 
-void Planner_Node::odomCallback(const ros::MessageEvent<nav_msgs::Odometry const>& _event, int _robot_nr)
+void Planner_Node::odomCallback(const ros::MessageEvent<nav_msgs::Odometry const> &_event, int _robot_nr)
 {
-    const nav_msgs::Odometry_< std::allocator< void > >::ConstPtr& nav_msg = _event.getMessage();
+    const nav_msgs::Odometry_< std::allocator< void > >::ConstPtr &nav_msg = _event.getMessage();
 
     Eigen::Vector2d p;
     p[0] = nav_msg->pose.pose.position.x;
@@ -196,7 +196,7 @@ void Planner_Node::odomCallback(const ros::MessageEvent<nav_msgs::Odometry const
 }
 
 
-void Planner_Node::graphCallback(const tuw_multi_robot_msgs::VoronoiGraph& msg)
+void Planner_Node::graphCallback(const tuw_multi_robot_msgs::VoronoiGraph &msg)
 {
     //TODO Graph Hash
     std::vector<Segment> graph;
@@ -230,6 +230,7 @@ void Planner_Node::graphCallback(const tuw_multi_robot_msgs::VoronoiGraph& msg)
     std::sort(graph.begin(), graph.end(), sortSegments);
 
     size_t hash = getHash(graph);
+
     if(current_graph_hash_ != hash)
     {
         current_graph_hash_ = hash;
@@ -264,7 +265,7 @@ void Planner_Node::graphCallback(const tuw_multi_robot_msgs::VoronoiGraph& msg)
 }
 
 
-void Planner_Node::goalsCallback(const tuw_multi_robot_msgs::PoseIdArray& _goals)
+void Planner_Node::goalsCallback(const tuw_multi_robot_msgs::PoseIdArray &_goals)
 {
     //Goals have to be orderd
     std::vector<Eigen::Vector2d> goals;
@@ -351,7 +352,7 @@ void Planner_Node::Publish(const uint32_t duration)
         ros_path.header.seq = 0;
         ros_path.header.stamp = ros::Time::now();
         ros_path.header.frame_id = "map";
-        const std::vector< Checkpoint >& route = getRoute(i);
+        const std::vector< Checkpoint > &route = getRoute(i);
 
         //Add first point
         geometry_msgs::PoseStamped p;
@@ -365,9 +366,9 @@ void Planner_Node::Publish(const uint32_t duration)
 
         p.pose.orientation.w = 1;
         ros_path.poses.push_back(p);
-        
+
         //Add other points
-        for(const Checkpoint &c : route)
+        for(const Checkpoint & c : route)
         {
             geometry_msgs::PoseStamped p;
             p.header.seq = 0;
@@ -391,9 +392,9 @@ void Planner_Node::Publish(const uint32_t duration)
         ros_path.header.seq = 0;
         ros_path.header.stamp = ros::Time::now();
         ros_path.header.frame_id = "map";
-        const std::vector< Checkpoint >& route = getRoute(i);
+        const std::vector< Checkpoint > &route = getRoute(i);
 
-        for(const Checkpoint &c : route)
+        for(const Checkpoint & c : route)
         {
             tuw_multi_robot_msgs::PathSegment s;
 
@@ -457,7 +458,7 @@ size_t Planner_Node::getHash(const std::vector<signed char> &_map, const Eigen::
     return seed;
 }
 
-std::size_t Planner_Node::getHash(const std::vector< Segment >& _graph)
+std::size_t Planner_Node::getHash(const std::vector< Segment > &_graph)
 {
     std::size_t seed = 0;
 

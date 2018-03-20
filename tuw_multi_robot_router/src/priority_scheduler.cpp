@@ -70,7 +70,7 @@ bool PriorityScheduler::reschedulePriorities(const uint32_t _collidingRobot, std
         found = true;
         uint32_t maxCollisions=0;
         bool robotFound = false;
-        _firstRobotToReplan=0;
+        _firstRobotToReplan = 0;
         for(uint32_t i = 0; i < priorityCollidingRobot; i++)
         {
             uint32_t robot = newSchedule[i];
@@ -103,6 +103,7 @@ bool PriorityScheduler::reschedulePriorities(const uint32_t _collidingRobot, std
                 found = false;
                 //Swap back
                 std::swap(newSchedule[_firstRobotToReplan], newSchedule[priorityCollidingRobot]);
+                _collisions[newSchedule[_firstRobotToReplan]] = 0;   //Remove robot from potential exchange list
                 break;
             }
         }

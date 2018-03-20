@@ -33,7 +33,7 @@
 #define TIME_OVERLAP 1
 #define SEARCH_DEPTH 20 //TODO settings
 
-SegmentExpander::SegmentExpander(const Heuristic &_h, const PotentialCalculator &_pCalc) : collision_resolution_(TIME_OVERLAP, SEARCH_DEPTH)
+SegmentExpander::SegmentExpander(const Heuristic &_h, const PotentialCalculator &_pCalc) : collision_resolution_(TIME_OVERLAP)
 {
     hx_ = std::make_unique<Heuristic>(_h);
     pCalc_ = std::make_unique<PotentialCalculator>(_pCalc);
