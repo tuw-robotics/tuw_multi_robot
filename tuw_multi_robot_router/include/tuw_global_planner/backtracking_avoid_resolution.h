@@ -40,6 +40,8 @@ public:
 
   void resetSession(const RouteCoordinator *_route_querry, const PotentialCalculator *_pCalc, const uint32_t _robot_radius);
   std::vector<std::reference_wrapper<Vertex>> resolve(Vertex &_current, Vertex &_next, int32_t _collision);
+  const std::vector<uint32_t> &getRobotCollisions() const;
+  void saveCollision(const uint32_t _coll);
 private:	
   void trackBack(Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential);
   void avoid(Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential);
@@ -47,7 +49,6 @@ private:
   void avoidStart(Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential);
   void avoidGoal(Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential);
   void addCollision(const uint32_t robot);
-
 
 
 private:
@@ -58,7 +59,7 @@ private:
   //unique_ptr to keep references of Vertex (Heap), because the list is updated while runtime
   std::vector<std::vector<std::unique_ptr<Vertex>>> generatedSubgraphs_;        
   std::vector<std::reference_wrapper<Vertex>> foundSolutions_;
-  std::vector<int> encounteredCollisions_;
+  std::vector<uint32_t> encounteredCollisions_;
   uint32_t resolutionAttemp_ = 0;
   bool avoidStartSuccessorDone_ = false;
   bool avoidStartPredecessorDone_ = false;

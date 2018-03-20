@@ -29,20 +29,18 @@
 #ifndef SPEED_SCHEDULER_H
 #define SPEED_SCHEDULER_H
 
-#include <tuw_global_planner/segment.h>
+#include <memory>
+#include <vector>
 
 class SpeedScheduler
 {
-public:     SpeedScheduler(int _nrRobots);
-public:		void reset(int _nrRobots);
-public:     bool rescheduleSpeeds (int _collidingRobot, const std::vector< int > _collsisions, std::vector< float >& _newSchedule);
-public:     std::vector<float> &getActualSpeeds();
+public:     SpeedScheduler(const uint32_t _nrRobots);
+public:		void reset(const uint32_t  _nrRobots);
+public:     bool rescheduleSpeeds (const uint32_t  _collidingRobot, const std::vector< uint32_t > &_collsisions, std::vector< float >& _newSchedule, int32_t &_firstRobotToReplan);
+public:     const std::vector<float> &getActualSpeeds();
   
 protected:  std::vector<std::vector<float>> checkedSchedules_;
 protected:  std::vector<float> actualSpeedSchedule_;
-protected:  int maxColls_;
-protected:  std::vector<int> collisionsRobot_;
-protected:  int maxReductions_ = 4;
 };
 
 #endif // HEURISTIC_H

@@ -66,6 +66,7 @@ class RouteCoordinatorTimed :  public RouteCoordinator
                 uint32_t getSize() const;
                 int32_t getTimeUntilRobotOnSegment(const int32_t _robotNr, const uint32_t _segId) const;
                 std::vector<std::pair<uint32_t, float>> getListOfRobotsHigherPrioritizedRobots(const uint32_t _robot, const uint32_t _segId, const int32_t _potential) const;
+                void removeRobot(const uint32_t _robot);
 
             private:
                 std::vector<std::vector<seg_occupation>> timeline_;
@@ -73,6 +74,8 @@ class RouteCoordinatorTimed :  public RouteCoordinator
                 std::vector<float> segmentSpace_;
                 uint32_t maxTime_ = 0;
                 uint32_t nrRobots_ = 0;
+                
+                uint32_t tmpRobot_ = 0;
         };
 
 
@@ -90,6 +93,7 @@ class RouteCoordinatorTimed :  public RouteCoordinator
         int32_t findSegNr(const uint32_t _robot, const uint32_t _potential) const;
         int32_t findPotentialUntilRobotOnSegment(const uint32_t _robot, const uint32_t _segId) const;        //-1 means forever
         std::vector<std::pair<uint32_t, float>> getListOfRobotsHigherPrioritizedRobots(const uint32_t _robot, const uint32_t _segId, const int32_t _potential) const;
+        void removeRobot(const uint32_t _robot);
     private:
         bool checkSegmentSingle(const Vertex &_next, const uint32_t _startTime, const int32_t _endTime, const uint32_t _diameterPixel, int32_t &_collisionRobot, const bool &_ignoreGoal) const;
 

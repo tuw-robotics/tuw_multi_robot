@@ -47,7 +47,7 @@ public:
   virtual const uint32_t getStart() const=0;
   virtual const uint32_t getEnd() const=0;
   virtual std::vector<std::pair<uint32_t, float>> getListOfRobotsHigherPrioritizedRobots(const uint32_t _robot, const uint32_t _segId, const int32_t _potential) const=0;
-  
+  virtual void removeRobot(const uint32_t _robot)=0;
   
   virtual int32_t findSegNr(const uint32_t _robot, const uint32_t _potential) const=0;  //TODO BETTER VERSION
   virtual int32_t findPotentialUntilRobotOnSegment(const uint32_t _robot, const uint32_t _segId) const=0;

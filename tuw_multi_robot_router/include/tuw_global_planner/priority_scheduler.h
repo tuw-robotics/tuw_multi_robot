@@ -33,13 +33,13 @@
 
 class PriorityScheduler
 {
-public:     PriorityScheduler(int _nrRobots);
-public:		void reset(int _nrRobots);
-public:     bool reschedulePriorities (int _collidingRobot, const std::vector< int > _collsisions, std::vector< int >& _newSchedule);
-public:     std::vector<int> &getActualSchedule();
+public:     PriorityScheduler(const uint32_t _nrRobots);
+public:		void reset(const uint32_t _nrRobots);
+public:     bool reschedulePriorities (const uint32_t _collidingRobot, std::vector< uint32_t > _collsisions, std::vector< uint32_t >& _newSchedule, uint32_t &_firstRobotToReplan);
+public:     const std::vector<uint32_t> &getActualSchedule() const;
   
-protected:  std::vector<std::vector<int>> checkedSchedules_;
-protected:	std::vector<int> actualPrioritySchedule_;
+protected:  std::vector<std::vector<uint32_t>> checkedSchedules_;
+protected:	std::vector<uint32_t> actualPrioritySchedule_;
 };
 
 #endif // HEURISTIC_H

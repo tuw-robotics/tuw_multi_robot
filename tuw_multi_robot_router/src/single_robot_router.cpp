@@ -39,12 +39,13 @@ SingleRobotRouter::SingleRobotRouter()
     traceback_ = std::make_unique<Traceback>();
 }
 
-bool SingleRobotRouter::getRouteCandidate(const uint32_t _start, const uint32_t _goal, const RouteCoordinator &path_coordinator, const uint32_t _radius, std::vector<RouteVertex> &_path)
+bool SingleRobotRouter::getRouteCandidate(const uint32_t _start, const uint32_t _goal, const RouteCoordinator &path_coordinator, const uint32_t _robotDiameter, const float &_robotSpeed, std::vector<RouteVertex> &_path, const uint32_t _maxIterations)
 {
-    radius_ = _radius;
+    robotDiameter_ = _robotDiameter;
     resetAttempt();
+    segment_expander_->setSpeed(_robotSpeed);
 
-    if(!segment_expander_->calculatePotentials(&path_coordinator, *(searchGraph_[_start].get()), *(searchGraph_[_goal].get()), searchGraph_.size() * 20, radius_)) //TODO *LIGHTNING* no fixed numbers :D
+    if(!segment_expander_->calculatePotentials(&path_coordinator, *(searchGraph_[_start].get()), *(searchGraph_[_goal].get()), _maxIterations, robotDiameter_)) 
         return false;
 
     std::vector<RouteVertex> reversedPath;

@@ -43,6 +43,8 @@ class CollisionResolution
 public:     
   virtual void resetSession(const RouteCoordinator *_route_querry, const PotentialCalculator *_pCalc, const uint32_t _robot_radius)=0;
   virtual std::vector<std::reference_wrapper<Vertex>> resolve(Vertex &_current, Vertex &_next, int32_t _collision)=0;
+  virtual const std::vector<uint32_t> &getRobotCollisions() const = 0;
+  virtual void saveCollision(const uint32_t _coll)=0;
 
 };
 

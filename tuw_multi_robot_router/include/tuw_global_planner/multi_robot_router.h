@@ -33,6 +33,7 @@
 #include <tuw_global_planner/priority_scheduler.h>
 #include <tuw_global_planner/route_coordinator_timed.h>
 #include <tuw_global_planner/route_generator.h>
+#include <tuw_global_planner/speed_scheduler.h>
 
 class MultiRobotRouter : RouteGenerator
 {
@@ -43,8 +44,10 @@ class MultiRobotRouter : RouteGenerator
         bool getRoutingTable(const std::vector<Segment> &_graph, const std::vector<uint32_t> &_startSegments, const std::vector<uint32_t> &_goalSegments, std::vector<std::vector<Checkpoint>>& _routingTable);
     private:
         void resetAttempt(const std::vector< Segment > &_graph);
-        std::unique_ptr<PriorityScheduler> priority_scheduler_;
+        PriorityScheduler priority_scheduler_;
+        SpeedScheduler speed_scheduler_;
         std::unique_ptr<RouteCoordinator> route_coordinator_;
+        
         
         uint32_t nr_robots_;
         uint32_t min_diameter_;

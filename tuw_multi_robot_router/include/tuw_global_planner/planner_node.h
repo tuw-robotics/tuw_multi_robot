@@ -50,7 +50,7 @@ class Planner_Node :  Planner
     public:     Planner_Node(ros::NodeHandle &n);
 
     public:     void PublishEmpty();
-    public:     void Publish();
+    public:     void Publish(const uint32_t duration);
 //ROS:
     public:     ros::NodeHandle                 n_;      ///< Node handler to the root node
     public:     ros::NodeHandle                 n_param_;///< Node handler to the current node

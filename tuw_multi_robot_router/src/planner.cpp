@@ -197,7 +197,7 @@ bool Planner::calculateStartPoints(const std::vector<float> &_radius, const cv::
             return false;
         }
         
-        ROS_INFO("DEBUG Robot %i: StartSeg[%i]; GoalSeg[%i]", i, startSegments_[i], goalSegments_[i]);
+        //ROS_INFO("DEBUG Robot %i: StartSeg[%i]; GoalSeg[%i]", i, startSegments_[i], goalSegments_[i]);
     }
 
     return true;
@@ -245,11 +245,11 @@ float Planner::distanceToSegment(const Segment &_s, const Eigen::Vector2d &_p)
     return std::sqrt(e.dot(e));
 }
 
-bool Planner::resolveSegment(const std::vector< Segment >& _graph, const uint32_t &_segId, const Eigen::Vector2d& _originPoint, const float &_radius,  uint32_t& _foundSeg)
+bool Planner::resolveSegment(const std::vector< Segment >& _graph, const uint32_t &_segId, const Eigen::Vector2d& _originPoint, const float &_diameter,  uint32_t& _foundSeg)
 {
     const Segment seg = _graph[_segId];
 
-    if((seg.getPredecessors().size() == 0 || seg.getSuccessors().size() == 0) && seg.width() < _radius)
+    if((seg.getPredecessors().size() == 0 || seg.getSuccessors().size() == 0) && seg.width() < _diameter)
     {
         //If we are on a leave Segment we are allowed to move the robot one segment in the graph if its radius is to big.
         //Because it can happen, that a leave segment has a triangular shape and thus wrong width value.
@@ -271,7 +271,7 @@ bool Planner::resolveSegment(const std::vector< Segment >& _graph, const uint32_
             float de_y = _originPoint[1] - _graph[neighbour].getEnd()[1];
             float d = (std::sqrt(ds_x * ds_x + ds_y * ds_y) + std::sqrt(de_x * de_x + de_y * de_y)) / 2;
 
-            if(d < dist && _radius <= _graph[neighbour].width())
+            if(d < dist && _diameter <= _graph[neighbour].width())
             {
                 _foundSeg = neighbour;
                 dist = d;
@@ -280,11 +280,11 @@ bool Planner::resolveSegment(const std::vector< Segment >& _graph, const uint32_
 
         //Return only true if a valid Segment is found, where the radius of the robot is smaller
         //than the segment width
-        if(_radius <= _graph[_foundSeg].width())
+        if(_diameter <= _graph[_foundSeg].width())
             return true;
 
     }
-    else if(_radius <= seg.width())
+    else if(_diameter <= seg.width())
     {
         //if the radius is smaller than the segment width a valid segment is found
         return true;
@@ -510,7 +510,10 @@ bool Planner::makePlan(const std::vector< Eigen::Vector2d > &_goals, const std::
     routingTable_.clear();
     
     if(!multiRobotRouter_->getRoutingTable(_graph, startSegments_, goalSegments_, routingTable_))
+    {
+        ROS_INFO("Failed to find Routing Table");
         return false;
+    }
     
     postprocessRoutingTable();
     

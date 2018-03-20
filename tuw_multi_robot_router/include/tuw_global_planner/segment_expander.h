@@ -45,6 +45,7 @@ class SegmentExpander
         bool calculatePotentials(const RouteCoordinator *_p, Vertex &_start, Vertex &_end, const uint32_t _maxIterations, const uint32_t _radius);
         const std::vector<uint32_t> &getRobotCollisions() const;
         void reset();
+        void setSpeed(const float &_speed);
     private:
         template <class T, class S, class C>
         void clearpq(std::priority_queue<T, S, C>& q)

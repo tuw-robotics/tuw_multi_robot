@@ -32,7 +32,7 @@
 PotentialCalculator::PotentialCalculator()  : multiplier_(1)
 {   }
 
-PotentialCalculator::PotentialCalculator(int _multiplier) : multiplier_(_multiplier)
+PotentialCalculator::PotentialCalculator(const float & _multiplier) : multiplier_(_multiplier)
 {   }
 
 
@@ -47,7 +47,7 @@ float PotentialCalculator::CalculatePotential(const Segment& _segment) const
 }
 
 
-void PotentialCalculator::SetMultiplier(int _multiplier)
+void PotentialCalculator::SetMultiplier(const float &_multiplier)
 {
     multiplier_ = _multiplier;
 }

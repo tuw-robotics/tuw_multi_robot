@@ -35,8 +35,8 @@ class PotentialCalculator
 {
     public:
         PotentialCalculator();
-        PotentialCalculator(int _multiplier);
-        void SetMultiplier(int _multiplier);
+        PotentialCalculator(const float & _multiplier);
+        void SetMultiplier(const float & _multiplier);
         float CalculatePotential(const Vertex &_vertex) const;
         float CalculatePotential(const Segment &_segment) const;
 

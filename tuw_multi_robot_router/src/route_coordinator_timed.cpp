@@ -191,6 +191,11 @@ std::vector< std::pair<uint32_t, float> > RouteCoordinatorTimed::getListOfRobots
 }
 
 
+void RouteCoordinatorTimed::removeRobot(const uint32_t _robot)
+{
+    timeline_.removeRobot(_robot);
+}
+
 
 
 
@@ -458,3 +463,24 @@ std::vector< std::pair<uint32_t, float> > RouteCoordinatorTimed::Timeline::getLi
     return robots;
 }
 
+
+void RouteCoordinatorTimed::Timeline::removeRobot(const uint32_t _robot)
+{   
+    tmpRobot_ = _robot;
+    for(std::vector<seg_occupation> &occ : timeline_)
+    {
+        occ.erase(std::remove_if(occ.begin(), occ.end(), [_robot](seg_occupation x){return x.robot == _robot;}), occ.end());
+    }
+    
+    maxTime_ = 0;
+    for(std::vector<seg_occupation> &occ : timeline_)
+    {
+        for(seg_occupation &o : occ)
+        {
+            if(o.endTime > maxTime_)
+                maxTime_ = o.endTime;
+        }
+    }
+    if(robotSegments_.size() > _robot)
+        robotSegments_[_robot].clear();
+}

@@ -56,6 +56,17 @@ void BacktrackingAvoidResolution::addCollision(const uint32_t robot)
     encounteredCollisions_[robot]++;
 }
 
+void BacktrackingAvoidResolution::saveCollision(const uint32_t _coll)
+{
+    addCollision(_coll);
+}
+
+
+const std::vector< uint32_t > &BacktrackingAvoidResolution::getRobotCollisions() const
+{
+    return encounteredCollisions_;
+}
+
 
 std::vector<std::reference_wrapper<Vertex>> BacktrackingAvoidResolution::resolve(Vertex &_current, Vertex &_next, int32_t _collision)
 {
@@ -530,70 +541,3 @@ void BacktrackingAvoidResolution::avoidGoal(Vertex &_current, Vertex &_next, con
 
     }
 }
-
-
-
-/*
-
-
-
-void BacktrackingAvoidResolution::avoidEnd(std::shared_ptr< Segment > _current, std::shared_ptr< Segment > _next, float _newPot, int _robot_radius, std::vector< std::shared_ptr< Segment > >& retVals, int _collision)
-{
-    if(!(_next->getIndex() == path_querry_->getEnd()->getIndex()))
-        return;
-
-    Neighbours crossing = _next->getPredecessors();
-
-    if(crossing.contains(_current))
-        crossing = _next->getSuccessors();
-
-
-    if(!crossing.contains(_current))
-    {
-        int coll;
-
-        if(path_querry_->checkSegment(_next, _current->planning.Potential - timeoverlap_,  _current->planning.Potential + pCalc_->CalculatePotential(_next) + timeoverlap_, _robot_radius, coll, true)) //TODO ERROR IS GOAL
-        {
-            _next->planning.Potential = _current->planning.Potential + pCalc_->CalculatePotential(_next);
-            _next->planning.BacktrackingPredecessor = _current;
-            _next->planning.Collision = _collision;
-
-            for(auto seg_it = crossing.cbegin(); seg_it != crossing.cend(); seg_it++)
-            {
-                if(std::find(avoidedSegments_.begin(), avoidedSegments_.end(), (*seg_it)->getIndex()) != avoidedSegments_.end())
-                    return;
-                else
-                    avoidedSegments_.push_back((*seg_it)->getIndex());
-
-                std::shared_ptr<Segment> newCurrent = std::make_shared<Segment>(*_next);
-                createdSegmements_.push_back(newCurrent);
-                newCurrent->planning.Potential = _current->planning.BacktrackingPredecessor->planning.Potential + pCalc_->CalculatePotential(_current);
-
-                std::shared_ptr<Segment> cross_next = std::make_shared<Segment> (*(*seg_it));
-                createdSegmements_.push_back(cross_next);
-                cross_next->planning.BacktrackingPredecessor = newCurrent;
-                cross_next->planning.Potential = std::max<float>(_newPot, newCurrent->planning.Potential + pCalc_->CalculatePotential(cross_next));
-                cross_next->planning.Collision = -1;
-                cross_next->planning.BacktrackingSuccessor = _next;
-                cross_next->planning.WaitSeg = true;
-
-                int coll = -1;
-
-                if(path_querry_->checkSegment(cross_next, newCurrent->planning.Potential - timeoverlap_,  cross_next->planning.Potential + timeoverlap_, _robot_radius, coll))
-                {
-                    retVals.push_back(cross_next);
-                }
-                else if(coll != -1)
-                {
-                    moveSegment(newCurrent, cross_next, _robot_radius, coll, retVals);
-                }
-
-            }
-        }
-        else if(coll != _collision)
-        {
-            //TODO ...
-        }
-
-    }
-}*/

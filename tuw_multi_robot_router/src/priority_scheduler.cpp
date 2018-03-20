@@ -28,83 +28,95 @@
 
 #include <tuw_global_planner/priority_scheduler.h>
 
-std::vector< int >& PriorityScheduler::getActualSchedule()
-{
-    return actualPrioritySchedule_;
-}
-
-PriorityScheduler::PriorityScheduler(int _nrRobots)
+PriorityScheduler::PriorityScheduler(const uint32_t _nrRobots)
 {
     reset(_nrRobots);
 }
 
-bool PriorityScheduler::reschedulePriorities(int _collidingRobot, const std::vector< int > _collsisions, std::vector< int >& _newSchedule)
-{
-    auto it = std::find(actualPrioritySchedule_.begin(), actualPrioritySchedule_.end(), _collidingRobot);
-
-    int priorityCollidingRobot = -1;
-
-    if(it != actualPrioritySchedule_.end())
-    {
-        priorityCollidingRobot = std::distance(actualPrioritySchedule_.begin(), it);
-    }
-
-    if(priorityCollidingRobot <= 0)
-        return false;
-
-    while(priorityCollidingRobot > 0)
-    {
-        int priorityOtherElement = priorityCollidingRobot;
-        priorityCollidingRobot--;
-
-        std::swap(actualPrioritySchedule_[priorityOtherElement], actualPrioritySchedule_[priorityCollidingRobot]);
-        int otherElem = actualPrioritySchedule_[priorityOtherElement];
-
-
-        if(_collsisions[otherElem] > 0)
-        {
-            //check if allready used
-            bool notEqual = true;
-
-            for(auto & schedule : checkedSchedules_)
-            {
-                notEqual = false;
-
-                for(int i = 0; i < schedule.size(); i++)
-                {
-                    if(schedule[i] != actualPrioritySchedule_[i])
-                    {
-                        notEqual = true;
-                    }
-                }
-
-                if(!notEqual)
-                    break;
-            }
-
-            if(notEqual)
-            {
-                _newSchedule = actualPrioritySchedule_;
-                checkedSchedules_.emplace_back(actualPrioritySchedule_);
-                return true;
-            }
-        }
-    }
-
-    return false;
-}
-
-void PriorityScheduler::reset(int _nrRobots)
+void PriorityScheduler::reset(const uint32_t _nrRobots)
 {
     checkedSchedules_.clear();
-
     actualPrioritySchedule_.clear();
 
-    for(int i = 0; i < _nrRobots; i++)
+    for(uint32_t i = 0; i < _nrRobots; i++)
     {
-        actualPrioritySchedule_.push_back(i);
+        actualPrioritySchedule_.emplace_back(i);
     }
 
     checkedSchedules_.emplace_back(actualPrioritySchedule_);
+}
+
+const std::vector< uint32_t > &PriorityScheduler::getActualSchedule() const
+{
+    return actualPrioritySchedule_;
+}
+
+bool PriorityScheduler::reschedulePriorities(const uint32_t _collidingRobot, std::vector< uint32_t > _collisions, std::vector< uint32_t > &_newSchedule, uint32_t &_firstRobotToReplan)
+{
+    _collisions.resize(_newSchedule.size(),0);
+  
+    auto it = std::find(actualPrioritySchedule_.begin(), actualPrioritySchedule_.end(), _collidingRobot);
+    if(it == actualPrioritySchedule_.end())
+        return false;
+    
+    uint32_t priorityCollidingRobot = std::distance(actualPrioritySchedule_.begin(), it);
+    
+    
+    bool found;
+    uint32_t count = 0;
+    std::vector<uint32_t> newSchedule = actualPrioritySchedule_;
+    do
+    {
+        found = true;
+        uint32_t maxCollisions=0;
+        bool robotFound = false;
+        _firstRobotToReplan=0;
+        for(uint32_t i = 0; i < priorityCollidingRobot; i++)
+        {
+            uint32_t robot = newSchedule[i];
+            if(_collisions[robot] > maxCollisions)
+            {
+                maxCollisions = _collisions[robot];
+                _firstRobotToReplan = i;
+                robotFound = true;
+            }
+        }
+      
+        if(!robotFound)
+            return false;
+      
+        std::swap(newSchedule[_firstRobotToReplan], newSchedule[priorityCollidingRobot]);
+        
+        for(const std::vector<uint32_t> &schedule : checkedSchedules_)
+        {
+            bool neq = false;
+            for(uint32_t i = 0; i < newSchedule.size(); i++)
+            {
+                if(newSchedule[i] != schedule[i])
+                {
+                    neq = true;
+                    break;
+                }
+            }
+            if(neq == false)
+            {
+                found = false;
+                //Swap back
+                std::swap(newSchedule[_firstRobotToReplan], newSchedule[priorityCollidingRobot]);
+                break;
+            }
+        }
+        count++;
+    }while(count < priorityCollidingRobot && !found);
+  
+    if(found)
+    {
+        actualPrioritySchedule_ = newSchedule;
+        _newSchedule = newSchedule;
+        checkedSchedules_.emplace_back(actualPrioritySchedule_);
+        return true;
+    }
+        
+    return false;
 }
 

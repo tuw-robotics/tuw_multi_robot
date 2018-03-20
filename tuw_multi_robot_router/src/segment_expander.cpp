@@ -181,7 +181,13 @@ void SegmentExpander::resolveStartCollision(Vertex &_start, Vertex &_end)
         clearpq(seg_queue_);
         int32_t collision = -1;
         if(route_querry_->checkSegment(_start, 0, _start.potential + TIME_OVERLAP, diameter_, collision))
+        {
             seg_queue_.push(&_start);
+        }
+        else if(collision != -1)
+        {
+            collision_resolution_.saveCollision(collision);
+        }
     }
 }
 bool SegmentExpander::containsVertex(const Vertex& _v, const std::vector< std::reference_wrapper< Vertex > >& _list) const
@@ -195,6 +201,11 @@ bool SegmentExpander::containsVertex(const Vertex& _v, const std::vector< std::r
     return false;
 }
 
+
+void SegmentExpander::setSpeed(const float &_speed)
+{
+    pCalc_->SetMultiplier(_speed);
+}
 
 Vertex *SegmentExpander::expandVoronoi(Vertex &_start, Vertex &_end, const uint32_t _cycles)
 {
@@ -251,6 +262,6 @@ Vertex *SegmentExpander::expandVoronoi(Vertex &_start, Vertex &_end, const uint3
 
 const std::vector<uint32_t> &SegmentExpander::getRobotCollisions() const
 {
-    return collisions_robots_;
+    return collision_resolution_.getRobotCollisions();
 }
 

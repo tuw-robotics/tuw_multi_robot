@@ -59,13 +59,13 @@ int main(int argc, char** argv)
     return 0;
 }
 
-
+//TODO REMOV DEFAULT ROBOTS
 Planner_Node::Planner_Node(ros::NodeHandle& _n) :
     Planner(),
     n_(_n),
     n_param_("~"),
-    robot_names_(std::vector<std::string> ( {"robot_0", "robot_1", "robot_2"})),     //TODO INIT
-    robot_radius_(std::vector<float> ( {0.3,0.3, 0.3}))
+    robot_names_(std::vector<std::string> ( )),     //TODO INIT
+    robot_radius_(std::vector<float> ( ))
 {
     id_ = 0;
     n_param_.param("robot_names", robot_names_, robot_names_);
@@ -291,7 +291,9 @@ void Planner_Node::goalsCallback(const tuw_multi_robot_msgs::PoseIdArray& _goals
             int cx = mapOrigin_[0];
             int cy = mapOrigin_[1];
 
-            Publish();
+            auto t2 = std::chrono::high_resolution_clock::now();
+            uint32_t duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+            Publish(duration);
             ROS_INFO("Multi Robot Router: Publishing Plan");
         }
         else
@@ -341,7 +343,7 @@ void Planner_Node::PublishEmpty()
 }
 
 
-void Planner_Node::Publish()
+void Planner_Node::Publish(const uint32_t duration)
 {
     for(int i = 0; i < robot_names_.size(); i++)
     {
@@ -430,7 +432,7 @@ void Planner_Node::Publish()
     //ps.longestPathLength = getLongestPathLength();
     //ps.prioritySchedulingAttemps = getPriorityScheduleAttemps();
     //ps.speedSchedulingAttemps = getSpeedScheduleAttemps();
-    //ps.duration = getDuration_ms();
+    ps.duration = duration;
 
     pubPlannerStatus_.publish(ps);
 

@@ -29,74 +29,63 @@
 #include <tuw_global_planner/speed_scheduler.h>
 #include <climits>
 
-std::vector< float >& SpeedScheduler::getActualSpeeds()
+const std::vector< float >& SpeedScheduler::getActualSpeeds()
 {
-    for(auto s : actualSpeedSchedule_)
-    {
-        //ROS_INFO("r%f", s);
-    }
-
     return actualSpeedSchedule_;
 }
 
-SpeedScheduler::SpeedScheduler(int _nrRobots)
+SpeedScheduler::SpeedScheduler(const uint32_t _nrRobots)
 {
     reset(_nrRobots);
 }
 
-bool SpeedScheduler::rescheduleSpeeds(int _collidingRobot, const std::vector< int > _collisions, std::vector< float >& _newSchedule)
+bool SpeedScheduler::rescheduleSpeeds(const uint32_t  _collidingRobot, const std::vector< uint32_t > &_collisions, std::vector< float >& _newSchedule, int32_t &_firstRobotToReplan)
 {
-    bool found = false;
+    //Perform only one speed reduction
 
-    while(!found)
+    //bool found = false;
+
+    //while(!found)
+    //{
+    _firstRobotToReplan = -1;
+    uint32_t collisions = 0;
+
+    for(int i = 0; i < _collisions.size(); i++)
     {
-        int robot = -1;
-        int collisions = 0;
-
-        for(int i = 0; i < _collisions.size(); i++)
+        if(_collisions[i] > collisions && i != _collidingRobot)
         {
-            if(_collisions[i] > collisions && _collisions[i] < maxColls_ && collisionsRobot_[i] < maxReductions_ && i != _collidingRobot)
-            {
-                robot = i;
-                collisions = _collisions[i];
-            }
+            _firstRobotToReplan = i;
+            collisions = _collisions[i];
         }
-
-        if(robot == -1)
-            return false;
-
-        actualSpeedSchedule_[robot] += 2.0;
-
-
-        if(actualSpeedSchedule_[robot] > 6.0)
-            return false;
-
-        found = true;
-        collisionsRobot_[robot] ++;
-        checkedSchedules_.emplace_back(actualSpeedSchedule_);
-        _newSchedule = actualSpeedSchedule_;
-
     }
 
 
-    return found;
+    if(_firstRobotToReplan != -1 && actualSpeedSchedule_[_firstRobotToReplan] == 1.0)
+    {
+        actualSpeedSchedule_[_firstRobotToReplan] *= 2.0;
+        checkedSchedules_.emplace_back(actualSpeedSchedule_);
+        _newSchedule = actualSpeedSchedule_;
+        return true;
+    }
+    else
+    {
+        _firstRobotToReplan = -1;
+        return false;
+    }
+
+    //}
+
+
+    //return found;
 
 }
 
-void SpeedScheduler::reset(int _nrRobots)
+void SpeedScheduler::reset(const uint32_t _nrRobots)
 {
     checkedSchedules_.clear();
-
     actualSpeedSchedule_.clear();
 
-    for(int i = 0; i < _nrRobots; i++)
-    {
-        actualSpeedSchedule_.push_back(1.0);
-    }
-
+    actualSpeedSchedule_.resize(_nrRobots, 1.0);
     checkedSchedules_.emplace_back(actualSpeedSchedule_);
-    maxColls_ = INT_MAX;
-    collisionsRobot_.clear();
-    collisionsRobot_.resize(_nrRobots, 0);
 }
 

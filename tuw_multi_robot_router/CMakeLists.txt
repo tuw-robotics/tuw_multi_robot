@@ -141,7 +141,7 @@ include_directories(
 	src/backtracking_avoid_resolution.cpp
 	src/priority_scheduler.cpp
 	src/potential_calculator.cpp
-#	src/speed_scheduler.cpp
+	src/speed_scheduler.cpp
 #	src/velocity_calculator.cpp
  )
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})

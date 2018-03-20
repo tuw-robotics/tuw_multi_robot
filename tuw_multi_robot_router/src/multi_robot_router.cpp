@@ -31,10 +31,9 @@
 #include <iostream>
 #include <ros/ros.h>
 
-MultiRobotRouter::MultiRobotRouter(const uint32_t _nr_robots, const std::vector<uint32_t> &_robotRadius) : RouteGenerator()
+MultiRobotRouter::MultiRobotRouter(const uint32_t _nr_robots, const std::vector<uint32_t> &_robotRadius) : RouteGenerator(), priority_scheduler_(_nr_robots), speed_scheduler_(_nr_robots)
 {
-    priority_scheduler_ = std::make_unique<PriorityScheduler> (_nr_robots);
-    route_coordinator_ = std::make_unique<RouteCoordinatorTimed> ();
+    route_coordinator_ = std::make_unique<RouteCoordinatorTimed>();
     setRobotNr(_nr_robots);
     robotDiameter_ = _robotRadius;
 }
@@ -42,7 +41,7 @@ MultiRobotRouter::MultiRobotRouter(const uint32_t _nr_robots, const std::vector<
 void MultiRobotRouter::setRobotNr(const uint32_t _nr_robots)
 {
     nr_robots_ = _nr_robots;
-    priority_scheduler_->reset(_nr_robots);
+    priority_scheduler_.reset(_nr_robots);
 }
 
 void MultiRobotRouter::setRobotRadius(const std::vector< uint32_t > &_diameter)
@@ -60,7 +59,8 @@ void MultiRobotRouter::setRobotRadius(const std::vector< uint32_t > &_diameter)
 void MultiRobotRouter::resetAttempt(const std::vector< Segment > &_graph)
 {
     route_coordinator_->reset(_graph, nr_robots_);
-    priority_scheduler_->reset(nr_robots_);
+    priority_scheduler_.reset(nr_robots_);
+    speed_scheduler_.reset(nr_robots_);
     robotCollisions_.clear();
     robotCollisions_.resize(nr_robots_);
 }
@@ -80,34 +80,71 @@ bool MultiRobotRouter::getRoutingTable(const std::vector<Segment> &_graph, const
     std::vector<std::vector<RouteVertex>> routeCandidates;
     routeCandidates.resize(nr_robots_);
 
-    for(int i = 0; i < nr_robots_; i++)
-    {
-        route_coordinator_->setActive(i);
-
-        if(!srr.getRouteCandidate(startSegments[i], goalSegments[i], *route_coordinator_.get(), robotDiameter_[i], routeCandidates[i]))
-            return false;
-
-        robotCollisions_[i] = srr.getRobotCollisions();
-
-        if(!route_coordinator_->addRoute(routeCandidates[i], robotDiameter_[i]))
-            return false;
-
-        //DEBUG
-        ROS_INFO("Route Candidate");
-        for(const RouteVertex & rv : routeCandidates[i])
+    std::vector<uint32_t> priorityList = priority_scheduler_.getActualSchedule();
+    std::vector<float> speedList = speed_scheduler_.getActualSpeeds();
+    uint32_t firstSchedule = 0;
+    bool found = false;
+    uint32_t robot;
+    do
+    {   
+        ROS_INFO("new Prio");
+        int32_t firstRobot = -1;
+        do
         {
-            ROS_INFO("Vertex %i: pot: %i", rv.getSegment().getSegmentId(), rv.potential);
-        }
+            ROS_INFO("new Speed");
+            //Find first schedule to replan if speed rescheduling was active 
+            //(used for removing from path coordinator)
+//             if(firstRobot != -1)
+//             {
+//                 for(uint32_t i = 0; i < priorityList.size(); i++)
+//                 {
+//                     if(priorityList[i] == firstRobot)
+//                         firstSchedule = i;
+//                 }
+//             }
+//           
+//           
+//             //Remove only schedules (robots) which have to be replanned
+//             for(uint32_t i = firstSchedule; i < nr_robots_; i++)
+//             {
+//                 robot = priorityList[i];
+//                 route_coordinator_->removeRobot(robot);
+//             }
+            route_coordinator_->reset(_graph,nr_robots_);
+            firstRobot = 0;
+            firstSchedule = 0;
+            
+            //Find a plan for each robot with no plan
+            for(uint32_t i = firstSchedule; i < nr_robots_; i++)
+            {
+                found = false;
+                robot = priorityList[i];
+                
+                route_coordinator_->setActive(robot);
+                //Worst case scenario: Search whole graph once + n * (move through whole graph to avoid other robot) -> graph.size() * (i+1) iterations
+                if(!srr.getRouteCandidate(startSegments[robot], goalSegments[robot], *route_coordinator_.get(), robotDiameter_[robot], speedList[robot], routeCandidates[robot], _graph.size() * (i + 1)))
+                {
+                    ROS_INFO("Failed Robot");
+                    robotCollisions_[robot] = srr.getRobotCollisions();
+                    robotCollisions_[robot].resize(nr_robots_,0);
+                    break;
+                }
+                robotCollisions_[robot] = srr.getRobotCollisions();
+                robotCollisions_[robot].resize(nr_robots_,0);
+                
+                if(!route_coordinator_->addRoute(routeCandidates[robot], robotDiameter_[robot]))
+                {
+                    ROS_INFO("Failed coord");
+                    break;
+                }
 
-        ROS_INFO("Collisions");
-        for(const uint32_t & vec : robotCollisions_[i])
-        {
-            ROS_INFO("Coll %u", vec);
-        }
-    }
-
+                found = true;
+            }
+        }while(!found && speed_scheduler_.rescheduleSpeeds(robot,srr.getRobotCollisions(), speedList, firstRobot));
+    }while(!found && priority_scheduler_.reschedulePriorities(robot, srr.getRobotCollisions(), priorityList, firstSchedule));
+    
     routingTable = generatePath(routeCandidates, *(route_coordinator_.get()));
 
-    return true;
+    return found;
 }
 
