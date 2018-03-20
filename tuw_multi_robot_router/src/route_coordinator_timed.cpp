@@ -121,7 +121,37 @@ bool RouteCoordinatorTimed::checkSegment(const Vertex &_next, const uint32_t _st
     {
         return false;
     }
-    //Checking neighbours not used because if it is a crossing the segment is allready occupied... (computation time improvement)
+    
+    std::vector<uint32_t> pred = _next.getSegment().getPredecessors();
+
+    if(_next.crossingPredecessor)
+    {
+        for(const uint32_t  idx : pred)
+        {
+            if(!timeline_.checkCrossingSegment(_startTime, _endTime, idx, activeRobot_, _diameterPixel, _collisionRobot))
+            {
+                std::cout << "nope Pred" << std::endl;
+                return false;
+            }
+
+        }
+    }
+
+    std::vector<uint32_t>  succ = _next.getSegment().getSuccessors();
+
+    if(_next.crossingSuccessor)
+    {
+        for(const uint32_t  idx : succ)
+        {
+            if(!timeline_.checkCrossingSegment(_startTime, _endTime, idx, activeRobot_, _diameterPixel, _collisionRobot))
+            {
+                std::cout << "nopeSucc" << std::endl;
+                return false;
+            }
+
+        }
+    }
+    
     return true;
 }
 
@@ -259,6 +289,7 @@ bool RouteCoordinatorTimed::Timeline::addSegment(const uint32_t _startTime, cons
 
     if(!checkSegment(_startTime, _endTime, _segId, _robotNr, _robotSize, collision))
     {
+        std::cout << "check segment..." << std::endl;
         return false;
     }
 
