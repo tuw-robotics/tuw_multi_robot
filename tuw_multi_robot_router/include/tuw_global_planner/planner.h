@@ -32,19 +32,8 @@
 #include <vector>
 #include <memory>
 #include <opencv/cv.h>
-//#include <tuw_global_planner/utils.h>
-//#include <tuw_global_planner/srr_utils.h>
 #include <tuw_global_planner/point_expander.h>
 #include <tuw_global_planner/multi_robot_router.h>
-// #include <tuw_global_planner/segment_expander.h>
-// #include <tuw_global_planner/traceback.h>
-// #include <tuw_global_planner/backtracking_avoid_resolution.h>
-// #include <tuw_global_planner/backtracking_resolution.h>
-// #include <tuw_global_planner/path_generator.h>
-// #include <tuw_global_planner/priority_scheduler.h>
-// #include <tuw_global_planner/speed_scheduler.h>
-// #include <tuw_global_planner/potential_calculator.h>
-// #include <tuw_global_planner/velocity_calculator.h>
 
 class Planner
 {
@@ -60,88 +49,26 @@ class Planner
         /**
         * @brief updates the robot start positin (normally called from odom r[_robot_id]
         */
-     public:  
         /**
         * @brief generates the plan from (Vertex[odom robotPose] to Vertex[_goals]
         * @param _radius a vector of the robots radius'
         * @param _map the grid_map used to find the start and goal segments of the path
         * @param _graph the full graph of the map used for planning the path
-        */       
+        */
         bool makePlan(const std::vector< Eigen::Vector2d > &_goals, const std::vector<float> &_radius, const cv::Mat &_map, const float &_resolution, const Eigen::Vector2d &_origin, const std::vector<Segment> &_graph);
-        /**
-        * @brief returns the Graph as Point with the found potential used for synchronization
-        */
-//     public:         const std::vector< Potential_Point > &getPath(int _robot_id);
-        /**
-        * @brief returns the Graph as Path Vertex with preconditions for every sgement
-        **/
-//     public:         const std::vector< PathSegment > &getPathSeg(int _robot_id);
-        /**
-        * @brief returns true if a plann is found TODO deprecated?
-        */
-//     public:         bool gotPlan();
 
-//     public:         const std::vector<float> &getVelocityProfile(int _robot_id);
 
-      const std::vector<Checkpoint> &getRoute(const uint32_t _robot);
-      void postprocessRoutingTable();
-     private:        
-       bool calculateStartPoints(const std::vector<float> &_radius, const cv::Mat &_map, const float &resolution, const Eigen::Vector2d &origin, const std::vector<Segment> &_graph);
-       //Calculate a segment
-       int32_t getSegment(const std::vector<Segment> &_graph, const Eigen::Vector2d &_pose);
-       //Helper dist calculation
-       float distanceToSegment(const Segment &_s, const Eigen::Vector2d &_p);
-       //Checks if _seg is a leave of the graph and uses the closes neighbor as segment if the width of the leave is to small
-       bool resolveSegment(const std::vector< Segment > &_graph, const uint32_t &_segId, const Eigen::Vector2d &_originPoint, const float &_radius, uint32_t &_foundSeg);
-       
-       void getTrimedGraph(const std::vector< Segment > &_graph, std::vector< Segment > &_trimmedGraph, const uint32_t minDiameter); 
-//     private:        bool getPaths(const std::vector<std::shared_ptr<Vertex>> &_graph, int &_actualRobot, const std::vector<int> &_priorities, const std::vector<float>& _speedList, int maxStepsPotExp);
-//     private:        bool resolveSegment(const std::vector< std::shared_ptr< Vertex > >& _graph, const std::shared_ptr<Vertex>& _seg, const Point& _originPoint, float _radius, std::shared_ptr< Vertex > &_foundSeg);
-//
-//     private:        bool gotPlan_;
-//     private:        std::vector<std::vector< Potential_Point > > paths_;
-//     private:        std::vector<std::vector< PathSegment > > segPaths_;
-//
-//     private:        std::vector< Point > realGoals_;
-//     private:        std::vector< Point > realStart_;
-//     private:        std::vector<std::shared_ptr<Vertex>> startSegments_;
-//     private:        std::vector<std::shared_ptr<Vertex>> goalSegments_;
-//     private:        std::vector< int >  radius_;
-//     private:        std::vector<std::vector<float>> velocityProfile_;
-//
-      
-//
-//     private:        
-//     private:        std::unique_ptr<SegmentExpander> expander_;
-//     private:        std::unique_ptr<Traceback> traceback_;
-//     private:        std::shared_ptr<Path_Coordinator> path_querry_;
-//     private:        std::shared_ptr<BacktrackingAvoidResolution> resolution_;
-//     private:        std::shared_ptr<PotentialCalculator> pCalc_;
-//     private:        std::vector<std::vector<int>> segCounter;
-//     private:        std::unique_ptr<PathGenerator<Potential_Point>> path_generator_Point_;
-//     private:        std::unique_ptr<PathGenerator<PathSegment>> path_generator_Segment_;
-//     private:        std::unique_ptr<PriorityScheduler> priorityScheduler_;
-//     private:        std::unique_ptr<SpeedScheduler> speedScheduler_;
-//     private:        std::unique_ptr<VelocityCalculator> velocityCalc_;
-//
-//     private:        int speedScheduleAttemps_;
-//     private:        int priorityScheduleAttemps_;
-//     private:        int overallPathLength_;
-//     private:        int longestPatLength_;
-//     private:        int duration_;
-//
-//
-//     public:         int getDuration_ms();
-//     public:         int getOverallPathLength();
-//     public:         int getLongestPathLength();
-//     public:         int getPriorityScheduleAttemps();
-//     public:         int getSpeedScheduleAttemps();
-//
-//
-//     private:        
-//     private:        
-    public:         
-      std::shared_ptr<float> potential_; 
+        const std::vector<Checkpoint> &getRoute(const uint32_t _robot);
+        void postprocessRoutingTable();
+
+        uint32_t getDuration_ms();
+        uint32_t getOverallPathLength();
+        uint32_t getLongestPathLength();
+        uint32_t getPriorityScheduleAttemps();
+        uint32_t getSpeedScheduleAttemps();
+
+
+        std::shared_ptr<float> potential_;
 
     private:
         enum class goalMode
@@ -150,11 +77,21 @@ class Planner
             use_voronoi_goal,
             use_map_goal
         };
-        enum class graphType              
+        enum class graphType
         {
             voronoi,
             random
         };
+        bool calculateStartPoints(const std::vector<float> &_radius, const cv::Mat &_map, const float &resolution, const Eigen::Vector2d &origin, const std::vector<Segment> &_graph);
+        //Calculate a segment
+        int32_t getSegment(const std::vector<Segment> &_graph, const Eigen::Vector2d &_pose);
+        //Helper dist calculation
+        float distanceToSegment(const Segment &_s, const Eigen::Vector2d &_p);
+        //Checks if _seg is a leave of the graph and uses the closes neighbor as segment if the width of the leave is to small
+        bool resolveSegment(const std::vector< Segment > &_graph, const uint32_t &_segId, const Eigen::Vector2d &_originPoint, const float &_radius, uint32_t &_foundSeg);
+
+        void getTrimedGraph(const std::vector< Segment > &_graph, std::vector< Segment > &_trimmedGraph, const uint32_t minDiameter);
+
         uint32_t robot_nr_;
         std::vector<bool> pose_received_;
         std::vector<Eigen::Vector2d> robot_poses_;
@@ -166,11 +103,16 @@ class Planner
         std::vector<uint32_t> startSegments_;
         std::vector<uint32_t> goalSegments_;
         std::vector<uint32_t>  diameter_;
-        
+
         std::unique_ptr<PointExpander> pointExpander_;
         std::unique_ptr<MultiRobotRouter> multiRobotRouter_;
         std::vector<std::vector<Checkpoint>> routingTable_;
-        
+        uint32_t speedScheduleAttemps_;
+        uint32_t priorityScheduleAttemps_;
+        uint32_t overallPathLength_;
+        uint32_t longestPatLength_;
+        uint32_t duration_;
+
     protected:
         graphType graphMode_ = graphType::voronoi;
         goalMode goalMode_ = goalMode::use_voronoi_goal;

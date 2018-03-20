@@ -36,7 +36,7 @@
 class BacktrackingResolution : public CollisionResolution
 {
 public:     
-  BacktrackingResolution(uint32_t _timeoverlap, const uint32_t _maxSearchDepth);
+  BacktrackingResolution(uint32_t _timeoverlap);
 
   void resetSession(const RouteCoordinator *_route_querry, const PotentialCalculator *_pCalc, const uint32_t _robot_radius);
   std::vector<std::reference_wrapper<Vertex>> resolve(Vertex &_current, Vertex &_next, int32_t _collision);
@@ -59,7 +59,6 @@ private:
   uint32_t resolutionAttemp_ = 0;
   bool avoidStartSuccessorDone_ = false;
   bool avoidStartPredecessorDone_ = false;
-  uint32_t maxSearchDepth_ = 0;
 };
 
 #endif // HEURISTIC_H

@@ -292,9 +292,7 @@ void Planner_Node::goalsCallback(const tuw_multi_robot_msgs::PoseIdArray &_goals
             int cx = mapOrigin_[0];
             int cy = mapOrigin_[1];
 
-            auto t2 = std::chrono::high_resolution_clock::now();
-            uint32_t duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
-            Publish(duration);
+            Publish();
             ROS_INFO("Multi Robot Router: Publishing Plan");
         }
         else
@@ -337,14 +335,14 @@ void Planner_Node::PublishEmpty()
     tuw_multi_robot_msgs::PlannerStatus ps;
     ps.id = id_;
     ps.success = 0;
-    ps.duration = 0;//getDuration_ms();
+    ps.duration = getDuration_ms();
 
     pubPlannerStatus_.publish(ps);
 
 }
 
 
-void Planner_Node::Publish(const uint32_t duration)
+void Planner_Node::Publish()
 {
     for(int i = 0; i < robot_names_.size(); i++)
     {
@@ -429,11 +427,11 @@ void Planner_Node::Publish(const uint32_t duration)
     tuw_multi_robot_msgs::PlannerStatus ps;
     ps.id = id_;
     ps.success = 1;
-    //ps.overallPathLength = getOverallPathLength();
-    //ps.longestPathLength = getLongestPathLength();
-    //ps.prioritySchedulingAttemps = getPriorityScheduleAttemps();
-    //ps.speedSchedulingAttemps = getSpeedScheduleAttemps();
-    ps.duration = duration;
+    ps.overallPathLength = (int32_t)getOverallPathLength();
+    ps.longestPathLength = (int32_t)getLongestPathLength();
+    ps.prioritySchedulingAttemps = (int32_t)getPriorityScheduleAttemps();
+    ps.speedSchedulingAttemps = (int32_t)getSpeedScheduleAttemps();
+    ps.duration = (int32_t)getDuration_ms();
 
     pubPlannerStatus_.publish(ps);
 

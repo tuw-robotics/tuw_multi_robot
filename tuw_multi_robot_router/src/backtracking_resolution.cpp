@@ -31,7 +31,7 @@
 
 #include <tuw_global_planner/backtracking_resolution.h>
 
-BacktrackingResolution::BacktrackingResolution(uint32_t _timeoverlap, const uint32_t _maxSearchDepth) : timeoverlap_(_timeoverlap), maxSearchDepth_(_maxSearchDepth)
+BacktrackingResolution::BacktrackingResolution(uint32_t _timeoverlap) : timeoverlap_(_timeoverlap)
 {
 }
 

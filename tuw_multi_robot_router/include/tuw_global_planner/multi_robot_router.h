@@ -42,6 +42,8 @@ class MultiRobotRouter : RouteGenerator
         void setRobotNr(const uint32_t _nr_robots);
         void setRobotRadius(const std::vector<uint32_t> &_radius);
         bool getRoutingTable(const std::vector<Segment> &_graph, const std::vector<uint32_t> &_startSegments, const std::vector<uint32_t> &_goalSegments, std::vector<std::vector<Checkpoint>>& _routingTable);
+        uint32_t getPriorityScheduleAttempts();
+        uint32_t getSpeedScheduleAttempts();
     private:
         void resetAttempt(const std::vector< Segment > &_graph);
         PriorityScheduler priority_scheduler_;
@@ -53,6 +55,8 @@ class MultiRobotRouter : RouteGenerator
         uint32_t min_diameter_;
         std::vector<uint32_t> robotDiameter_;
         std::vector<std::vector<uint32_t>> robotCollisions_;
+        uint32_t priorityScheduleAttempts_;
+        uint32_t speedScheduleAttempts_;
         
 };
 

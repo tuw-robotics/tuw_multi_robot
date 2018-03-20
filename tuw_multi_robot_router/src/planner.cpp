@@ -475,12 +475,10 @@ bool Planner::resolveSegment(const std::vector< Segment >& _graph, const uint32_
 //
 bool Planner::makePlan(const std::vector< Eigen::Vector2d > &_goals, const std::vector<float> &_radius, const cv::Mat &_map, const float &_resolution, const Eigen::Vector2d &_origin, const std::vector<Segment> &_graph)
 {
-    //resolution_->clear();
-
-    //speedScheduleAttemps_ = 0;
-    //priorityScheduleAttemps_ = 0;
-    //auto t1 = std::chrono::high_resolution_clock::now();
-    //std::clock_t startcputime = std::clock();
+    speedScheduleAttemps_ = 0;
+    priorityScheduleAttemps_ = 0;
+    auto t1 = std::chrono::high_resolution_clock::now();
+    std::clock_t startcputime = std::clock();
 
     if(_goals.size() != robot_nr_)
     {
@@ -518,63 +516,6 @@ bool Planner::makePlan(const std::vector< Eigen::Vector2d > &_goals, const std::
     postprocessRoutingTable();
     
     return true;
-
-//     priorityScheduler_->reset(_goals.size());
-//     int lastPlannedRobot = -1;
-//     std::vector<int> priorityList = priorityScheduler_->getActualSchedule();
-//     std::vector<int> collisions;
-//     int duration;
-//     do
-//     {
-//         ROS_INFO("=========================================================");
-//         ROS_INFO("Multi Robot Router: New prority schedule");
-//         speedScheduler_->reset(_goals.size());
-//         std::vector<float> speedList = speedScheduler_->getActualSpeeds();
-//         int reschedule_count = 0;
-//
-//         do
-//         {
-//             reschedule_count++;
-//             ROS_INFO("=========================================================");
-//             ROS_INFO("Multi Robot Router: New speed schedule %f %f", (float)speedList[0], (float)speedList[1]);
-//             std::vector<std::shared_ptr<Segment>> graph = _graph;
-//             path_querry_->reset(graph, goals_.size());
-//
-//             if(!path_querry_->setStartSegments(startSegments_, radius_))
-//             {
-//                 return false;
-//             }
-//
-//             if(!path_querry_->setGoalSegments(goalSegments_, radius_))
-//             {
-//                 return false;
-//             }
-//
-//
-//             if(getPaths(graph, lastPlannedRobot, priorityList, speedList,  _map.cols *  _map.rows))
-//             {
-//                 auto t2 = std::chrono::high_resolution_clock::now();
-//                 duration_ = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
-//
-//                 return true;
-//             }
-//
-//             speedScheduleAttemps_++;
-//
-//             collisions = path_querry_->getNrOfRobotCollisions(lastPlannedRobot);
-//
-//         }
-//         while(speedScheduler_->rescheduleSpeeds(lastPlannedRobot, collisions, speedList) && reschedule_count < 10);
-//
-//         auto t2 = std::chrono::high_resolution_clock::now();
-//         duration = (std::clock() - startcputime) / (double)CLOCKS_PER_SEC;// * 1000;
-//     }
-//     while(priorityScheduler_->reschedulePriorities(lastPlannedRobot, collisions, priorityList) && duration < 30);
-//
-//     auto t2 = std::chrono::high_resolution_clock::now();
-//     duration_ = (std::clock() - startcputime) / (double)CLOCKS_PER_SEC * 1000;
-//
-//     return false;
 }
 
 
@@ -612,48 +553,29 @@ void Planner::updateRobotPose(uint32_t _robot_id, const Eigen::Vector2d& _pose)
     pose_received_[_robot_id] = true;
 }
 
-// const std::vector< Potential_Point >& Planner::getPath(int _robot_id)
-// {
-//     return paths_[_robot_id];
-// }
-//
-// bool Planner::gotPlan()
-// {
-//     return gotPlan_;
-// }
-//
-// const std::vector< PathSegment >& Planner::getPathSeg(int _robot_id)
-// {
-//     return segPaths_[_robot_id];
-// }
-//
-//
-// const std::vector<float>& Planner::getVelocityProfile(int _robot_id)
-// {
-//     return velocityProfile_[_robot_id];
-// }
-//
-// int Planner::getDuration_ms()
-// {
-//     return duration_;
-// }
-//
-// int Planner::getLongestPathLength()
-// {
-//     return longestPatLength_;
-// }
-//
-// int Planner::getOverallPathLength()
-// {
-//     return overallPathLength_;
-// }
-//
-// int Planner::getPriorityScheduleAttemps()
-// {
-//     return priorityScheduleAttemps_;
-// }
-//
-// int Planner::getSpeedScheduleAttemps()
-// {
-//     return speedScheduleAttemps_;
-// }
+
+uint32_t Planner::getDuration_ms()
+{
+    return duration_;
+}
+
+uint32_t Planner::getLongestPathLength()
+{
+    return longestPatLength_;
+}
+
+uint32_t Planner::getOverallPathLength()
+{
+    return overallPathLength_;
+}
+
+uint32_t Planner::getPriorityScheduleAttemps()
+{
+    return priorityScheduleAttemps_;
+}
+
+uint32_t Planner::getSpeedScheduleAttemps()
+{
+    return speedScheduleAttemps_;
+}
+

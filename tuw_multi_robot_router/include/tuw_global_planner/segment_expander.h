@@ -76,7 +76,7 @@ class SegmentExpander
         std::unique_ptr<Heuristic> hx_;
         std::unique_ptr<PotentialCalculator> pCalc_;
         const RouteCoordinator *route_querry_;
-        AvoidanceResolution collision_resolution_;
+        std::unique_ptr<AvoidanceResolution> collision_resolution_;
 
         std::vector<uint32_t> collisions_robots_;
 };

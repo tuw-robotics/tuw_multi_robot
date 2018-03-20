@@ -63,6 +63,8 @@ void MultiRobotRouter::resetAttempt(const std::vector< Segment > &_graph)
     speed_scheduler_.reset(nr_robots_);
     robotCollisions_.clear();
     robotCollisions_.resize(nr_robots_);
+    priorityScheduleAttempts_ = 0;
+    speedScheduleAttempts_ = 0;
 }
 
 bool MultiRobotRouter::getRoutingTable(const std::vector<Segment> &_graph, const std::vector<uint32_t> &startSegments, const std::vector<uint32_t> &goalSegments, std::vector<std::vector< Checkpoint>> &routingTable)
@@ -71,8 +73,6 @@ bool MultiRobotRouter::getRoutingTable(const std::vector<Segment> &_graph, const
     route_coordinator_->setStartSegments(startSegments);
     route_coordinator_->setGoalSegments(goalSegments);
 
-    //TODO Priority Rescheduling
-    //TODO Speed Rescheduling
 
     SingleRobotRouter srr;
     srr.initSearchGraph(_graph, min_diameter_);
@@ -87,11 +87,9 @@ bool MultiRobotRouter::getRoutingTable(const std::vector<Segment> &_graph, const
     uint32_t robot;
     do
     {   
-        ROS_INFO("new Prio");
         int32_t firstRobot = -1;
         do
         {
-            ROS_INFO("new Speed");
             //Find first schedule to replan if speed rescheduling was active 
             //(used for removing from path coordinator)
             if(firstRobot != -1)
@@ -136,8 +134,11 @@ bool MultiRobotRouter::getRoutingTable(const std::vector<Segment> &_graph, const
                 }
 
                 found = true;
+                speedScheduleAttempts_++;
             }
         }while(!found && speed_scheduler_.rescheduleSpeeds(robot,srr.getRobotCollisions(), speedList, firstRobot));
+        
+        priorityScheduleAttempts_++;
     }while(!found && priority_scheduler_.reschedulePriorities(robot, srr.getRobotCollisions(), priorityList, firstSchedule));
     
     routingTable = generatePath(routeCandidates, *(route_coordinator_.get()));

@@ -33,10 +33,11 @@
 #define TIME_OVERLAP 1
 #define SEARCH_DEPTH 20 //TODO settings
 
-SegmentExpander::SegmentExpander(const Heuristic &_h, const PotentialCalculator &_pCalc) : collision_resolution_(TIME_OVERLAP)
+SegmentExpander::SegmentExpander(const Heuristic &_h, const PotentialCalculator &_pCalc)  
 {
     hx_ = std::make_unique<Heuristic>(_h);
     pCalc_ = std::make_unique<PotentialCalculator>(_pCalc);
+    collision_resolution_ = std::make_unique<AvoidanceResolution>(TIME_OVERLAP);
 }
 
 void SegmentExpander::reset()
@@ -59,7 +60,7 @@ void SegmentExpander::addVoronoiExpansoionCandidate(Vertex &_current, Vertex &_n
     {
         if(collision != -1)
         {
-            std::vector<std::reference_wrapper<Vertex>> resolutions = collision_resolution_.resolve(_current, _next, collision);
+            std::vector<std::reference_wrapper<Vertex>> resolutions = collision_resolution_->resolve(_current, _next, collision);
             
             for(Vertex& res : resolutions)
             {
@@ -98,7 +99,7 @@ bool SegmentExpander::calculatePotentials(const RouteCoordinator *_p, Vertex & _
     route_querry_ = _p;
 
     collisions_robots_.clear();
-    collision_resolution_.resetSession(_p, pCalc_.get(), _diameter);
+    collision_resolution_->resetSession(_p, pCalc_.get(), _diameter);
     diameter_ = _diameter;
 
     Vertex *foundEnd = expandVoronoi(_start, _end, _maxIterations);
@@ -186,7 +187,7 @@ void SegmentExpander::resolveStartCollision(Vertex &_start, Vertex &_end)
         }
         else if(collision != -1)
         {
-            collision_resolution_.saveCollision(collision);
+            collision_resolution_->saveCollision(collision);
         }
     }
 }
@@ -262,6 +263,6 @@ Vertex *SegmentExpander::expandVoronoi(Vertex &_start, Vertex &_end, const uint3
 
 const std::vector<uint32_t> &SegmentExpander::getRobotCollisions() const
 {
-    return collision_resolution_.getRobotCollisions();
+    return collision_resolution_->getRobotCollisions();
 }
 

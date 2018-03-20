@@ -27,6 +27,7 @@
  */
 
 #include <tuw_global_planner/route_coordinator_timed.h>
+#include <iostream>
 
 #define TIME_INFINITY   (-1)
 //#define DEBUG
@@ -56,6 +57,7 @@ bool RouteCoordinatorTimed::addRoute(const std::vector< RouteVertex > &_path, co
         
         if(!timeline_.addSegment(begin, end, _path[i].getSegment().getSegmentId(), activeRobot_, _diameterPixel, true))
         {
+            std::cout << "add segment robot: " << activeRobot_ << std::endl;
             return false;
         }
 
@@ -67,6 +69,7 @@ bool RouteCoordinatorTimed::addRoute(const std::vector< RouteVertex > &_path, co
             {
                 if(!timeline_.addCrossingSegment(begin, end, idx, activeRobot_, _diameterPixel, false))
                 {
+                    std::cout << "add crossing segment p robot: " << activeRobot_ << std::endl;
                     return false;
                 }
 
@@ -81,6 +84,7 @@ bool RouteCoordinatorTimed::addRoute(const std::vector< RouteVertex > &_path, co
             {
                 if(!timeline_.addCrossingSegment(begin, end, idx, activeRobot_, _diameterPixel, false))
                 {
+                    std::cout << "add crossing segment s robot: " << activeRobot_ << std::endl;
                     return false;
                 }
 
