@@ -30,6 +30,7 @@
 
 
 #include <tuw_global_planner/backtracking_resolution.h>
+#include <iostream>
 
 BacktrackingResolution::BacktrackingResolution(uint32_t _timeoverlap) : timeoverlap_(_timeoverlap)
 {
@@ -99,7 +100,19 @@ void BacktrackingResolution::trackBack(Vertex &_current, Vertex &_next, const in
     //Free the next Vertex for new expansion
     _next.potential = -1;
     _next.collision = -1;
+    
+    
+    //if(_freePotential == -1)          //TODO check if return
+    //    std::cout << " error " << std::endl;
+    
+    if(_freePotential == -2)
+        std::cout << " error2 " << _collision << " c " << _current.getSegment().getSegmentId() << " n " << _next.getSegment().getSegmentId() << std::endl;
 
+    //Return if potential is blocked forever
+    if(_freePotential < 0)
+        return;
+    
+    
     //If backtracking is not possible (we are on the start vertex) try to wait there
     //Additionally Backtracking beond wait Segments is not allowed to be able to solve
     //multi robot scenarios (avoiding n robots in a row)
@@ -108,7 +121,7 @@ void BacktrackingResolution::trackBack(Vertex &_current, Vertex &_next, const in
     if(_current.predecessor_ == NULL || _current.isWaitSegment)
     {
         int32_t collision = -1;
-
+        
         if(route_querry_->checkSegment(_current, 0,  _freePotential + 2 * timeoverlap_, robotDiameter_, collision))
         {
             _next.potential = -1;
@@ -122,15 +135,13 @@ void BacktrackingResolution::trackBack(Vertex &_current, Vertex &_next, const in
             current_n.collision = _collision;
             current_n.successor_ = &_next;    //Tell expander to only expand to next
 
+            
             foundSolutions_.push_back(current_n);
         }
         else
         {
             if(_collision != collision)
                 addCollision(collision);
-            
-            float leavePotential = route_querry_->findPotentialUntilRobotOnSegment(collision, _next.getSegment().getSegmentId());
-            
         }
     }
     else    //we are somewhere on the path
@@ -155,6 +166,7 @@ void BacktrackingResolution::trackBack(Vertex &_current, Vertex &_next, const in
             next_n.predecessor_ = &current_n;
             next_n.successor_ = &_next;         //Tell expander to only expand to next (we are not allowed to leave the backtracked path)
 
+            
             if(vertexFree)
             {
                 foundSolutions_.push_back(current_n);
@@ -165,7 +177,9 @@ void BacktrackingResolution::trackBack(Vertex &_current, Vertex &_next, const in
                     addCollision(collision);
 
 
-                float leavePotential = route_querry_->findPotentialUntilRobotOnSegment(collision, next_n.getSegment().getSegmentId());
+                float leavePotential = route_querry_->findPotentialUntilRobotOnSegment(collision, current_n.getSegment().getSegmentId());
+                if(leavePotential == -2)
+                    std::cout << "trackback ? " << current_n.getSegment().getSegmentId() << " n " << next_n.getSegment().getSegmentId() << " c " << collision << " " << leavePotential << std::endl;
                 trackBack(current_n, next_n, collision, leavePotential);
 
                 //Continue Resolving (Avoid Segment, Avoid Crossing, ...)

@@ -101,6 +101,10 @@ void BacktrackingAvoidResolution::trackBack(Vertex &_current, Vertex &_next, con
     _next.potential = -1;
     _next.collision = -1;
 
+    //Return if potential is blocked forever
+    if(_freePotential < 0)
+        return;
+    
     //If backtracking is not possible (we are on the start vertex) try to wait there
     //Additionally Backtracking beond wait Segments is not allowed to be able to solve
     //multi robot scenarios (avoiding n robots in a row)
@@ -170,7 +174,7 @@ void BacktrackingAvoidResolution::trackBack(Vertex &_current, Vertex &_next, con
                     addCollision(collision);
 
 
-                float leavePotential = route_querry_->findPotentialUntilRobotOnSegment(collision, next_n.getSegment().getSegmentId());
+                float leavePotential = route_querry_->findPotentialUntilRobotOnSegment(collision, current_n.getSegment().getSegmentId());
                 trackBack(current_n, next_n, collision, leavePotential);
                 avoid(current_n, next_n, collision, leavePotential);
 
@@ -184,6 +188,11 @@ void BacktrackingAvoidResolution::trackBack(Vertex &_current, Vertex &_next, con
 void BacktrackingAvoidResolution::avoid(Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential)
 {
     if(_current.predecessor_ == NULL)
+        return;
+    
+    
+    //Return if potential is blocked forever
+    if(_freePotential < 0)
         return;
 
     //We need to find if _next is a successor or a predecessor of current and use this crossing for avoidance
@@ -270,6 +279,11 @@ void BacktrackingAvoidResolution::avoid(Vertex &_current, Vertex &_next, const i
 
 void BacktrackingAvoidResolution::moveSegment(Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential, const uint32_t _depth) //Quick fix depth (Better depth queue with best first)
 {
+  
+    //Return if potential is blocked forever
+    if(_freePotential < 0)
+        return;
+    
     if(_depth == 0)
         return;
   
@@ -362,6 +376,11 @@ void BacktrackingAvoidResolution::moveSegment(Vertex &_current, Vertex &_next, c
 
 void BacktrackingAvoidResolution::avoidStart(Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential)
 {
+  
+    //Return if potential is blocked forever
+    if(_freePotential < 0)
+        return;
+    
     //If we are not on Start we cant use this strategy :D
     //If we have allready used the avoid strategy we will not use it again
     //(caused due to multiple backtracking attemps)
@@ -457,6 +476,11 @@ void BacktrackingAvoidResolution::avoidGoal(Vertex &_current, Vertex &_next, con
     //_next is goal Segment
     //_current tells us the direction
   
+  
+    //Return if potential is blocked forever
+    if(_freePotential < 0)
+        return;
+    
     //If we are not on Goal we cant use this strategy :D
     if(_next.getSegment().getSegmentId() != route_querry_->getEnd())
         return;

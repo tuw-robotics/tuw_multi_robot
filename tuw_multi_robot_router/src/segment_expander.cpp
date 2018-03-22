@@ -30,6 +30,7 @@
 
 #include <tuw_global_planner/segment_expander.h>
 #include <tuw_global_planner/route_coordinator.h>
+#include <iostream>
 #define TIME_OVERLAP 1
 #define SEARCH_DEPTH 20 //TODO settings
 
@@ -37,13 +38,13 @@ SegmentExpander::SegmentExpander(const Heuristic &_h, const PotentialCalculator 
 {
     hx_ = std::make_unique<Heuristic>(_h);
     pCalc_ = std::make_unique<PotentialCalculator>(_pCalc);
-    collision_resolution_ = std::make_unique<AvoidanceResolution>(TIME_OVERLAP);
+    collision_resolution_ = std::make_unique<BacktrackingResolution>(TIME_OVERLAP);
 }
 
 void SegmentExpander::reset()
 {
     collisions_robots_.clear();
-    //TODO Expansion segments
+    //TODO Expansion segments Not sure if new
 }
 
 void SegmentExpander::addVoronoiExpansoionCandidate(Vertex &_current, Vertex &_next, Vertex &_end)
@@ -68,7 +69,9 @@ void SegmentExpander::addVoronoiExpansoionCandidate(Vertex &_current, Vertex &_n
                 res.weight =  res.potential + h;
 
                 if(res.getSegment().getSegmentId() == _end.getSegment().getSegmentId())                 //Should not happen but safety first :D
+                {
                     res.weight = 0;
+                }
 
                 seg_queue_.push(&res);
             }
@@ -84,7 +87,7 @@ void SegmentExpander::addVoronoiExpansoionCandidate(Vertex &_current, Vertex &_n
 
     _next.weight = weight;
     _next.potential = pot;
-
+    
     if(_next.getSegment().getSegmentId() == _end.getSegment().getSegmentId())
         _next.weight = 0;
 

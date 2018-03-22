@@ -475,14 +475,14 @@ bool Planner::resolveSegment(const std::vector< Segment >& _graph, const uint32_
 //
 bool Planner::makePlan(const std::vector< Eigen::Vector2d > &_goals, const std::vector<float> &_radius, const cv::Mat &_map, const float &_resolution, const Eigen::Vector2d &_origin, const std::vector<Segment> &_graph)
 {
-    speedScheduleAttemps_ = 0;
-    priorityScheduleAttemps_ = 0;
     auto t1 = std::chrono::high_resolution_clock::now();
     std::clock_t startcputime = std::clock();
 
     if(_goals.size() != robot_nr_)
     {
         ROS_INFO("Multi Robot Router: Wrong nr of goals %lu %lu", _goals.size(), goals_.size());
+        auto t2 = std::chrono::high_resolution_clock::now();
+        duration_ = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
         return false;
     }
 
@@ -493,6 +493,8 @@ bool Planner::makePlan(const std::vector< Eigen::Vector2d > &_goals, const std::
     if(!calculateStartPoints(_radius, _map, _resolution, _origin, _graph))
     {
         ROS_INFO("Multi Robot Router: Failed to find Endpoints");
+        auto t2 = std::chrono::high_resolution_clock::now();
+        duration_ = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
         return false;
     }
 
@@ -510,10 +512,36 @@ bool Planner::makePlan(const std::vector< Eigen::Vector2d > &_goals, const std::
     if(!multiRobotRouter_->getRoutingTable(_graph, startSegments_, goalSegments_, routingTable_))
     {
         ROS_INFO("Failed to find Routing Table");
+        auto t2 = std::chrono::high_resolution_clock::now();
+        duration_ = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
         return false;
     }
     
     postprocessRoutingTable();
+    
+    
+    
+    //DEBUG STATS
+    longestPatLength_ = 0;
+    overallPathLength_ = 0;
+
+    for(std::vector<Checkpoint> &path : routingTable_)
+    {
+        float lengthPath = 0;
+        for(Checkpoint &seg : path)
+        {
+            Eigen::Vector2d vec = (seg.end - seg.start);
+            float lengthVertex = std::sqrt(vec[0] * vec[0] + vec[1] * vec[1]);
+            overallPathLength_ += lengthVertex;
+            lengthPath += lengthVertex;
+        }
+
+        longestPatLength_ = std::max<int>(longestPatLength_, lengthPath);
+    }
+    
+    auto t2 = std::chrono::high_resolution_clock::now();
+    duration_ = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+    //DEBUG STATS
     
     return true;
 }
@@ -559,23 +587,23 @@ uint32_t Planner::getDuration_ms()
     return duration_;
 }
 
-uint32_t Planner::getLongestPathLength()
+float Planner::getLongestPathLength()
 {
     return longestPatLength_;
 }
 
-uint32_t Planner::getOverallPathLength()
+float Planner::getOverallPathLength()
 {
     return overallPathLength_;
 }
 
 uint32_t Planner::getPriorityScheduleAttemps()
 {
-    return priorityScheduleAttemps_;
+    return multiRobotRouter_->getPriorityScheduleAttempts();
 }
 
 uint32_t Planner::getSpeedScheduleAttemps()
 {
-    return speedScheduleAttemps_;
+    return multiRobotRouter_->getSpeedScheduleAttempts();
 }
 

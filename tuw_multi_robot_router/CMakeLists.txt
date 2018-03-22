@@ -143,7 +143,7 @@ include_directories(
 	src/priority_scheduler.cpp
 	src/potential_calculator.cpp
 	src/speed_scheduler.cpp
-#	src/velocity_calculator.cpp
+    src/empty_resolution.cpp
  )
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 

@@ -31,6 +31,8 @@
 #include <iostream>
 #include <ros/ros.h>
 
+//TODO Timelimit
+
 MultiRobotRouter::MultiRobotRouter(const uint32_t _nr_robots, const std::vector<uint32_t> &_robotRadius) : RouteGenerator(), priority_scheduler_(_nr_robots), speed_scheduler_(_nr_robots)
 {
     route_coordinator_ = std::make_unique<RouteCoordinatorTimed>();
@@ -65,6 +67,16 @@ void MultiRobotRouter::resetAttempt(const std::vector< Segment > &_graph)
     robotCollisions_.resize(nr_robots_);
     priorityScheduleAttempts_ = 0;
     speedScheduleAttempts_ = 0;
+}
+
+const uint32_t MultiRobotRouter::getPriorityScheduleAttempts() const
+{
+    return priorityScheduleAttempts_;
+}
+
+const uint32_t MultiRobotRouter::getSpeedScheduleAttempts() const
+{
+    return speedScheduleAttempts_;
 }
 
 bool MultiRobotRouter::getRoutingTable(const std::vector<Segment> &_graph, const std::vector<uint32_t> &startSegments, const std::vector<uint32_t> &goalSegments, std::vector<std::vector< Checkpoint>> &routingTable)
@@ -119,7 +131,7 @@ bool MultiRobotRouter::getRoutingTable(const std::vector<Segment> &_graph, const
                 //Worst case scenario: Search whole graph once + n * (move through whole graph to avoid other robot) -> graph.size() * (i+1) iterations
                 if(!srr.getRouteCandidate(startSegments[robot], goalSegments[robot], *route_coordinator_.get(), robotDiameter_[robot], speedList[robot], routeCandidates[robot], _graph.size() * (i + 1)))
                 {
-                    ROS_INFO("Failed Robot");
+                    //ROS_INFO("Failed Robot");
                     robotCollisions_[robot] = srr.getRobotCollisions();
                     robotCollisions_[robot].resize(nr_robots_,0);
                     break;
@@ -129,7 +141,7 @@ bool MultiRobotRouter::getRoutingTable(const std::vector<Segment> &_graph, const
                 
                 if(!route_coordinator_->addRoute(routeCandidates[robot], robotDiameter_[robot]))
                 {
-                    ROS_INFO("Failed coord");
+                    ROS_INFO("Failed coordinator");
                     break;
                 }
 

@@ -32,6 +32,7 @@
 #define TIME_INFINITY   (-1)
 //#define DEBUG
 
+
 RouteCoordinatorTimed::RouteCoordinatorTimed() : RouteCoordinator()
 {
 }
@@ -57,7 +58,6 @@ bool RouteCoordinatorTimed::addRoute(const std::vector< RouteVertex > &_path, co
         
         if(!timeline_.addSegment(begin, end, _path[i].getSegment().getSegmentId(), activeRobot_, _diameterPixel, true))
         {
-            std::cout << "add segment robot: " << activeRobot_ << std::endl;
             return false;
         }
 
@@ -69,7 +69,6 @@ bool RouteCoordinatorTimed::addRoute(const std::vector< RouteVertex > &_path, co
             {
                 if(!timeline_.addCrossingSegment(begin, end, idx, activeRobot_, _diameterPixel, false))
                 {
-                    std::cout << "add crossing segment p robot: " << activeRobot_ << std::endl;
                     return false;
                 }
 
@@ -84,7 +83,6 @@ bool RouteCoordinatorTimed::addRoute(const std::vector< RouteVertex > &_path, co
             {
                 if(!timeline_.addCrossingSegment(begin, end, idx, activeRobot_, _diameterPixel, false))
                 {
-                    std::cout << "add crossing segment s robot: " << activeRobot_ << std::endl;
                     return false;
                 }
 
@@ -92,7 +90,7 @@ bool RouteCoordinatorTimed::addRoute(const std::vector< RouteVertex > &_path, co
         }
 
     }
-
+    
     return true;
 }
 
@@ -117,7 +115,15 @@ const uint32_t RouteCoordinatorTimed::getStart() const
 
 bool RouteCoordinatorTimed::checkSegment(const Vertex &_next, const uint32_t _startTime, const int32_t _endTime, const uint32_t _diameterPixel, int32_t &_collisionRobot, bool _ignoreGoal) const
 {
-    if(!checkSegmentSingle(_next, _startTime, _endTime, _diameterPixel, _collisionRobot, _ignoreGoal))
+  
+    //Bug fix check all neighbour edges for infinity
+    int32_t endTime = _endTime;
+    if(isGoal(_next) && !_ignoreGoal)
+    {
+        endTime = TIME_INFINITY;
+    }
+  
+    if(!checkSegmentSingle(_next, _startTime, endTime, _diameterPixel, _collisionRobot, _ignoreGoal))
     {
         return false;
     }
@@ -128,9 +134,8 @@ bool RouteCoordinatorTimed::checkSegment(const Vertex &_next, const uint32_t _st
     {
         for(const uint32_t  idx : pred)
         {
-            if(!timeline_.checkCrossingSegment(_startTime, _endTime, idx, activeRobot_, _diameterPixel, _collisionRobot))
+            if(!timeline_.checkCrossingSegment(_startTime, endTime, idx, activeRobot_, _diameterPixel, _collisionRobot))
             {
-                std::cout << "nope Pred" << std::endl;
                 return false;
             }
 
@@ -143,15 +148,14 @@ bool RouteCoordinatorTimed::checkSegment(const Vertex &_next, const uint32_t _st
     {
         for(const uint32_t  idx : succ)
         {
-            if(!timeline_.checkCrossingSegment(_startTime, _endTime, idx, activeRobot_, _diameterPixel, _collisionRobot))
+            if(!timeline_.checkCrossingSegment(_startTime, endTime, idx, activeRobot_, _diameterPixel, _collisionRobot))
             {
-                std::cout << "nopeSucc" << std::endl;
                 return false;
             }
 
         }
     }
-    
+        
     return true;
 }
 
@@ -289,7 +293,6 @@ bool RouteCoordinatorTimed::Timeline::addSegment(const uint32_t _startTime, cons
 
     if(!checkSegment(_startTime, _endTime, _segId, _robotNr, _robotSize, collision))
     {
-        std::cout << "check segment..." << std::endl;
         return false;
     }
 
@@ -451,7 +454,7 @@ int32_t RouteCoordinatorTimed::Timeline::findSegId(const int32_t _robot, const u
 
 int32_t RouteCoordinatorTimed::Timeline::getTimeUntilRobotOnSegment(const int32_t _robotNr, const uint32_t _segId) const
 {
-    int32_t ret = -1;
+    int32_t ret = -2;
 
     for(const auto & occupation : timeline_[_segId])
     {
@@ -460,6 +463,7 @@ int32_t RouteCoordinatorTimed::Timeline::getTimeUntilRobotOnSegment(const int32_
             ret = occupation.endTime;
         }
     }
+    
 
     return ret;
 }

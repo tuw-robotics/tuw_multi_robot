@@ -62,8 +62,8 @@ class Planner
         void postprocessRoutingTable();
 
         uint32_t getDuration_ms();
-        uint32_t getOverallPathLength();
-        uint32_t getLongestPathLength();
+        float getOverallPathLength();
+        float getLongestPathLength();
         uint32_t getPriorityScheduleAttemps();
         uint32_t getSpeedScheduleAttemps();
 
@@ -107,10 +107,8 @@ class Planner
         std::unique_ptr<PointExpander> pointExpander_;
         std::unique_ptr<MultiRobotRouter> multiRobotRouter_;
         std::vector<std::vector<Checkpoint>> routingTable_;
-        uint32_t speedScheduleAttemps_;
-        uint32_t priorityScheduleAttemps_;
-        uint32_t overallPathLength_;
-        uint32_t longestPatLength_;
+        float overallPathLength_;
+        float longestPatLength_;
         uint32_t duration_;
 
     protected:

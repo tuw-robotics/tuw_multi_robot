@@ -26,27 +26,27 @@
  * 
  */
 
-#ifndef COLLISION_RESOLUTION_H
-#define COLLISION_RESOLUTION_H
+#ifndef EMPTY_RESOLUTION_H
+#define EMPTY_RESOLUTION_H
 
 #include <tuw_global_planner/srr_utils.h>
 #include <tuw_global_planner/route_coordinator.h>
-#include <tuw_global_planner/potential_calculator.h>
-//TODO
-//remember Vertex
-//remember Collisions
+#include <tuw_global_planner/collision_resolution.h>
 
-
-
-class CollisionResolution
+class EmptyResolution : public CollisionResolution
 {
 public:     
-  virtual void resetSession(const RouteCoordinator *_route_querry, const PotentialCalculator *_pCalc, const uint32_t _robot_radius)=0;
-  virtual std::vector<std::reference_wrapper<Vertex>> resolve(Vertex &_current, Vertex &_next, int32_t _collision)=0;
-  virtual const std::vector<uint32_t> &getRobotCollisions() const = 0;
-  virtual void saveCollision(const uint32_t _coll)=0;
+  EmptyResolution(uint32_t _timeoverlap);
 
+  void resetSession(const RouteCoordinator *_route_querry, const PotentialCalculator *_pCalc, const uint32_t _robot_radius);
+  std::vector<std::reference_wrapper<Vertex>> resolve(Vertex &_current, Vertex &_next, int32_t _collision);
+  const std::vector<uint32_t> &getRobotCollisions() const;
+  void saveCollision(const uint32_t _coll);
+  
+private:     
+  void addCollision(uint32_t _collision);
+  std::vector<std::reference_wrapper<Vertex>> foundSolutions_;
+  std::vector<uint32_t> encounteredCollisions_;
 };
 
 #endif // HEURISTIC_H
-

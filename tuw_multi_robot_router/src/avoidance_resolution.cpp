@@ -30,6 +30,7 @@
 
 
 #include <tuw_global_planner/avoidance_resolution.h>
+#include <iostream>
 
 AvoidanceResolution::AvoidanceResolution(uint32_t _timeoverlap) : timeoverlap_(_timeoverlap)
 {
@@ -101,6 +102,10 @@ void AvoidanceResolution::trackBack(Vertex &_current, Vertex &_next, const int32
     _next.potential = -1;
     _next.collision = -1;
 
+    //Return if potential is blocked forever
+    if(_freePotential < 0)
+        return;
+    
     //If backtracking is not possible (we are on the start vertex) try to wait there
     //Additionally Backtracking beond wait Segments is not allowed to be able to solve
     //multi robot scenarios (avoiding n robots in a row)
@@ -132,6 +137,9 @@ void AvoidanceResolution::trackBack(Vertex &_current, Vertex &_next, const int32
 
             float leavePotential = route_querry_->findPotentialUntilRobotOnSegment(collision, _next.getSegment().getSegmentId());
 
+            if(leavePotential == -2)
+                std::cout << "wwwww" << std::endl;
+            
             if(_current.predecessor_ == NULL)
                 avoidStart(_current, _next, collision, leavePotential);
             else if(_current.isWaitSegment)
@@ -170,7 +178,7 @@ void AvoidanceResolution::trackBack(Vertex &_current, Vertex &_next, const int32
                     addCollision(collision);
 
 
-                float leavePotential = route_querry_->findPotentialUntilRobotOnSegment(collision, next_n.getSegment().getSegmentId());
+                float leavePotential = route_querry_->findPotentialUntilRobotOnSegment(collision, current_n.getSegment().getSegmentId());
                 trackBack(current_n, next_n, collision, leavePotential);
                 avoid(current_n, next_n, collision, leavePotential);
 
@@ -186,6 +194,10 @@ void AvoidanceResolution::avoid(Vertex &_current, Vertex &_next, const int32_t _
     if(_current.predecessor_ == NULL)
         return;
 
+    //Return if potential is blocked forever
+    if(_freePotential < 0)
+        return;
+    
     //We need to find if _next is a successor or a predecessor of current and use this crossing for avoidance
     bool crossingFound = false;
     std::vector<std::reference_wrapper<Vertex>> crossing;
@@ -270,6 +282,10 @@ void AvoidanceResolution::avoid(Vertex &_current, Vertex &_next, const int32_t _
 
 void AvoidanceResolution::moveSegment(Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential) //Quick fix depth (Better depth queue with best first)
 {
+    //Return if potential is blocked forever
+    if(_freePotential < 0)
+        return;
+    
     std::queue<queueElement> empty;
     std::swap( queue_, empty );
             
@@ -323,6 +339,10 @@ void AvoidanceResolution::moveSegment(Vertex &_current, Vertex &_next, const int
 
 bool AvoidanceResolution::expandSegment(const Vertex &cSeg, Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential)
 {
+    //Return if potential is blocked forever
+    if(_freePotential < 0)
+        return false;
+    
     int32_t collision;
     float moveFwdTime = _current.potential + pCalc_->CalculatePotential(_next) + timeoverlap_;
     float waitTime = std::max<float>(moveFwdTime + pCalc_->CalculatePotential(cSeg) + timeoverlap_, _freePotential + 2 * timeoverlap_);
@@ -398,6 +418,10 @@ void AvoidanceResolution::avoidStart(Vertex &_current, Vertex &_next, const int3
     if(_current.predecessor_ != NULL)
         return;
 
+    //Return if potential is blocked forever
+    if(_freePotential < 0)
+        return;
+    
     //Select the side of the vertex which not contains _next to move avoid from the colliding robot
     bool foundPredecessorVertex = false;
     std::vector<std::reference_wrapper<Vertex>> crossing = _current.getPlanningPredecessors();
@@ -487,6 +511,10 @@ void AvoidanceResolution::avoidGoal(Vertex &_current, Vertex &_next, const int32
     //_next is goal Segment
     //_current tells us the direction
 
+    //Return if potential is blocked forever
+    if(_freePotential < 0)
+        return;
+    
     //If we are not on Goal we cant use this strategy :D
     if(_next.getSegment().getSegmentId() != route_querry_->getEnd())
         return;
