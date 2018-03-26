@@ -35,6 +35,7 @@
 
 //TODO add Weights from robots...
 //TODO multithreaded planner ; multithreded goal selector
+//TODO optimization
 
 int main(int argc, char **argv)
 {

@@ -21,7 +21,7 @@ namespace velocity_controller
 
     int SegmentController::getCount()
     {
-		return pathCounter_;
+		return pathCounter_ - 1;
     }
 
 
