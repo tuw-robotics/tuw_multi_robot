@@ -94,11 +94,11 @@ find_package(OpenCV 3 REQUIRED)
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
+ generate_dynamic_reconfigure_options(
+    cfg/router.cfg
 #   cfg/DynReconf1.cfg
 #   cfg/DynReconf2.cfg
-# )
-
+ )
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -138,12 +138,11 @@ include_directories(
 	src/traceback.cpp
 	src/route_generator.cpp
 	src/backtracking_resolution.cpp
-	src/backtracking_avoid_resolution.cpp
 	src/avoidance_resolution.cpp
+        src/empty_resolution.cpp
 	src/priority_scheduler.cpp
 	src/potential_calculator.cpp
 	src/speed_scheduler.cpp
-    src/empty_resolution.cpp
  )
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 
@@ -155,7 +154,7 @@ target_link_libraries(tuw_multi_robot_router_node
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context

@@ -34,17 +34,19 @@
 #include <tuw_global_planner/route_coordinator.h>
 #include <eigen3/Eigen/Dense>
 
-class RouteGenerator
+namespace multi_robot_router
 {
-    public:
-        std::vector<std::vector<Checkpoint>> generatePath(const std::vector<std::vector<RouteVertex>> &_paths, const RouteCoordinator &routeQuerry_) const;
+    class RouteGenerator
+    {
+        public:
+            std::vector<std::vector<Checkpoint>> generatePath(const std::vector<std::vector<RouteVertex>> &_paths, const RouteCoordinator &routeQuerry_) const;
 
-    private:
-        Checkpoint createElement(const RouteVertex &_element) const;
-        void addPreconditions(Checkpoint &_segment, const RouteVertex &_segToFind, const uint32_t _pathNr, const std::vector<std::vector<RouteVertex>> &_paths, const RouteCoordinator &routeQuerry_) const;
+        private:
+            Checkpoint createElement(const RouteVertex &_element) const;
+            void addPreconditions(Checkpoint &_segment, const RouteVertex &_segToFind, const uint32_t _pathNr, const std::vector<std::vector<RouteVertex>> &_paths, const RouteCoordinator &routeQuerry_) const;
 
-};
-
+    };
+}
 
 #endif
 

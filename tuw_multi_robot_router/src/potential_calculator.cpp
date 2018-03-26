@@ -29,25 +29,28 @@
 
 #include <tuw_global_planner/potential_calculator.h>
 
-PotentialCalculator::PotentialCalculator()  : multiplier_(1)
-{   }
-
-PotentialCalculator::PotentialCalculator(const float & _multiplier) : multiplier_(_multiplier)
-{   }
-
-
-float PotentialCalculator::CalculatePotential(const Vertex &_vertex) const
+namespace multi_robot_router
 {
-    return CalculatePotential(_vertex.getSegment());
-}
+    PotentialCalculator::PotentialCalculator()  : multiplier_(1)
+    {   }
 
-float PotentialCalculator::CalculatePotential(const Segment& _segment) const
-{
-    return _segment.length() * multiplier_;
-}
+    PotentialCalculator::PotentialCalculator(const float &_multiplier) : multiplier_(_multiplier)
+    {   }
 
 
-void PotentialCalculator::SetMultiplier(const float &_multiplier)
-{
-    multiplier_ = _multiplier;
+    float PotentialCalculator::CalculatePotential(const Vertex &_vertex) const
+    {
+        return CalculatePotential(_vertex.getSegment());
+    }
+
+    float PotentialCalculator::CalculatePotential(const Segment &_segment) const
+    {
+        return _segment.length() * multiplier_;
+    }
+
+
+    void PotentialCalculator::SetMultiplier(const float &_multiplier)
+    {
+        multiplier_ = _multiplier;
+    }
 }

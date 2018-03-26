@@ -29,35 +29,45 @@
 #ifndef MRR_H
 #define MRR_H
 
+#include <tuw_global_planner/single_robot_router.h>
 #include <tuw_global_planner/srr_utils.h>
 #include <tuw_global_planner/priority_scheduler.h>
 #include <tuw_global_planner/route_coordinator_timed.h>
 #include <tuw_global_planner/route_generator.h>
 #include <tuw_global_planner/speed_scheduler.h>
+#include <tuw_global_planner/segment_expander.h>
 
-class MultiRobotRouter : RouteGenerator
+namespace multi_robot_router
 {
-    public:
-        MultiRobotRouter(const uint32_t _nr_robots, const std::vector<uint32_t> &_robotRadius);
-        void setRobotNr(const uint32_t _nr_robots);
-        void setRobotRadius(const std::vector<uint32_t> &_radius);
-        bool getRoutingTable(const std::vector<Segment> &_graph, const std::vector<uint32_t> &_startSegments, const std::vector<uint32_t> &_goalSegments, std::vector<std::vector<Checkpoint>>& _routingTable);
-        const uint32_t getPriorityScheduleAttempts() const;
-        const uint32_t getSpeedScheduleAttempts() const;
-    private:
-        void resetAttempt(const std::vector< Segment > &_graph);
-        PriorityScheduler priority_scheduler_;
-        SpeedScheduler speed_scheduler_;
-        std::unique_ptr<RouteCoordinator> route_coordinator_;
-        
-        
-        uint32_t nr_robots_;
-        uint32_t min_diameter_;
-        std::vector<uint32_t> robotDiameter_;
-        std::vector<std::vector<uint32_t>> robotCollisions_;
-        uint32_t priorityScheduleAttempts_;
-        uint32_t speedScheduleAttempts_;
-        
-};
+    class MultiRobotRouter : RouteGenerator
+    {
+        public:
+            MultiRobotRouter(const uint32_t _nr_robots, const std::vector<uint32_t> &_robotRadius);
+            void setRobotNr(const uint32_t _nr_robots);
+            void setRobotRadius(const std::vector<uint32_t> &_radius);
+            bool getRoutingTable(const std::vector<Segment> &_graph, const std::vector<uint32_t> &_startSegments, const std::vector<uint32_t> &_goalSegments, std::vector<std::vector<Checkpoint>> &_routingTable, const float &_timeLimit);
+            const uint32_t getPriorityScheduleAttempts() const;
+            const uint32_t getSpeedScheduleAttempts() const;
+            void setCollisionResolver(const SegmentExpander::CollisionResolverType cRes);
+        private:
+            void resetAttempt(const std::vector< Segment > &_graph);
+            bool planPaths(const std::vector<uint32_t> &_priorityList, const std::vector<float> &_speedList, const std::vector<uint32_t> &_startSegments, const std::vector<uint32_t> &_goalSegments, const uint32_t _firstSchedule, std::vector<std::vector<RouteVertex>> &_routeCandidates, uint32_t &_robot);
+            PriorityScheduler priority_scheduler_;
+            SpeedScheduler speed_scheduler_;
+            std::unique_ptr<RouteCoordinator> route_coordinator_;
+            bool useSpeedRescheduler_ = true;
+            bool usePriorityRescheduler_ = true;
 
+            uint32_t nr_robots_;
+            uint32_t min_diameter_;
+            std::vector<uint32_t> robotDiameter_;
+            std::vector<std::vector<uint32_t>> robotCollisions_;
+            uint32_t priorityScheduleAttempts_;
+            uint32_t speedScheduleAttempts_;
+            SegmentExpander::CollisionResolverType cResType_;
+            SingleRobotRouter srr;
+            uint32_t maxIterationsSingleRobot_;
+
+    };
+}
 #endif

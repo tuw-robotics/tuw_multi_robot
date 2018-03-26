@@ -35,53 +35,64 @@
 #include <tuw_global_planner/collision_resolution.h>
 #include <tuw_global_planner/avoidance_resolution.h>
 #include <tuw_global_planner/backtracking_resolution.h>
-#include <tuw_global_planner/backtracking_avoid_resolution.h>
 #include <tuw_global_planner/empty_resolution.h>
 #include <algorithm>
 #include <memory>
 #include <queue>
 
-class SegmentExpander
+namespace multi_robot_router
 {
-    public:
-        SegmentExpander(const Heuristic &_h, const PotentialCalculator &_pCalc);//, const CollisionResolution &_cr);
-        bool calculatePotentials(const RouteCoordinator *_p, Vertex &_start, Vertex &_end, const uint32_t _maxIterations, const uint32_t _radius);
-        const std::vector<uint32_t> &getRobotCollisions() const;
-        void reset();
-        void setSpeed(const float &_speed);
-    private:
-        template <class T, class S, class C>
-        void clearpq(std::priority_queue<T, S, C>& q)
-        {
-            q = std::priority_queue<T, S, C>();
-        }
-
-        struct greaterSegmentWrapper
-        {
-            bool operator()(const Vertex *_a, const Vertex *_b) const
+    class SegmentExpander
+    {
+        public:
+            enum class CollisionResolverType
             {
-                return _a->weight > _b->weight;
+                none,
+                backtracking,
+                avoidance
+            };
+            SegmentExpander(const Heuristic &_h, const PotentialCalculator &_pCalc, const CollisionResolverType _cRes);
+
+            bool calculatePotentials(const RouteCoordinator *_p, Vertex &_start, Vertex &_end, const uint32_t _maxIterations, const uint32_t _radius);
+            const std::vector<uint32_t> &getRobotCollisions() const;
+            void reset();
+            void setSpeed(const float &_speed);
+            void setCollisionResolver(const CollisionResolverType cRes);
+        private:
+            template <class T, class S, class C>
+            void clearpq(std::priority_queue<T, S, C> &q)
+            {
+                q = std::priority_queue<T, S, C>();
             }
-        };
+
+            struct greaterSegmentWrapper
+            {
+                bool operator()(const Vertex *_a, const Vertex *_b) const
+                {
+                    return _a->weight > _b->weight;
+                }
+            };
 
 
-        Vertex *expandVoronoi(Vertex &_start, Vertex &_end, const uint32_t _cycles);
-        void addVoronoiExpansoionCandidate(Vertex &_current, Vertex &_next, Vertex &_end);
-        void resolveStartCollision(Vertex &_start, Vertex &_end);
+            Vertex *expandVoronoi(Vertex &_start, Vertex &_end, const uint32_t _cycles);
+            void addExpansoionCandidate(Vertex &_current, Vertex &_next, Vertex &_end);
+            void addStartExpansionCandidate(Vertex &_start, Vertex &_current, Vertex &_next, Vertex &_end);
+            void resolveStartCollision(Vertex &_start, Vertex &_end);
 
-        bool containsVertex(const Vertex &_v, const std::vector< std::reference_wrapper< Vertex > >& _list) const;
-        
-        std::priority_queue<Vertex*, std::vector<Vertex*>, greaterSegmentWrapper> seg_queue_;
-        uint32_t neutral_cost_ = 1;
-        uint32_t diameter_;
+            bool containsVertex(const Vertex &_v, const std::vector< std::reference_wrapper< Vertex > > &_list) const;
+
+            std::priority_queue<Vertex *, std::vector<Vertex *>, greaterSegmentWrapper> seg_queue_;
+            uint32_t neutral_cost_ = 1;
+            uint32_t diameter_;
 
 
-        std::unique_ptr<Heuristic> hx_;
-        std::unique_ptr<PotentialCalculator> pCalc_;
-        const RouteCoordinator *route_querry_;
-        std::unique_ptr<CollisionResolution> collision_resolution_;
+            std::unique_ptr<Heuristic> hx_;
+            std::unique_ptr<PotentialCalculator> pCalc_;
+            std::unique_ptr<CollisionResolution> collision_resolution_;
 
-        std::vector<uint32_t> collisions_robots_;
-};
-
+            const RouteCoordinator *route_querry_;
+            std::vector<uint32_t> collisions_robots_;
+            std::vector<std::unique_ptr<Vertex>> startSegments_;
+    };
+}
 #endif

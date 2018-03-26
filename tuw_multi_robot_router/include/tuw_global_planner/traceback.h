@@ -33,13 +33,15 @@
 #include <vector>
 #include <tuw_global_planner/srr_utils.h>
 
-class Traceback
+namespace multi_robot_router
 {
-    public:
-        Traceback() {}
-        virtual bool getPath(const Vertex &_startSeg, const Vertex &_endSeg, std::vector<RouteVertex>& _path) const;
-    private:
-        virtual bool isSuccessor(const Vertex *_vertex, const Vertex *_succ) const;
-};
-
+    class Traceback
+    {
+        public:
+            Traceback() {}
+            virtual bool getPath(const Vertex &_startSeg, const Vertex &_endSeg, std::vector<RouteVertex> &_path) const;
+        private:
+            virtual bool isSuccessor(const Vertex *_vertex, const Vertex *_succ) const;
+    };
+}
 #endif // TRACEBACK_H

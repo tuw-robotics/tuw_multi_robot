@@ -38,90 +38,92 @@
 #include <map>
 #include <eigen3/Eigen/Dense>
 
-class PointExpander
+namespace multi_robot_router
 {
-    public:
-        void initialize(const cv::Mat &_map);
-        bool findGoalOnMap(const Eigen::Vector2d &_start, const uint32_t &_cycles, float* _potential, const std::map<uint32_t, Eigen::Vector2d> &_goals, const uint32_t &_optimizationSteps, Eigen::Vector2d &_foundPoint, int32_t &_segIdx, const uint32_t &_radius);
-        float getDistanceToObstacle(const Eigen::Vector2d &vec);
-    private:
-        template <class T, class S, class C>
-        void clearpq(std::priority_queue<T, S, C>& q)
-        {
-            q = std::priority_queue<T, S, C>();
-        }
-        class Index
-        {
-            public:
-
-                Index(int index, float c, float d, float p)
-                {
-                    i = index;
-                    weight = c;
-                    dist = d;
-                    potential = p;
-                }
-
-                Index(int x_val, int y_val, int nx, float c, float d, float p)
-                {
-                    i = x_val + y_val * nx;
-                    weight = c;
-                    dist = d;
-                    potential = p;
-                }
-
-                Index offsetDist(int dist_x, int dist_y, int nx, int ny)
-                {
-                    int x_val = (i % nx) + dist_x;
-                    int y_val = (i / nx) + dist_y;
-
-                    if(x_val < 0 || x_val > nx || y_val < 0 || y_val > ny)
-                        return Index(-1, -1, -1, -1);
-
-                    return Index(x_val, y_val, nx, 0, 0, 0);
-                }
-
-                int getX(int nx)
-                {
-                    return (i % nx);
-                }
-
-                int getY(int nx)
-                {
-                    return (i / nx);
-                }
-
-                float distance(Index _p, int _nx)
-                {
-                    float dx = abs(getX(_nx) - _p.getX(_nx));
-                    float dy = abs(getY(_nx) - _p.getY(_nx));
-
-                    return std::sqrt(dx * dx + dy * dy);
-                }
-
-                int i;
-                float weight;
-                float dist;
-                float cost;
-                float potential;
-        };
-
-        struct greater1
-        {
-            bool operator()(const Index& a, const Index& b) const
+    class PointExpander
+    {
+        public:
+            void initialize(const cv::Mat &_map);
+            bool findGoalOnMap(const Eigen::Vector2d &_start, const uint32_t &_cycles, float *_potential, const std::map<uint32_t, Eigen::Vector2d> &_goals, const uint32_t &_optimizationSteps, Eigen::Vector2d &_foundPoint, int32_t &_segIdx, const uint32_t &_radius);
+            float getDistanceToObstacle(const Eigen::Vector2d &vec);
+        private:
+            template <class T, class S, class C>
+            void clearpq(std::priority_queue<T, S, C> &q)
             {
-                return a.weight > b.weight;
+                q = std::priority_queue<T, S, C>();
             }
-        };
-        std::priority_queue<Index, std::vector<Index>, greater1> queue_;
-        int nx_, ny_, ns_;
-        Index findGoal(const Index &_start, const uint32_t &_cycles, float* _potential, const std::map<uint32_t, Index> &_goals, const uint32_t &_optimizationSteps, int32_t &segIdx, const uint32_t &_radius);
-        void addPotentialExpansionCandidate(Index _current, int32_t _next_x, int32_t _next_y, float* _potential, uint32_t _distToObstacle);
-        bool isGoal(Index _p, const std::map<uint32_t, Index> &_goals, int32_t &segIdx);
+            class Index
+            {
+                public:
 
-        cv::Mat distance_field_;
-        float neutral_cost_ = 1;
+                    Index(int index, float c, float d, float p)
+                    {
+                        i = index;
+                        weight = c;
+                        dist = d;
+                        potential = p;
+                    }
 
-};
+                    Index(int x_val, int y_val, int nx, float c, float d, float p)
+                    {
+                        i = x_val + y_val * nx;
+                        weight = c;
+                        dist = d;
+                        potential = p;
+                    }
 
+                    Index offsetDist(int dist_x, int dist_y, int nx, int ny)
+                    {
+                        int x_val = (i % nx) + dist_x;
+                        int y_val = (i / nx) + dist_y;
+
+                        if(x_val < 0 || x_val > nx || y_val < 0 || y_val > ny)
+                            return Index(-1, -1, -1, -1);
+
+                        return Index(x_val, y_val, nx, 0, 0, 0);
+                    }
+
+                    int getX(int nx)
+                    {
+                        return (i % nx);
+                    }
+
+                    int getY(int nx)
+                    {
+                        return (i / nx);
+                    }
+
+                    float distance(Index _p, int _nx)
+                    {
+                        float dx = abs(getX(_nx) - _p.getX(_nx));
+                        float dy = abs(getY(_nx) - _p.getY(_nx));
+
+                        return std::sqrt(dx * dx + dy * dy);
+                    }
+
+                    int i;
+                    float weight;
+                    float dist;
+                    float cost;
+                    float potential;
+            };
+
+            struct greater1
+            {
+                bool operator()(const Index &a, const Index &b) const
+                {
+                    return a.weight > b.weight;
+                }
+            };
+            std::priority_queue<Index, std::vector<Index>, greater1> queue_;
+            int nx_, ny_, ns_;
+            Index findGoal(const Index &_start, const uint32_t &_cycles, float *_potential, const std::map<uint32_t, Index> &_goals, const uint32_t &_optimizationSteps, int32_t &segIdx, const uint32_t &_radius);
+            void addPotentialExpansionCandidate(Index _current, int32_t _next_x, int32_t _next_y, float *_potential, uint32_t _distToObstacle);
+            bool isGoal(Index _p, const std::map<uint32_t, Index> &_goals, int32_t &segIdx);
+
+            cv::Mat distance_field_;
+            float neutral_cost_ = 1;
+
+    };
+}
 #endif // VORONOI_EXPANDER_H

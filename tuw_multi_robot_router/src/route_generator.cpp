@@ -28,81 +28,84 @@
 
 #include <tuw_global_planner/route_generator.h>
 
-std::vector< std::vector< Checkpoint > > RouteGenerator::generatePath(const std::vector< std::vector< RouteVertex > > &_paths, const RouteCoordinator &routeQuerry_) const
+namespace multi_robot_router
 {
-    std::vector<std::vector<Checkpoint>> generatedPaths;
-
-    for(uint32_t i = 0; i < _paths.size(); i++)
+    std::vector< std::vector< Checkpoint > > RouteGenerator::generatePath(const std::vector< std::vector< RouteVertex > > &_paths, const RouteCoordinator &routeQuerry_) const
     {
-        std::vector<Checkpoint> generatedPath;
+        std::vector<std::vector<Checkpoint>> generatedPaths;
 
-        for(uint32_t j = 0; j < _paths[i].size(); j++)
+        for(uint32_t i = 0; i < _paths.size(); i++)
         {
-            if(_paths[i][j].direction == RouteVertex::path_direction::none)
+            std::vector<Checkpoint> generatedPath;
+
+            for(uint32_t j = 0; j < _paths[i].size(); j++)
             {
-                generatedPath.clear();
-                return generatedPaths;
+                if(_paths[i][j].direction == RouteVertex::path_direction::none)
+                {
+                    generatedPath.clear();
+                    return generatedPaths;
+                }
+
+
+                Checkpoint seg;
+                seg = createElement(_paths[i][j]);
+
+                addPreconditions(seg, _paths[i][j], i, _paths, routeQuerry_);
+                generatedPath.push_back(seg);
             }
 
-
-            Checkpoint seg;
-            seg = createElement(_paths[i][j]);
-
-            addPreconditions(seg, _paths[i][j], i, _paths, routeQuerry_);
-            generatedPath.push_back(seg);
+            generatedPaths.push_back(generatedPath);
         }
 
-        generatedPaths.push_back(generatedPath);
+        return generatedPaths;
     }
 
-    return generatedPaths;
-}
 
 
-
-Checkpoint RouteGenerator::createElement(const RouteVertex &_element) const
-{
-    Checkpoint ps;
-
-    if(_element.direction == RouteVertex::path_direction::start_to_end)
+    Checkpoint RouteGenerator::createElement(const RouteVertex &_element) const
     {
-        ps.segId = _element.getSegment().getSegmentId();
-        ps.end[0] = _element.getSegment().getStart()[0];
-        ps.end[1] = _element.getSegment().getStart()[1];
-        ps.start[0] = _element.getSegment().getEnd()[0];
-        ps.start[1] = _element.getSegment().getEnd()[1];
-    }
-    else
-    {
-        ps.segId = _element.getSegment().getSegmentId();
-        ps.end[0] = _element.getSegment().getEnd()[0];
-        ps.end[1] = _element.getSegment().getEnd()[1];
-        ps.start[0] = _element.getSegment().getStart()[0];
-        ps.start[1] = _element.getSegment().getStart()[1];
-    }
+        Checkpoint ps;
 
-    return ps;
-}
-
-void RouteGenerator::addPreconditions(Checkpoint &_segment, const RouteVertex &_segToFind, const uint32_t _pathNr, const std::vector<std::vector<RouteVertex>> &_paths, const RouteCoordinator &routeQuerry_) const
-{
-    std::vector<std::pair<uint32_t, float>> list = routeQuerry_.getListOfRobotsHigherPrioritizedRobots(_pathNr, _segToFind.getSegment().getSegmentId(), _segToFind.potential);
-    _segment.preconditions.clear();
-
-    for(const std::pair<uint32_t, float> &rob : list)
-    {
-        bool found = false;
-
-        for(uint32_t i = 0; i < _paths[rob.first].size(); i++)
+        if(_element.direction == RouteVertex::path_direction::start_to_end)
         {
-            if(_paths[rob.first][i].potential >= rob.second)
+            ps.segId = _element.getSegment().getSegmentId();
+            ps.end[0] = _element.getSegment().getStart()[0];
+            ps.end[1] = _element.getSegment().getStart()[1];
+            ps.start[0] = _element.getSegment().getEnd()[0];
+            ps.start[1] = _element.getSegment().getEnd()[1];
+        }
+        else
+        {
+            ps.segId = _element.getSegment().getSegmentId();
+            ps.end[0] = _element.getSegment().getEnd()[0];
+            ps.end[1] = _element.getSegment().getEnd()[1];
+            ps.start[0] = _element.getSegment().getStart()[0];
+            ps.start[1] = _element.getSegment().getStart()[1];
+        }
+
+        return ps;
+    }
+
+    void RouteGenerator::addPreconditions(Checkpoint &_segment, const RouteVertex &_segToFind, const uint32_t _pathNr, const std::vector<std::vector<RouteVertex>> &_paths, const RouteCoordinator &routeQuerry_) const
+    {
+        std::vector<std::pair<uint32_t, float>> list = routeQuerry_.getListOfRobotsHigherPrioritizedRobots(_pathNr, _segToFind.getSegment().getSegmentId(), _segToFind.potential);
+        _segment.preconditions.clear();
+
+        for(const std::pair<uint32_t, float> &rob : list)
+        {
+            bool found = false;
+
+            for(uint32_t i = 0; i < _paths[rob.first].size(); i++)
             {
-                Checkpoint::Precondition pc;
-                pc.robotId = rob.first;
-                pc.stepCondition = i;
-                _segment.preconditions.push_back(pc);
-                found = true;
-                break;
+                if(_paths[rob.first][i].potential >= rob.second)
+                {
+                    Checkpoint::Precondition pc;
+                    pc.robotId = rob.first;
+                    pc.stepCondition = i;
+                    _segment.preconditions.push_back(pc);
+                    found = true;
+                    break;
+                }
             }
         }
     }

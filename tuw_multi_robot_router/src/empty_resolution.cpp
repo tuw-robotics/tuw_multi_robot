@@ -26,49 +26,49 @@
  *
  */
 
-//TODO Dont use depth first search for priority queue (use breadth first search instead and abort at first match) queue       
-
 
 #include <tuw_global_planner/empty_resolution.h>
 #include <iostream>
 
-EmptyResolution::EmptyResolution(uint32_t _timeoverlap)
+namespace multi_robot_router
 {
-    encounteredCollisions_.clear();
+    EmptyResolution::EmptyResolution()
+    {
+        encounteredCollisions_.clear();
+    }
+
+    void EmptyResolution::resetSession(const RouteCoordinator *_route_querry, const PotentialCalculator *_pCalc, const uint32_t _robotDiameter)
+    {
+        encounteredCollisions_.clear();
+    }
+
+
+    void EmptyResolution::addCollision(const uint32_t robot)
+    {
+        if(encounteredCollisions_.size() <= robot)
+            encounteredCollisions_.resize(robot + 1, 0);
+
+        encounteredCollisions_[robot]++;
+    }
+
+    void EmptyResolution::saveCollision(const uint32_t _coll)
+    {
+        addCollision(_coll);
+    }
+
+
+    const std::vector< uint32_t > &EmptyResolution::getRobotCollisions() const
+    {
+        return encounteredCollisions_;
+    }
+
+
+    std::vector<std::reference_wrapper<Vertex>> EmptyResolution::resolve(Vertex &_current, Vertex &_next, int32_t _collision)
+    {
+        addCollision(_collision);
+
+        return foundSolutions_;
+    }
 }
-
-void EmptyResolution::resetSession(const RouteCoordinator *_route_querry, const PotentialCalculator *_pCalc, const uint32_t _robotDiameter)
-{
-    encounteredCollisions_.clear();
-}
-
-
-void EmptyResolution::addCollision(const uint32_t robot)
-{
-    if(encounteredCollisions_.size() <= robot)
-        encounteredCollisions_.resize(robot + 1, 0);
-
-    encounteredCollisions_[robot]++;
-}
-
-void EmptyResolution::saveCollision(const uint32_t _coll)
-{
-    addCollision(_coll);
-}
-
-
-const std::vector< uint32_t > &EmptyResolution::getRobotCollisions() const
-{
-    return encounteredCollisions_;
-}
-
-
-std::vector<std::reference_wrapper<Vertex>> EmptyResolution::resolve(Vertex &_current, Vertex &_next, int32_t _collision)
-{
-    addCollision(_collision);
-
-    return foundSolutions_;
-}
-
 
 

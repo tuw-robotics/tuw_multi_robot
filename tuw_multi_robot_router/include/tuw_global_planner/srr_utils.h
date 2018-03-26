@@ -36,79 +36,79 @@
 #include <eigen3/Eigen/Dense>
 
 
-class Segment
+namespace multi_robot_router
 {
-    public:
-        Segment(const uint32_t &_id, const std::vector<Eigen::Vector2d> &_points, const std::vector<uint32_t> &_successors, const std::vector<uint32_t> &_predecessors, const float &_width);
-        uint32_t getSegmentId() const;
-        float width() const;
-        float length() const;
+    class Segment
+    {
+        public:
+            Segment(const uint32_t &_id, const std::vector<Eigen::Vector2d> &_points, const std::vector<uint32_t> &_successors, const std::vector<uint32_t> &_predecessors, const float &_width);
+            uint32_t getSegmentId() const;
+            float width() const;
+            float length() const;
 
-        const std::vector<Eigen::Vector2d> &getPoints() const;
-        const std::vector<uint32_t> &getPredecessors() const;
-        const std::vector<uint32_t> &getSuccessors() const;
+            const std::vector<Eigen::Vector2d> &getPoints() const;
+            const std::vector<uint32_t> &getPredecessors() const;
+            const std::vector<uint32_t> &getSuccessors() const;
 
-        const Eigen::Vector2d &getStart() const;
-        const Eigen::Vector2d &getEnd() const;
-    private:
-        uint32_t segmentId_;
-        float width_;
-        float length_;
-        std::vector<Eigen::Vector2d> points_;
-        std::vector<uint32_t> predecessors_;
-        std::vector<uint32_t> successors_;
-};
-
-
-class Vertex
-{
-    public:
-        Vertex(const Segment &_seg);
-        const std::vector<std::reference_wrapper<Vertex>> &getPlanningSuccessors() const;
-        const std::vector<std::reference_wrapper<Vertex>> &getPlanningPredecessors() const;
-
-        void initNeighbours(std::vector<std::unique_ptr<Vertex>> &_sortedVertices, const uint32_t _minSegmentWidth=0);
-        
-        const Segment &getSegment() const;
-        void updateVertex(const Vertex &_v);
-
-        int32_t potential = 0;            //Endtime (the time a robot is supposed to leave the segment)
-        int32_t collision = 0;
-        int32_t weight = 0;
-        bool crossingPredecessor = false;
-        bool crossingSuccessor = false;
-        bool isWaitSegment = false;
-        Vertex *predecessor_=NULL;
-        Vertex *successor_=NULL;
-    private:
-        std::vector<std::reference_wrapper<Vertex>> successors_;
-        std::vector<std::reference_wrapper<Vertex>> predecessors_;
-        const Segment &segment_;
-};
+            const Eigen::Vector2d &getStart() const;
+            const Eigen::Vector2d &getEnd() const;
+        private:
+            uint32_t segmentId_;
+            float width_;
+            float length_;
+            std::vector<Eigen::Vector2d> points_;
+            std::vector<uint32_t> predecessors_;
+            std::vector<uint32_t> successors_;
+    };
 
 
-class RouteVertex
-{
-    public:
-        enum class path_direction
-        {
-            none,
-            start_to_end,
-            end_to_start
-        };
-        RouteVertex(const Vertex& _vertex);
-        RouteVertex(const RouteVertex& _vertex);
-        const Segment &getSegment() const;
+    class Vertex
+    {
+        public:
+            Vertex(const Segment &_seg);
+            const std::vector<std::reference_wrapper<Vertex>> &getPlanningSuccessors() const;
+            const std::vector<std::reference_wrapper<Vertex>> &getPlanningPredecessors() const;
 
-        int32_t potential = 0;
-        int32_t collision = 0;
-        bool overlapPredecessor = false;
-        bool overlapSuccessor = false;
-        path_direction direction;
-        const Segment &segment_;
-};
+            void initNeighbours(std::vector<std::unique_ptr<Vertex>> &_sortedVertices, const uint32_t _minSegmentWidth = 0);
+
+            const Segment &getSegment() const;
+            void updateVertex(const Vertex &_v);
+
+            int32_t potential = 0;            //Endtime (the time a robot is supposed to leave the segment)
+            int32_t collision = 0;
+            int32_t weight = 0;
+            bool crossingPredecessor = false;
+            bool crossingSuccessor = false;
+            bool isWaitSegment = false;
+            Vertex *predecessor_ = NULL;
+            Vertex *successor_ = NULL;
+        private:
+            std::vector<std::reference_wrapper<Vertex>> successors_;
+            std::vector<std::reference_wrapper<Vertex>> predecessors_;
+            const Segment &segment_;
+    };
 
 
+    class RouteVertex
+    {
+        public:
+            enum class path_direction
+            {
+                none,
+                start_to_end,
+                end_to_start
+            };
+            RouteVertex(const Vertex &_vertex);
+            RouteVertex(const RouteVertex &_vertex);
+            const Segment &getSegment() const;
 
+            int32_t potential = 0;
+            int32_t collision = 0;
+            bool overlapPredecessor = false;
+            bool overlapSuccessor = false;
+            path_direction direction;
+            const Segment &segment_;
+    };
+}
 
 #endif

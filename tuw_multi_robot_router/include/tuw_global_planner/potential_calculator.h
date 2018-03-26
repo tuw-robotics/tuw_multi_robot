@@ -31,17 +31,19 @@
 
 #include <tuw_global_planner/srr_utils.h>
 
-class PotentialCalculator
+namespace multi_robot_router
 {
-    public:
-        PotentialCalculator();
-        PotentialCalculator(const float & _multiplier);
-        void SetMultiplier(const float & _multiplier);
-        float CalculatePotential(const Vertex &_vertex) const;
-        float CalculatePotential(const Segment &_segment) const;
+    class PotentialCalculator
+    {
+        public:
+            PotentialCalculator();
+            PotentialCalculator(const float &_multiplier);
+            void SetMultiplier(const float &_multiplier);
+            float CalculatePotential(const Vertex &_vertex) const;
+            float CalculatePotential(const Segment &_segment) const;
 
-    private:
-        float multiplier_;
-};
-
+        private:
+            float multiplier_;
+    };
+}
 #endif

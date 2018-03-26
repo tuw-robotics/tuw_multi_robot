@@ -29,78 +29,75 @@
 #ifndef PLANNER_NODE_H
 #define PLANNER_NODE_H
 
-
+//ROS
+#include <ros/ros.h>
 #include <tuw_multi_robot_msgs/PoseIdArray.h>
 #include <tuw_multi_robot_msgs/PoseId.h>
-#include <ros/ros.h>
 #include <nav_msgs/Odometry.h>
-#include <nav_msgs/Path.h>
 #include <tuw_multi_robot_msgs/VoronoiGraph.h>
-#include <memory>
-#include <nav_msgs/OccupancyGrid.h>     //DEBUG
+#include <nav_msgs/Path.h>
+#include <nav_msgs/OccupancyGrid.h>
 #include <tuw_multi_robot_msgs/PlannerStatus.h>
-#include <opencv/cv.hpp>
-#include <std_msgs/Float32MultiArray.h>
+#include <dynamic_reconfigure/server.h>
+#include <tuw_multi_robot_router/MultiRobotRouterConfig.h>
 
 #include <tuw_global_planner/planner.h>
 #include <tuw_global_planner/mrr_utils.h>
+#include <opencv/cv.hpp>
 
-class Planner_Node :  Planner
+namespace multi_robot_router
 {
-    public:     Planner_Node(ros::NodeHandle &n);
+    class Planner_Node :  Planner
+    {
+        public:
+            Planner_Node(ros::NodeHandle &n);
+            void PublishEmpty();
+            void Publish();
+            ros::NodeHandle                 n_;      ///< Node handler to the root node
+            ros::NodeHandle                 n_param_;///< Node handler to the current node
+            std::unique_ptr<ros::Rate>      rate_;
 
-    public:     void PublishEmpty();
-    public:     void Publish();
-//ROS:
-    public:     ros::NodeHandle                 n_;      ///< Node handler to the root node
-    public:     ros::NodeHandle                 n_param_;///< Node handler to the current node
-    public:     std::unique_ptr<ros::Rate>      rate_;
+        private:
+            dynamic_reconfigure::Server<tuw_multi_robot_router::MultiRobotRouterConfig> param_server;
+            dynamic_reconfigure::Server<tuw_multi_robot_router::MultiRobotRouterConfig>::CallbackType call_type;
+            std::vector<ros::Publisher>         pubPaths_;
+            std::vector<ros::Publisher>         pubSegPaths_;
+            ros::Publisher                      pubPlannerStatus_;
 
-// ROS Publishers
-    private:
-        std::vector<ros::Publisher>         pubPaths_;
-        std::vector<ros::Publisher>         pubSegPaths_;
-        std::vector<ros::Publisher>         pubVelocityProfile_;
-        ros::Publisher                      pubPlannerStatus_;
+            std::vector<ros::Subscriber>        subOdom_;
+            ros::Subscriber                     subGoalSet_;
+            ros::Subscriber                     subMap_;
+            ros::Subscriber                     subVoronoiGraph_;
 
-        std::vector<ros::Subscriber>        subOdom_;
-        ros::Subscriber                     subGoalSet_;
-        ros::Subscriber                     subMap_;
-        ros::Subscriber                     subVoronoiGraph_;
+            std::vector<std::string>            robot_names_;
+            cv::Mat                             distMap_;
+            Eigen::Vector2d                     mapOrigin_;
+            float                               mapResolution_;
+            std::vector<float>                  robot_radius_;
+            std::string                         segpath_topic_;
+            std::string                         odom_topic_;
+            std::string                         path_topic_;
+            std::string                         goal_topic_;
+            std::string                         map_topic_;
+            std::string                         voronoi_topic_;
+            std::string                         planner_status_topic_;
+            bool                                got_map_ = false;
+            bool                                got_graph_ = false;
+            std::vector<Segment>                graph_;
+            size_t                              current_map_hash_;
+            size_t                              current_graph_hash_;
+            int                                 id_;
 
-
-        std::vector<std::string>            robot_names_;
-        //private:    std::shared_ptr<unsigned char>      map_;
-        cv::Mat                             distMap_;
-        Eigen::Vector2d                     mapOrigin_;
-        float                               mapResolution_;
-        std::vector<float>                  robot_radius_;
-        std::string                         segpath_topic_;
-        std::string                         odom_topic_;
-        std::string                         path_topic_;
-        std::string                         goal_topic_;
-        std::string                         map_topic_;
-        std::string                         voronoi_topic_;
-        std::string                         velocity_topic_;
-        std::string                         planner_status_topic_;
-        bool                                got_map_ = false;
-        bool                                got_graph_ = false;
-        std::vector<Segment>                graph_;
-        size_t                              current_map_hash_;
-        size_t                              current_graph_hash_;
-        int                                 id_;
-
-        void odomCallback(const ros::MessageEvent<nav_msgs::Odometry const>& _event, int _topic);
-        void graphCallback(const tuw_multi_robot_msgs::VoronoiGraph& msg);
-        void goalsCallback(const tuw_multi_robot_msgs::PoseIdArray& _goals);
-        void mapCallback(const nav_msgs::OccupancyGrid& _map);
-
-        static bool sortSegments(const Segment &i, const Segment &j) {return i.getSegmentId() < j.getSegmentId();}
-
-        size_t getHash(const std::vector<signed char> &_map, const Eigen::Vector2d &_origin, const float &_resolution);
-        size_t getHash(const std::vector<Segment> &_graph);
-};
-
+            void parametersCallback(tuw_multi_robot_router::MultiRobotRouterConfig &config, uint32_t level);
+            void odomCallback(const ros::MessageEvent<nav_msgs::Odometry const> &_event, int _topic);
+            void graphCallback(const tuw_multi_robot_msgs::VoronoiGraph &msg);
+            void goalsCallback(const tuw_multi_robot_msgs::PoseIdArray &_goals);
+            void mapCallback(const nav_msgs::OccupancyGrid &_map);
+            size_t getHash(const std::vector<signed char> &_map, const Eigen::Vector2d &_origin, const float &_resolution);
+            size_t getHash(const std::vector<Segment> &_graph);
+            static bool sortSegments(const Segment &i, const Segment &j) { return i.getSegmentId() < j.getSegmentId(); }
+    };
+}
 #endif // PLANNER_NODE_H
 
 

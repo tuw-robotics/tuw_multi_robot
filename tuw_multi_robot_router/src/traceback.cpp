@@ -29,44 +29,53 @@
 #include <tuw_global_planner/traceback.h>
 #include <ros/ros.h>
 
-bool Traceback::getPath(const Vertex &_startSeg, const Vertex &_endSeg, std::vector<RouteVertex>& _path) const
+namespace multi_robot_router
 {
-    const Vertex *current = &_endSeg;
-    const Vertex* predecessor = current->predecessor_;  
-    
-    //Set moving direction
-    _path.emplace_back(*current);                                                
-    _path.back().direction = RouteVertex::path_direction::end_to_start;  
-    if(predecessor != NULL && isSuccessor(current, predecessor)) 
-        _path.back().direction = RouteVertex::path_direction::start_to_end;  
 
-
-    while(current->predecessor_ != NULL)
+    bool Traceback::getPath(const Vertex &_startSeg, const Vertex &_endSeg, std::vector<RouteVertex> &_path) const
     {
-        const Vertex* pred = current->predecessor_;
+        const Vertex *current = &_endSeg;
+        const Vertex *predecessor = current->predecessor_;
 
-        _path.emplace_back(*pred);
-        if(isSuccessor(pred, current)) 
-            _path.back().direction = RouteVertex::path_direction::end_to_start;    //-1
-        else
-            _path.back().direction = RouteVertex::path_direction::start_to_end;    //1
+        //Set moving direction
+        _path.emplace_back(*current);
+        _path.back().direction = RouteVertex::path_direction::end_to_start;
 
-        current = pred;
+        if(predecessor != NULL && isSuccessor(current, predecessor))
+            _path.back().direction = RouteVertex::path_direction::start_to_end;
+
+
+        while(current->predecessor_ != NULL)
+        {
+            const Vertex *pred = current->predecessor_;
+
+            _path.emplace_back(*pred);
+
+            if(isSuccessor(pred, current))
+                _path.back().direction = RouteVertex::path_direction::end_to_start;    //-1
+            else
+                _path.back().direction = RouteVertex::path_direction::start_to_end;    //1
+
+            current = pred;
+        }
+
+        if(_path.back().getSegment().getSegmentId() != _startSeg.getSegment().getSegmentId())
+            return false;
+
+        return true;
     }
 
-    if(_path.back().getSegment().getSegmentId() != _startSeg.getSegment().getSegmentId())
+    bool Traceback::isSuccessor(const Vertex *_vertex, const Vertex *_succ) const
+    {
+        const std::vector<std::reference_wrapper<Vertex>> succ = _vertex->getPlanningSuccessors();
+
+        for(const Vertex & s : succ)
+        {
+            if(s.getSegment().getSegmentId() == _succ->getSegment().getSegmentId())
+                return true;
+        }
+
         return false;
-    
-    return true;
-}
-
-bool Traceback::isSuccessor(const Vertex *_vertex, const Vertex *_succ) const
-{
-    const std::vector<std::reference_wrapper<Vertex>> succ = _vertex->getPlanningSuccessors();
-    for(const Vertex &s : succ)
-    {
-        if(s.getSegment().getSegmentId() == _succ->getSegment().getSegmentId())
-            return true;
     }
-    return false;
+
 }

@@ -35,30 +35,33 @@
 #include <tuw_global_planner/traceback.h>
 #include <iostream>
 
-typedef struct Robot
+namespace multi_robot_router
 {
-    int id;
-    float diameter;
-    float speedMultiplier;
-    Robot(int _id, float _d, float _s) : id(_id), diameter(_d), speedMultiplier(_s){}
-    Robot(int _id, float _d) : Robot(_id, _d, 1){}
-}Robot;
+    typedef struct Robot
+    {
+        int id;
+        float diameter;
+        float speedMultiplier;
+        Robot(int _id, float _d, float _s) : id(_id), diameter(_d), speedMultiplier(_s) {}
+        Robot(int _id, float _d) : Robot(_id, _d, 1) {}
+    } Robot;
 
 
-class SingleRobotRouter
-{
-    public:
-        SingleRobotRouter();
-        bool getRouteCandidate(const uint32_t _start, const uint32_t _goal, const RouteCoordinator &path_coordinator, const uint32_t _robotDiameter, const float &_robotSpeed, std::vector<RouteVertex> &path, const uint32_t _maxIterations);
-        const std::vector<uint32_t> &getRobotCollisions() const;
-        void initSearchGraph(const std::vector<Segment> &_graph, const uint32_t minSegmentWidth_=0);
-    private:
-        void resetAttempt();
-        std::unique_ptr<SegmentExpander> segment_expander_;
-        std::unique_ptr<Traceback> traceback_;
-        uint32_t robotDiameter_;
-        //unique_ptr to keep references of Vertex (Heap), because the list is updated while runtime
-        std::vector<std::unique_ptr<Vertex>> searchGraph_;       
-};
-
+    class SingleRobotRouter
+    {
+        public:
+            SingleRobotRouter();
+            bool getRouteCandidate(const uint32_t _start, const uint32_t _goal, const RouteCoordinator &path_coordinator, const uint32_t _robotDiameter, const float &_robotSpeed, std::vector<RouteVertex> &path, const uint32_t _maxIterations);
+            const std::vector<uint32_t> &getRobotCollisions() const;
+            void initSearchGraph(const std::vector<Segment> &_graph, const uint32_t minSegmentWidth_ = 0);
+            void setCollisionResolver(const SegmentExpander::CollisionResolverType cRes);
+        private:
+            void resetAttempt();
+            std::unique_ptr<SegmentExpander> segment_expander_;
+            std::unique_ptr<Traceback> traceback_;
+            uint32_t robotDiameter_;
+            //unique_ptr to keep references of Vertex (Heap), because the list is updated while runtime
+            std::vector<std::unique_ptr<Vertex>> searchGraph_;
+    };
+}
 #endif
