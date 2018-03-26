@@ -33,10 +33,8 @@
 #include <chrono>
 #include <boost/functional/hash.hpp>
 
-//TODO Astar Dijkstra
 //TODO add Weights from robots...
-//TODO multithreaded
-//TODO replanPath
+//TODO multithreaded planner ; multithreded goal selector
 
 int main(int argc, char **argv)
 {
@@ -58,13 +56,12 @@ int main(int argc, char **argv)
 
 namespace multi_robot_router
 {
-    //TODO REMOV DEFAULT ROBOTS
     Planner_Node::Planner_Node(ros::NodeHandle &_n) :
         Planner(),
         n_(_n),
         n_param_("~"),
-        robot_names_(std::vector<std::string> ( {"robot_0", "robot_1", "robot_2"})),    //TODO INIT
-        robot_radius_(std::vector<float> ( {0.3, 0.3, 0.3}))
+        robot_names_(std::vector<std::string> ()),       //{"robot_0", "robot_1", "robot_2"}
+        robot_radius_(std::vector<float> ())
     {
         id_ = 0;
         n_param_.param("robot_names", robot_names_, robot_names_);
@@ -161,6 +158,9 @@ namespace multi_robot_router
             goalMode_ = goalMode::use_segment_goal;
         
         routerTimeLimit_s_ = config.router_time_limit_s;
+        
+        priorityRescheduling_ = config.priority_rescheduling;
+        speedRescheduling_ = config.speed_rescheduling;
     }
 
     void Planner_Node::mapCallback(const nav_msgs::OccupancyGrid &_map)
@@ -271,7 +271,7 @@ namespace multi_robot_router
 
             if(makePlan(goals, robot_radius_, distMap_, mapResolution_, mapOrigin_, graph_))
             {
-                int nx = distMap_.cols;     //TODO Verify
+                int nx = distMap_.cols;
                 int ny = distMap_.rows;
 
 
@@ -394,9 +394,9 @@ namespace multi_robot_router
                 s.end.y = posE[1] + mapOrigin_[1];
 
                 s.segId = c.segId;
-                s.width = graph_[c.segId].width() * mapResolution_;   //TODO      (SEG ID WRONG)
+                s.width = graph_[c.segId].width() * mapResolution_;
 
-                for(int j = 0; j < c.preconditions.size(); j++) //auto precond = (*it).preconditions.cbegin(); precond != (*it).preconditions.cend(); precond++)
+                for(int j = 0; j < c.preconditions.size(); j++)
                 {
                     tuw_multi_robot_msgs::PathPrecondition pc;
                     pc.robotId = c.preconditions[j].robotId;

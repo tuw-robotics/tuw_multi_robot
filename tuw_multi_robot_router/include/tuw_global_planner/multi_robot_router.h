@@ -49,6 +49,8 @@ namespace multi_robot_router
             const uint32_t getPriorityScheduleAttempts() const;
             const uint32_t getSpeedScheduleAttempts() const;
             void setCollisionResolver(const SegmentExpander::CollisionResolverType cRes);
+            void setPriorityRescheduling(const bool _status);
+            void setSpeedRescheduling(const bool _status);
         private:
             void resetAttempt(const std::vector< Segment > &_graph);
             bool planPaths(const std::vector<uint32_t> &_priorityList, const std::vector<float> &_speedList, const std::vector<uint32_t> &_startSegments, const std::vector<uint32_t> &_goalSegments, const uint32_t _firstSchedule, std::vector<std::vector<RouteVertex>> &_routeCandidates, uint32_t &_robot);

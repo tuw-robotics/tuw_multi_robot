@@ -107,12 +107,6 @@ namespace multi_robot_router
         _next.collision = -1;
 
 
-        //if(_freePotential == -1)          //TODO check if return
-        //    std::cout << " error " << std::endl;
-
-        if(_freePotential == -2)
-            std::cout << " error2 " << _collision << " c " << _current.getSegment().getSegmentId() << " n " << _next.getSegment().getSegmentId() << std::endl;
-
         //Return if potential is blocked forever
         if(_freePotential < 0)
             return;
@@ -183,10 +177,6 @@ namespace multi_robot_router
 
 
                     float leavePotential = route_querry_->findPotentialUntilRobotOnSegment(collision, current_n.getSegment().getSegmentId());
-
-                    if(leavePotential == -2)
-                        std::cout << "trackback ? " << current_n.getSegment().getSegmentId() << " n " << next_n.getSegment().getSegmentId() << " c " << collision << " " << leavePotential << std::endl;
-
                     trackBack(current_n, next_n, collision, leavePotential);
 
                     //Continue Resolving (Avoid Segment, Avoid Crossing, ...)

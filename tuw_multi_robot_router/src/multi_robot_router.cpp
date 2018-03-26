@@ -113,10 +113,8 @@ namespace multi_robot_router
         do
         {
             int32_t firstRobot = -1;
-
             do
             {
-              
                 //Find first schedule to replan if speed rescheduling was active
                 //(used for removing from path coordinator)
                 if(firstRobot != -1)
@@ -128,6 +126,8 @@ namespace multi_robot_router
                     }
                 }
                 found = planPaths(priorityList, speedList, _startSegments, _goalSegments, firstSchedule, routeCandidates, lastPlannedRobot);
+            
+                speedScheduleAttempts_++;
                 std::chrono::time_point<std::chrono::high_resolution_clock>  tgoal = std::chrono::high_resolution_clock::now();
                 duration = std::chrono::duration_cast<std::chrono::milliseconds>(tgoal - tstart).count();
                 duration /= 1000;
@@ -180,12 +180,22 @@ namespace multi_robot_router
             }
 
             found = true;
-            speedScheduleAttempts_++;
         }
 
         return found;
     }
 
+    void MultiRobotRouter::setPriorityRescheduling(const bool _status)
+    {
+        usePriorityRescheduler_ = _status;
+    }
+
+    void MultiRobotRouter::setSpeedRescheduling(const bool _status)
+    {
+        useSpeedRescheduler_ = _status;
+    }
+
+    
 }
 
 

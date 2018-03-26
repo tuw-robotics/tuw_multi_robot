@@ -26,8 +26,6 @@
  *
  */
 
-//TODO give potential...
-
 #include <tuw_global_planner/segment_expander.h>
 #include <tuw_global_planner/route_coordinator.h>
 #include <iostream>

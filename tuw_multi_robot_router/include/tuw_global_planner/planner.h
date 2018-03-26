@@ -118,6 +118,8 @@ namespace multi_robot_router
             goalMode goalMode_ = goalMode::use_voronoi_goal;
             uint32_t optimizationSegmentNr_;
             float routerTimeLimit_s_ = 10.0;
+            bool speedRescheduling_ = true;
+            bool priorityRescheduling_ = true;
     };
 }
 #endif // PLANNER_H

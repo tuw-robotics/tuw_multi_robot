@@ -490,7 +490,7 @@ namespace multi_robot_router
         }
 
         if(occupationRobot.robot != _robot)
-            return robots;    //TODO Error Should not happen
+            return robots;   
 
 
         for(const auto & occupation : timeline_[_segId])

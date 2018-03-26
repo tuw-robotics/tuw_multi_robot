@@ -32,7 +32,7 @@
 
 #include <time.h>
 
-#include <ros/ros.h> //DEBUG
+#include <ros/ros.h> 
 
 namespace multi_robot_router
 {
@@ -312,6 +312,8 @@ namespace multi_robot_router
         }
 
         multiRobotRouter_->setRobotRadius(diameter);
+        multiRobotRouter_->setPriorityRescheduling(priorityRescheduling_);
+        multiRobotRouter_->setSpeedRescheduling(speedRescheduling_);
         routingTable_.clear();
 
         if(!multiRobotRouter_->getRoutingTable(_graph, startSegments_, goalSegments_, routingTable_, routerTimeLimit_s_))
