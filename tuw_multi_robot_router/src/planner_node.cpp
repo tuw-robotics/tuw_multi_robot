@@ -61,7 +61,7 @@ namespace multi_robot_router
         Planner(),
         n_(_n),
         n_param_("~"),
-        robot_names_(std::vector<std::string> ()),       //{"robot_0", "robot_1", "robot_2"}
+        robot_names_(std::vector<std::string> ({"robot_0", "robot_1", "robot_2"})),       //{"robot_0", "robot_1", "robot_2"}
         robot_radius_(std::vector<float> ())
     {
         id_ = 0;
@@ -162,6 +162,7 @@ namespace multi_robot_router
         
         priorityRescheduling_ = config.priority_rescheduling;
         speedRescheduling_ = config.speed_rescheduling;
+        segmentOptimizations_ = config.path_endpoint_optimization;
     }
 
     void Planner_Node::mapCallback(const nav_msgs::OccupancyGrid &_map)

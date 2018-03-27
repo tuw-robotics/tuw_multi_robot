@@ -32,7 +32,7 @@
 
 #include <time.h>
 
-#include <ros/ros.h> 
+#include <ros/ros.h>
 
 namespace multi_robot_router
 {
@@ -324,6 +324,9 @@ namespace multi_robot_router
             return false;
         }
 
+        if(segmentOptimizations_)
+            optimizePaths(_graph);
+
         postprocessRoutingTable();
 
 
@@ -346,6 +349,7 @@ namespace multi_robot_router
 
             longestPatLength_ = std::max<int>(longestPatLength_, lengthPath);
         }
+
         longestPatLength_ *= _resolution;
         overallPathLength_ *= _resolution;
 
@@ -354,6 +358,15 @@ namespace multi_robot_router
         //DEBUG STATS
 
         return true;
+    }
+
+    void Planner::optimizePaths(const std::vector<Segment> &_graph)
+    {
+        if(routingTable_.size() > 1)
+            return;
+                
+        routingTable_[0].erase(routingTable_[0].begin(), routingTable_[0].begin() + 1);
+        routingTable_[0].erase(routingTable_[0].end() - 1, routingTable_[0].end());
     }
 
 

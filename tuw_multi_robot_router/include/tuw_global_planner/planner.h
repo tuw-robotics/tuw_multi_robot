@@ -62,7 +62,6 @@ namespace multi_robot_router
             void setCollisionResolutionType(const SegmentExpander::CollisionResolverType _cr);
 
             const std::vector<Checkpoint> &getRoute(const uint32_t _robot);
-            void postprocessRoutingTable();
 
             uint32_t getDuration_ms();
             float getOverallPathLength();
@@ -82,7 +81,12 @@ namespace multi_robot_router
             float distanceToSegment(const Segment &_s, const Eigen::Vector2d &_p);
             //Checks if _seg is a leave of the graph and uses the closes neighbor as segment if the width of the leave is to small
             bool resolveSegment(const std::vector< Segment > &_graph, const uint32_t &_segId, const Eigen::Vector2d &_originPoint, const float &_radius, uint32_t &_foundSeg);
-          
+            //for every path remove the first and last "segmentOptimizations_" number of segments if possible
+            void optimizePaths(const std::vector<Segment> &_graph);
+            //adds start and endpoints to the path
+            void postprocessRoutingTable();
+            
+            
             uint32_t robot_nr_;
             std::vector<bool> pose_received_;
             std::vector<Eigen::Vector2d> robot_poses_;
@@ -116,8 +120,8 @@ namespace multi_robot_router
             };
             graphType graphMode_ = graphType::voronoi;
             goalMode goalMode_ = goalMode::use_voronoi_goal;
-            uint32_t optimizationSegmentNr_;
             float routerTimeLimit_s_ = 10.0;
+            bool segmentOptimizations_= false;
             bool speedRescheduling_ = true;
             bool priorityRescheduling_ = true;
     };

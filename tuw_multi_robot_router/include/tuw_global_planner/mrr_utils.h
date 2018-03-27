@@ -15,7 +15,7 @@ namespace multi_robot_router
     } ;
 
 
-    struct Checkpoint
+    class Checkpoint
     {
         public:
             struct Precondition
@@ -46,6 +46,50 @@ namespace multi_robot_router
             }
             Checkpoint(): segId(-1)
             { }
+
+            void updatePreconditions(const Precondition &n_pc)
+            {
+                bool updatedPc = false;
+
+                for(Checkpoint::Precondition & pc : preconditions)
+                {
+                    if(pc.robotId == n_pc.robotId)
+                    {
+                        pc.stepCondition = std::max(pc.stepCondition, n_pc.stepCondition);
+                        updatedPc = true;
+                        break;
+                    }
+                }
+
+                if(!updatedPc)
+                {
+                    preconditions.push_back(n_pc);
+                }
+            }
+            
+            
+            void updatePreconditions(const std::vector<Precondition> &n_pcs)
+            {
+                for(const Checkpoint::Precondition &n_pc : n_pcs)
+                {
+                    bool updatedPc = false;
+
+                    for(Checkpoint::Precondition & pc : preconditions)
+                    {
+                        if(pc.robotId == n_pc.robotId)
+                        {
+                            pc.stepCondition = std::max(pc.stepCondition, n_pc.stepCondition);
+                            updatedPc = true;
+                            break;
+                        }
+                    }
+
+                    if(!updatedPc)
+                    {
+                        preconditions.push_back(n_pc);
+                    }      
+                }
+            }
     };
 }
 #endif

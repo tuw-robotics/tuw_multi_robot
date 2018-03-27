@@ -99,10 +99,11 @@ namespace multi_robot_router
             {
                 if(_paths[rob.first][i].potential >= rob.second)
                 {
-                    Checkpoint::Precondition pc;
-                    pc.robotId = rob.first;
-                    pc.stepCondition = i;
-                    _segment.preconditions.push_back(pc);
+                    Checkpoint::Precondition p;
+                    p.robotId = rob.first;
+                    p.stepCondition = i;
+                    _segment.updatePreconditions(p);
+                    
                     found = true;
                     break;
                 }
