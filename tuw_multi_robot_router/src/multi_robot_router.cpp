@@ -35,7 +35,7 @@ namespace multi_robot_router
 {
 //TODO Multithreaded
 
-    MultiRobotRouter::MultiRobotRouter(const uint32_t _nr_robots, const std::vector<uint32_t> &_robotRadius) : RouteGenerator(), priority_scheduler_(_nr_robots), speed_scheduler_(_nr_robots)
+    MultiRobotRouter::MultiRobotRouter(const uint32_t _nr_robots, const std::vector<uint32_t> &_robotRadius) :  RouteGenerator(), priority_scheduler_(_nr_robots), speed_scheduler_(_nr_robots)
     {
         route_coordinator_ = std::make_unique<RouteCoordinatorTimed>();
         setRobotNr(_nr_robots);
@@ -159,10 +159,11 @@ namespace multi_robot_router
             found = false;
             _robot = _priorityList[i];
 
-            route_coordinator_->setActive(_robot);
+            //route_coordinator_->setActive(_robot);
 
+            RouteCoordinatorWrapper rcWrapper(_robot, *route_coordinator_.get());
             //Worst case scenario: Search whole graph once + n * (move through whole graph to avoid other robot) -> graph.size() * (i+1) iterations
-            if(!srr.getRouteCandidate(_startSegments[_robot], _goalSegments[_robot], *route_coordinator_.get(), robotDiameter_[_robot], _speedList[_robot], _routeCandidates[_robot], maxIterationsSingleRobot_ * (i + 1)))
+            if(!srr.getRouteCandidate(_startSegments[_robot], _goalSegments[_robot], rcWrapper, robotDiameter_[_robot], _speedList[_robot], _routeCandidates[_robot], maxIterationsSingleRobot_ * (i + 1)))
             {
                 //ROS_INFO("Failed Robot");
                 robotCollisions_[_robot] = srr.getRobotCollisions();
@@ -173,7 +174,7 @@ namespace multi_robot_router
             robotCollisions_[_robot] = srr.getRobotCollisions();
             robotCollisions_[_robot].resize(nr_robots_, 0);
 
-            if(!route_coordinator_->addRoute(_routeCandidates[_robot], robotDiameter_[_robot]))
+            if(!route_coordinator_->addRoute(_routeCandidates[_robot], robotDiameter_[_robot], _robot))
             {
                 ROS_INFO("Failed coordinator");
                 break;

@@ -51,10 +51,15 @@ namespace multi_robot_router
     {
         public:
             SingleRobotRouter();
-            bool getRouteCandidate(const uint32_t _start, const uint32_t _goal, const RouteCoordinator &path_coordinator, const uint32_t _robotDiameter, const float &_robotSpeed, std::vector<RouteVertex> &path, const uint32_t _maxIterations);
+            SingleRobotRouter(const SingleRobotRouter &srr);
+            bool getRouteCandidate(const uint32_t _start, const uint32_t _goal, const RouteCoordinatorWrapper &path_coordinator, const uint32_t _robotDiameter, const float &_robotSpeed, std::vector<RouteVertex> &path, const uint32_t _maxIterations);
+            bool getRouteCandidate(const uint32_t _start, const uint32_t _goal, const RouteCoordinatorWrapper &path_coordinator, const uint32_t _robotDiameter, const float &_robotSpeed, const uint32_t _maxIterations);
+            
             const std::vector<uint32_t> &getRobotCollisions() const;
             void initSearchGraph(const std::vector<Segment> &_graph, const uint32_t minSegmentWidth_ = 0);
             void setCollisionResolver(const SegmentExpander::CollisionResolverType cRes);
+            bool getLastResult();
+            std::vector<RouteVertex> &getLastRoute();
         private:
             void resetAttempt();
             std::unique_ptr<SegmentExpander> segment_expander_;
@@ -62,6 +67,8 @@ namespace multi_robot_router
             uint32_t robotDiameter_;
             //unique_ptr to keep references of Vertex (Heap), because the list is updated while runtime
             std::vector<std::unique_ptr<Vertex>> searchGraph_;
+            bool lastAttempt_ = false;
+            std::vector<RouteVertex> path_;
     };
 }
 #endif

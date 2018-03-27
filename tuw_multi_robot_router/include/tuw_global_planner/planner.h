@@ -34,6 +34,7 @@
 #include <opencv/cv.h>
 #include <tuw_global_planner/point_expander.h>
 #include <tuw_global_planner/multi_robot_router.h>
+#include <tuw_global_planner/multi_robot_router_threaded_srr.h>
 
 namespace multi_robot_router
 {

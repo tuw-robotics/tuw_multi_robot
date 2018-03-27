@@ -153,7 +153,7 @@ pioneer2dx_no_sonar
 (
   # can refer to the robot by this name
   name "robot_1"
-  color "blue" 
+  color "green" 
   pose [ -10 19 0 -90 ] 
   hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
 )
@@ -162,7 +162,7 @@ pioneer2dx_no_sonar
 (
   # can refer to the robot by this name
   name "robot_2"
-  color "green" 
+  color "blue" 
   pose [ -6 19 0 -90 ] 
   hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
 )
@@ -171,7 +171,7 @@ pioneer2dx_no_sonar
 (
   # can refer to the robot by this name
   name "robot_3"
-  color "red" 
+  color "yellow" 
   pose [ -2 19 0 -90 ] 
   hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
 )
@@ -180,7 +180,7 @@ pioneer2dx_no_sonar
 (
   # can refer to the robot by this name
   name "robot_4"
-  color "blue" 
+  color "magenta" 
   pose [ 2 19 0 -90 ] 
   hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
 )
@@ -189,7 +189,7 @@ pioneer2dx_no_sonar
 (
   # can refer to the robot by this name
   name "robot_5"
-  color "green" 
+  color "white" 
   pose [ 6 19 0 -90 ] 
   hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
 )
@@ -198,7 +198,7 @@ pioneer2dx_no_sonar
 (
   # can refer to the robot by this name
   name "robot_6"
-  color "red" 
+  color "black" 
   pose [ 10 19 0 -90 ] 
   hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
 )
@@ -207,7 +207,7 @@ pioneer2dx_no_sonar
 (
   # can refer to the robot by this name
   name "robot_7"
-  color "blue" 
+  color "gray" 
   pose [ 14 19 0 -90 ] 
   hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
 )
@@ -216,7 +216,7 @@ pioneer2dx_no_sonar
 (
   # can refer to the robot by this name
   name "robot_8"
-  color "green" 
+  color "orange" 
   pose [ -19 14 0 0 ] 
   hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
 )
@@ -225,7 +225,7 @@ pioneer2dx_no_sonar
 (
   # can refer to the robot by this name
   name "robot_9"
-  color "red" 
+  color "brown" 
   pose [ -19 10 0 0 ] 
   hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
 )
@@ -234,7 +234,7 @@ pioneer2dx_no_sonar
 (
   # can refer to the robot by this name
   name "robot_10"
-  color "blue" 
+  color "cyan" 
   pose [ -19 6 0 0 ] 
   hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
 )
@@ -243,7 +243,7 @@ pioneer2dx_no_sonar
 (
   # can refer to the robot by this name
   name "robot_11"
-  color "green" 
+  color "pink" 
   pose [ -19 2 0 0 ] 
   hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
 )
@@ -252,7 +252,7 @@ pioneer2dx_no_sonar
 (
   # can refer to the robot by this name
   name "robot_12"
-  color "red" 
+  color "purple" 
   pose [ -19 -2 0 0 ] 
   hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
 )
@@ -261,7 +261,7 @@ pioneer2dx_no_sonar
 (
   # can refer to the robot by this name
   name "robot_13"
-  color "blue" 
+  color "khaki" 
   pose [ -19 -6 0 0 ] 
   hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
 )

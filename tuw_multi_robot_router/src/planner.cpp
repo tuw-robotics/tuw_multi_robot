@@ -50,7 +50,7 @@ namespace multi_robot_router
         robot_nr_ = _nr_robots;
         pointExpander_ = std::make_unique<PointExpander>();
         std::vector<uint32_t> robotRadius(_nr_robots, 0);
-        multiRobotRouter_ = std::make_unique<MultiRobotRouter>(_nr_robots, robotRadius);
+        multiRobotRouter_ = std::make_unique<MultiRobotRouterThreadedSrr>(_nr_robots, robotRadius);
 
     }
 

@@ -143,7 +143,7 @@ namespace multi_robot_router
         seg_queue_.push(&_next);
     }
 
-    bool SegmentExpander::calculatePotentials(const RouteCoordinator *_p, Vertex &_start, Vertex &_end, const uint32_t _maxIterations, const uint32_t _diameter)
+    bool SegmentExpander::calculatePotentials(const RouteCoordinatorWrapper *_p, Vertex &_start, Vertex &_end, const uint32_t _maxIterations, const uint32_t _diameter)
     {
         route_querry_ = _p;
 

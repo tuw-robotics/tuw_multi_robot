@@ -53,7 +53,7 @@ namespace multi_robot_router
             };
             SegmentExpander(const Heuristic &_h, const PotentialCalculator &_pCalc, const CollisionResolverType _cRes);
 
-            bool calculatePotentials(const RouteCoordinator *_p, Vertex &_start, Vertex &_end, const uint32_t _maxIterations, const uint32_t _radius);
+            bool calculatePotentials(const RouteCoordinatorWrapper *_p, Vertex &_start, Vertex &_end, const uint32_t _maxIterations, const uint32_t _radius);
             const std::vector<uint32_t> &getRobotCollisions() const;
             void reset();
             void setSpeed(const float &_speed);
@@ -90,7 +90,7 @@ namespace multi_robot_router
             std::unique_ptr<PotentialCalculator> pCalc_;
             std::unique_ptr<CollisionResolution> collision_resolution_;
 
-            const RouteCoordinator *route_querry_;
+            const RouteCoordinatorWrapper *route_querry_;
             std::vector<uint32_t> collisions_robots_;
             std::vector<std::unique_ptr<Vertex>> startSegments_;
     };

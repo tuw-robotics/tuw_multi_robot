@@ -40,7 +40,7 @@ namespace multi_robot_router
         public:
             EmptyResolution();
 
-            void resetSession(const RouteCoordinator *_route_querry, const PotentialCalculator *_pCalc, const uint32_t _robot_radius);
+            void resetSession(const RouteCoordinatorWrapper *_route_querry, const PotentialCalculator *_pCalc, const uint32_t _robot_radius);
             std::vector<std::reference_wrapper<Vertex>> resolve(Vertex &_current, Vertex &_next, int32_t _collision);
             const std::vector<uint32_t> &getRobotCollisions() const;
             void saveCollision(const uint32_t _coll);

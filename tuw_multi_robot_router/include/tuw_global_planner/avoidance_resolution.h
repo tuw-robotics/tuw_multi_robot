@@ -43,7 +43,7 @@ namespace multi_robot_router
             AvoidanceResolution(uint32_t _timeoverlap);
             AvoidanceResolution();
 
-            void resetSession(const RouteCoordinator *_route_querry, const PotentialCalculator *_pCalc, const uint32_t _robot_radius);
+            void resetSession(const RouteCoordinatorWrapper *_route_querry, const PotentialCalculator *_pCalc, const uint32_t _robot_radius);
             std::vector<std::reference_wrapper<Vertex>> resolve(Vertex &_current, Vertex &_next, int32_t _collision);
             const std::vector<uint32_t> &getRobotCollisions() const;
             void saveCollision(const uint32_t _coll);
@@ -65,7 +65,7 @@ namespace multi_robot_router
             void addCollision(const uint32_t robot);
 
 
-            const RouteCoordinator *route_querry_;
+            const RouteCoordinatorWrapper *route_querry_;
             const PotentialCalculator *pCalc_;
             uint32_t timeoverlap_;
             uint32_t robotDiameter_;

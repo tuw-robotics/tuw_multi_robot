@@ -33,24 +33,25 @@
 #include <tuw_global_planner/srr_utils.h>
 #include <tuw_global_planner/priority_scheduler.h>
 #include <tuw_global_planner/route_coordinator_timed.h>
+#include <tuw_global_planner/route_coordinator.h>
 #include <tuw_global_planner/route_generator.h>
 #include <tuw_global_planner/speed_scheduler.h>
 #include <tuw_global_planner/segment_expander.h>
 
 namespace multi_robot_router
 {
-    class MultiRobotRouter : RouteGenerator
+    class MultiRobotRouter : protected RouteGenerator
     {
         public:
             MultiRobotRouter(const uint32_t _nr_robots, const std::vector<uint32_t> &_robotRadius);
-            void setRobotNr(const uint32_t _nr_robots);
-            void setRobotRadius(const std::vector<uint32_t> &_radius);
-            bool getRoutingTable(const std::vector<Segment> &_graph, const std::vector<uint32_t> &_startSegments, const std::vector<uint32_t> &_goalSegments, std::vector<std::vector<Checkpoint>> &_routingTable, const float &_timeLimit);
-            const uint32_t getPriorityScheduleAttempts() const;
-            const uint32_t getSpeedScheduleAttempts() const;
-            void setCollisionResolver(const SegmentExpander::CollisionResolverType cRes);
-            void setPriorityRescheduling(const bool _status);
-            void setSpeedRescheduling(const bool _status);
+            virtual void setRobotNr(const uint32_t _nr_robots);
+            virtual void setRobotRadius(const std::vector<uint32_t> &_radius);
+            virtual bool getRoutingTable(const std::vector<Segment> &_graph, const std::vector<uint32_t> &_startSegments, const std::vector<uint32_t> &_goalSegments, std::vector<std::vector<Checkpoint>> &_routingTable, const float &_timeLimit);
+            virtual const uint32_t getPriorityScheduleAttempts() const;
+            virtual const uint32_t getSpeedScheduleAttempts() const;
+            virtual void setCollisionResolver(const SegmentExpander::CollisionResolverType cRes);
+            virtual void setPriorityRescheduling(const bool _status);
+            virtual void setSpeedRescheduling(const bool _status);
         private:
             void resetAttempt(const std::vector< Segment > &_graph);
             bool planPaths(const std::vector<uint32_t> &_priorityList, const std::vector<float> &_speedList, const std::vector<uint32_t> &_startSegments, const std::vector<uint32_t> &_goalSegments, const uint32_t _firstSchedule, std::vector<std::vector<RouteVertex>> &_routeCandidates, uint32_t &_robot);

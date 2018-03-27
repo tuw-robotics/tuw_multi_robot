@@ -40,7 +40,7 @@ namespace multi_robot_router
     }
 
 
-    bool RouteCoordinatorTimed::addRoute(const std::vector< RouteVertex > &_path, const uint32_t _diameterPixel)
+    bool RouteCoordinatorTimed::addRoute(const std::vector< RouteVertex > &_path, const uint32_t _diameterPixel, const uint32_t _robotId)
     {
         for(uint32_t i = 0; i < _path.size(); i++)
         {
@@ -58,8 +58,9 @@ namespace multi_robot_router
             }
 
 
-            if(!timeline_.addSegment(begin, end, _path[i].getSegment().getSegmentId(), activeRobot_, _diameterPixel, true))
+            if(!timeline_.addSegment(begin, end, _path[i].getSegment().getSegmentId(), _robotId, _diameterPixel, true))
             {
+                removeRobot(_robotId);
                 return false;
             }
 
@@ -69,8 +70,9 @@ namespace multi_robot_router
             {
                 for(const uint32_t  idx : pred)
                 {
-                    if(!timeline_.addCrossingSegment(begin, end, idx, activeRobot_, _diameterPixel, false))
+                    if(!timeline_.addCrossingSegment(begin, end, idx, _robotId, _diameterPixel, false))
                     {
+                        removeRobot(_robotId);
                         return false;
                     }
 
@@ -83,8 +85,9 @@ namespace multi_robot_router
             {
                 for(const uint32_t  idx : succ)
                 {
-                    if(!timeline_.addCrossingSegment(begin, end, idx, activeRobot_, _diameterPixel, false))
-                    {
+                    if(!timeline_.addCrossingSegment(begin, end, idx, _robotId, _diameterPixel, false))
+                    {   
+                        removeRobot(_robotId);
                         return false;
                     }
 
@@ -96,37 +99,37 @@ namespace multi_robot_router
         return true;
     }
 
-    bool RouteCoordinatorTimed::isGoal(const Vertex  &_seg) const
+    bool RouteCoordinatorTimed::isGoal(const Vertex  &_seg, const uint32_t _robotId) const
     {
-        return  _seg.getSegment().getSegmentId() == goalSegments_[activeRobot_];
+        return  _seg.getSegment().getSegmentId() == goalSegments_[_robotId];
     }
 
-    const uint32_t RouteCoordinatorTimed::getEnd() const
+    const uint32_t RouteCoordinatorTimed::getEnd(const uint32_t _robotId) const
     {
-        return goalSegments_[activeRobot_];
+        return goalSegments_[_robotId];
     }
 
-    const uint32_t RouteCoordinatorTimed::getStart() const
+    const uint32_t RouteCoordinatorTimed::getStart(const uint32_t _robotId) const
     {
-        return startSegments_[activeRobot_];
+        return startSegments_[_robotId];
     }
 
 
 
 
 
-    bool RouteCoordinatorTimed::checkSegment(const Vertex &_next, const uint32_t _startTime, const int32_t _endTime, const uint32_t _diameterPixel, int32_t &_collisionRobot, bool _ignoreGoal) const
+    bool RouteCoordinatorTimed::checkSegment(const Vertex &_next, const uint32_t _startTime, const int32_t _endTime, const uint32_t _diameterPixel, int32_t &_collisionRobot, const uint32_t _robotId, bool _ignoreGoal) const
     {
 
         //Bug fix check all neighbour edges for infinity
         int32_t endTime = _endTime;
 
-        if(isGoal(_next) && !_ignoreGoal)
+        if(isGoal(_next, _robotId) && !_ignoreGoal)
         {
             endTime = TIME_INFINITY;
         }
 
-        if(!checkSegmentSingle(_next, _startTime, endTime, _diameterPixel, _collisionRobot, _ignoreGoal))
+        if(!checkSegmentSingle(_next, _startTime, endTime, _diameterPixel, _collisionRobot, _robotId, _ignoreGoal))
         {
             return false;
         }
@@ -137,7 +140,7 @@ namespace multi_robot_router
         {
             for(const uint32_t  idx : pred)
             {
-                if(!timeline_.checkCrossingSegment(_startTime, endTime, idx, activeRobot_, _diameterPixel, _collisionRobot))
+                if(!timeline_.checkCrossingSegment(_startTime, endTime, idx, _robotId, _diameterPixel, _collisionRobot))
                 {
                     return false;
                 }
@@ -151,7 +154,7 @@ namespace multi_robot_router
         {
             for(const uint32_t  idx : succ)
             {
-                if(!timeline_.checkCrossingSegment(_startTime, endTime, idx, activeRobot_, _diameterPixel, _collisionRobot))
+                if(!timeline_.checkCrossingSegment(_startTime, endTime, idx, _robotId, _diameterPixel, _collisionRobot))
                 {
                     return false;
                 }
@@ -163,15 +166,15 @@ namespace multi_robot_router
     }
 
 
-    bool RouteCoordinatorTimed::checkSegmentSingle(const Vertex &_next, const uint32_t _startTime, const int32_t _endTime, const uint32_t _diameterPixel, int32_t &_collisionRobot, const bool &_ignoreGoal) const
+    bool RouteCoordinatorTimed::checkSegmentSingle(const Vertex &_next, const uint32_t _startTime, const int32_t _endTime, const uint32_t _diameterPixel, int32_t &_collisionRobot, const uint32_t _robotId, const bool &_ignoreGoal) const
     {
-        if(isGoal(_next) && !_ignoreGoal)
+        if(isGoal(_next, _robotId) && !_ignoreGoal)
         {
-            return timeline_.checkSegment(_startTime, TIME_INFINITY, _next.getSegment().getSegmentId(), activeRobot_, _diameterPixel, _collisionRobot);
+            return timeline_.checkSegment(_startTime, TIME_INFINITY, _next.getSegment().getSegmentId(), _robotId, _diameterPixel, _collisionRobot);
         }
         else
         {
-            return timeline_.checkSegment(_startTime, _endTime, _next.getSegment().getSegmentId(), activeRobot_, _diameterPixel, _collisionRobot);
+            return timeline_.checkSegment(_startTime, _endTime, _next.getSegment().getSegmentId(), _robotId, _diameterPixel, _collisionRobot);
         }
     }
 
@@ -184,10 +187,6 @@ namespace multi_robot_router
         startSegments_.clear();
     }
 
-    void RouteCoordinatorTimed::setActive(const uint32_t _robotNr)
-    {
-        activeRobot_ = _robotNr;
-    }
 
     bool RouteCoordinatorTimed::setGoalSegments(const std::vector<uint32_t> &_goalSegments)
     {

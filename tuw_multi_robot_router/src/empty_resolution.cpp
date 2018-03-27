@@ -37,7 +37,7 @@ namespace multi_robot_router
         encounteredCollisions_.clear();
     }
 
-    void EmptyResolution::resetSession(const RouteCoordinator *_route_querry, const PotentialCalculator *_pCalc, const uint32_t _robotDiameter)
+    void EmptyResolution::resetSession(const RouteCoordinatorWrapper *_route_querry, const PotentialCalculator *_pCalc, const uint32_t _robotDiameter)
     {
         encounteredCollisions_.clear();
     }

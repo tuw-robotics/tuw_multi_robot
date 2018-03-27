@@ -43,7 +43,7 @@ namespace multi_robot_router
     }
 
 
-    void AvoidanceResolution::resetSession(const RouteCoordinator *_route_querry, const PotentialCalculator *_pCalc, const uint32_t _robotDiameter)
+    void AvoidanceResolution::resetSession(const RouteCoordinatorWrapper *_route_querry, const PotentialCalculator *_pCalc, const uint32_t _robotDiameter)
     {
         route_querry_ = _route_querry;
         pCalc_ = _pCalc;

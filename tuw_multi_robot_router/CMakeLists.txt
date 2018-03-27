@@ -23,6 +23,21 @@ find_package(OpenCV 3 REQUIRED)
 # find_package(Boost REQUIRED COMPONENTS system)
 
 
+
+
+#check for OpenMP
+find_package(OpenMP)
+if(OPENMP_FOUND)
+message (STATUS "OpenMP found ${OpenMP_INCLUDE_DIRS}") 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}" )
+else(OPENMP_FOUND)
+message (STATUS "OpenMP not found")
+endif()
+
+
+
+
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
@@ -131,7 +146,8 @@ include_directories(
 	src/planner.cpp
 	src/srr_utils.cpp
 	src/point_expander.cpp
-	src/multi_robot_router.cpp
+    src/multi_robot_router.cpp
+    src/multi_robot_router_threaded_srr.cpp
 	src/single_robot_router.cpp
 	src/segment_expander.cpp
 	src/route_coordinator_timed.cpp
@@ -139,10 +155,11 @@ include_directories(
 	src/route_generator.cpp
 	src/backtracking_resolution.cpp
 	src/avoidance_resolution.cpp
-        src/empty_resolution.cpp
+    src/empty_resolution.cpp
 	src/priority_scheduler.cpp
 	src/potential_calculator.cpp
 	src/speed_scheduler.cpp
+	src/route_coordinator.cpp
  )
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 

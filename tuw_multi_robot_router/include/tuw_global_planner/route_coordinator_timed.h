@@ -84,24 +84,22 @@ namespace multi_robot_router
         public:
             RouteCoordinatorTimed();
             void reset(const std::vector<Segment>  &_graph, const uint32_t _nrRobots);
-            bool addRoute(const std::vector< RouteVertex > &_path, const uint32_t _diameterPixel);
-            bool checkSegment(const Vertex &_next, const uint32_t _startTime, const int32_t _endTime, const uint32_t _diameterPixel, int32_t &_collisionRobot, bool _ignoreGoal = false) const;
-            void setActive(const uint32_t _robotNr);
+            bool addRoute(const std::vector< RouteVertex > &_path, const uint32_t _diameterPixel, const uint32_t _robotId);
+            bool checkSegment(const Vertex &_next, const uint32_t _startTime, const int32_t _endTime, const uint32_t _diameterPixel, int32_t &_collisionRobot, const uint32_t _robotId, bool _ignoreGoal = false) const;
             bool setGoalSegments(const std::vector<uint32_t> &_goalSegments);
             bool setStartSegments(const std::vector<uint32_t> &_startSegments);
-            bool isGoal(const Vertex &_seg) const;
-            const uint32_t getStart() const;
-            const uint32_t  getEnd() const;
+            bool isGoal(const Vertex &_seg, const uint32_t _robotId) const;
+            const uint32_t getStart(const uint32_t _robotId) const;
+            const uint32_t  getEnd(const uint32_t _robotId) const;
             int32_t findSegNr(const uint32_t _robot, const uint32_t _potential) const;
             int32_t findPotentialUntilRobotOnSegment(const uint32_t _robot, const uint32_t _segId) const;        //-1 means forever
             std::vector<std::pair<uint32_t, float>> getListOfRobotsHigherPrioritizedRobots(const uint32_t _robot, const uint32_t _segId, const int32_t _potential) const;
             void removeRobot(const uint32_t _robot);
         private:
-            bool checkSegmentSingle(const Vertex &_next, const uint32_t _startTime, const int32_t _endTime, const uint32_t _diameterPixel, int32_t &_collisionRobot, const bool &_ignoreGoal) const;
+            bool checkSegmentSingle(const Vertex &_next, const uint32_t _startTime, const int32_t _endTime, const uint32_t _diameterPixel, int32_t &_collisionRobot, const uint32_t _robotId, const bool &_ignoreGoal) const;
 
 
             std::vector< uint32_t > robotSize_;
-            uint32_t activeRobot_ = 0;
             Timeline timeline_;
             std::vector<uint32_t> goalSegments_;
             std::vector<uint32_t> startSegments_;
