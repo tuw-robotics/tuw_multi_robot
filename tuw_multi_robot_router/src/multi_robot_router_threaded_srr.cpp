@@ -36,18 +36,20 @@ namespace multi_robot_router
 {
 //TODO Multithreaded
 
-    MultiRobotRouterThreadedSrr::MultiRobotRouterThreadedSrr(const uint32_t _nr_robots, const std::vector<uint32_t> &_robotRadius) : MultiRobotRouter(_nr_robots,_robotRadius), priority_scheduler_(_nr_robots), speed_scheduler_(_nr_robots)
+    MultiRobotRouterThreadedSrr::MultiRobotRouterThreadedSrr(const uint32_t _nr_robots, const std::vector<uint32_t> &_robotRadius, const uint32_t _threads) : MultiRobotRouter(_nr_robots, _robotRadius), priority_scheduler_(_nr_robots), speed_scheduler_(_nr_robots)
     {
         route_coordinator_ = std::make_unique<RouteCoordinatorTimed>();
+        threads_ = _threads;
         setRobotNr(_nr_robots);
         robotDiameter_ = _robotRadius;
-        
-        //TODO 
+
+        //TODO
         for(uint32_t i = 0; i < threads_; i++)
         {
             SingleRobotRouter sr;
             srr.push_back(sr);
         }
+        
     }
 
     void MultiRobotRouterThreadedSrr::setCollisionResolver(const SegmentExpander::CollisionResolverType cRes)
@@ -105,11 +107,12 @@ namespace multi_robot_router
 
         maxIterationsSingleRobot_ =  _graph.size();
 
-        for(SingleRobotRouter &sr : srr)
+        for(SingleRobotRouter & sr : srr)
         {
             sr.setCollisionResolver(cResType_);
             sr.initSearchGraph(_graph, min_diameter_);
         }
+
         std::vector<std::vector<RouteVertex>> routeCandidates;
         routeCandidates.resize(nr_robots_);
 
@@ -123,6 +126,7 @@ namespace multi_robot_router
         do
         {
             int32_t firstRobot = -1;
+
             do
             {
                 //Find first schedule to replan if speed rescheduling was active
@@ -135,23 +139,26 @@ namespace multi_robot_router
                             firstSchedule = i;
                     }
                 }
+
                 found = planPaths(priorityList, speedList, _startSegments, _goalSegments, firstSchedule, routeCandidates, lastPlannedRobot);
-            
+
                 speedScheduleAttempts_++;
                 std::chrono::time_point<std::chrono::high_resolution_clock>  tgoal = std::chrono::high_resolution_clock::now();
                 duration = std::chrono::duration_cast<std::chrono::milliseconds>(tgoal - tstart).count();
                 duration /= 1000;
             }
-            while(useSpeedRescheduler_ && duration < _timeLimit && !found && speed_scheduler_.rescheduleSpeeds(lastPlannedRobot, robotCollisions_[lastPlannedRobot], speedList, firstRobot) );
+            while(useSpeedRescheduler_ && duration < _timeLimit && !found && speed_scheduler_.rescheduleSpeeds(lastPlannedRobot, robotCollisions_[lastPlannedRobot], speedList, firstRobot));
 
             priorityScheduleAttempts_++;
         }
         while(usePriorityRescheduler_ && duration < _timeLimit && !found && priority_scheduler_.reschedulePriorities(lastPlannedRobot, robotCollisions_[lastPlannedRobot], priorityList, firstSchedule));
+
         routingTable = generatePath(routeCandidates, *(route_coordinator_.get()));
 
         return found;
     }
 
+    //TODO Optimize
     bool MultiRobotRouterThreadedSrr::planPaths(const std::vector<uint32_t> &_priorityList, const std::vector<float> &_speedList, const std::vector<uint32_t> &_startSegments, const std::vector<uint32_t> &_goalSegments, const uint32_t _firstSchedule, std::vector<std::vector<RouteVertex>> &_routeCandidates, uint32_t &_lastRobot)
     {
         //Remove only schedules (robots) which have to be replanned
@@ -161,85 +168,96 @@ namespace multi_robot_router
             route_coordinator_->removeRobot(robot);
         }
 
-        
+
         uint32_t plannedRobots = _firstSchedule;
+
         while(plannedRobots < nr_robots_)
         {
             uint32_t maxCount = std::min(plannedRobots + threads_, nr_robots_);
             uint32_t startCount = plannedRobots;
             int32_t currentFailedI = -1;
-                        
-            
-            
-            std::vector<std::thread> s; 
+
+
+
+            std::vector<std::thread> s;
             s.resize(maxCount - startCount);
             
+            std::vector<RouteCoordinatorWrapper> rcWrappers;
+            for(int i =  startCount; i < maxCount; i++)
+            {
+                uint32_t robot = _priorityList[i];
+                RouteCoordinatorWrapper rcW(robot, *(route_coordinator_.get()));
+                rcWrappers.push_back(rcW);
+            }
+
             for(int i = startCount; i < maxCount; i++)
             {
                 uint32_t robot = _priorityList[i];
-                RouteCoordinatorWrapper rcWrapper(robot, *route_coordinator_.get());
                 uint32_t start = _startSegments[robot];
                 uint32_t goal = _goalSegments[robot];
                 uint32_t diameter = robotDiameter_[robot];
                 float speed = _speedList[robot];
                 std::vector<RouteVertex> &routeCandidate = _routeCandidates[robot];
                 uint32_t iter = maxIterationsSingleRobot_ * (i + 1);
-                uint32_t index = i -startCount;
+                uint32_t index = i - startCount;
                 SingleRobotRouter &sr = srr[index];
-                s[index] = std::thread( 
-                [&rcWrapper, robot, start, goal, diameter, speed, &routeCandidate, iter, &sr]()
+                RouteCoordinatorWrapper &wr = rcWrappers[index];
+                s[index] = std::thread(                                                                                   //TODO not working multi threaded
+                [wr, robot, start, goal, diameter, speed, &routeCandidate, iter, &sr]()
                 {
-                  sr.getRouteCandidate(start, goal, rcWrapper, diameter, speed, routeCandidate, iter);  
-                  
-                } );
-              
-                
+                    sr.getRouteCandidate(start, goal, wr, diameter, speed, routeCandidate, iter);
+
+                });
+
+               // s[index].join();
+
                 //Worst case scenario: Search whole graph once + n * (move through whole graph to avoid other robot) -> graph.size() * (i+1) iterations
                 //srr[i - startCount].getRouteCandidate(_startSegments[robot], _goalSegments[robot], rcWrapper, robotDiameter_[robot], _speedList[robot], _routeCandidates[robot], maxIterationsSingleRobot_ * (i + 1));
-                
+
             }
-            
-            
-            for(std::thread &t : s)
+
+
+            for(std::thread & t : s)
             {
-                t.join();
+                if(t.joinable())
+                    t.join();
             }
-            
+
             for(uint32_t i = startCount; i < maxCount; i++)
             {
-                  uint32_t robot = _priorityList[i];
-                  uint32_t planner = i - startCount;
-                  _lastRobot = robot;
-                  
-                  robotCollisions_[robot] = srr[planner].getRobotCollisions();
-                  robotCollisions_[robot].resize(nr_robots_, 0);
-                  
-                  if(!srr[planner].getLastResult())
-                  {
-                      std::cout << "srr " << i << planner << std::endl;
-                      return false;
-                  }
-                  
-                  if(!route_coordinator_->addRoute(_routeCandidates[robot], robotDiameter_[robot], robot))
-                  {
-                      if(i == startCount)
-                      {
-                          std::cout << "should not happen" << std::endl;
-                          return false;
-                      }
-                      
-                      //Replan from plannedRobots
-                      break;
-                  }
-                  else
-                  {
-                      plannedRobots++;
-                  }
-              
+                uint32_t robot = _priorityList[i];
+                uint32_t planner = i - startCount;
+                _lastRobot = robot;
+
+                robotCollisions_[robot] = srr[planner].getRobotCollisions();
+                robotCollisions_[robot].resize(nr_robots_, 0);
+
+                if(!srr[planner].getLastResult())
+                {
+//                     //std::cout << "srr " << i << planner << std::endl;
+                    return false;
+                }
+
+                if(!route_coordinator_->addRoute(_routeCandidates[robot], robotDiameter_[robot], robot))
+                {
+                    if(i == startCount)
+                    {
+                        std::cout << "should not happen" << std::endl;
+                        return false;
+                    }
+
+                    //Replan from plannedRobots
+                    break;
+                }
+                else
+                {
+                    plannedRobots++;
+                }
+
             }
-              
+
         }
-        
+
         return true;
     }
 
@@ -253,7 +271,7 @@ namespace multi_robot_router
         useSpeedRescheduler_ = _status;
     }
 
-    
+
 }
 
 

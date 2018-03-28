@@ -49,14 +49,23 @@ namespace multi_robot_router
     {
         robot_nr_ = _nr_robots;
         pointExpander_ = std::make_unique<PointExpander>();
-        std::vector<uint32_t> robotRadius(_nr_robots, 0);
-        multiRobotRouter_ = std::make_unique<MultiRobotRouterThreadedSrr>(_nr_robots, robotRadius);
-
+        std::vector<uint32_t> robotRadius(robot_nr_, 0);
+        //multiRobotRouter_ = std::make_unique<MultiRobotRouterThreadedSrr>(robot_nr_, robotRadius, 8);
+        setPlannerType(routerType::multiThreadSrr, 8);
     }
 
     void Planner::setCollisionResolutionType(const SegmentExpander::CollisionResolverType _cr)
     {
         multiRobotRouter_->setCollisionResolver(_cr);
+    }
+
+    void Planner::setPlannerType(Planner::routerType _type, uint32_t _nr_threads)
+    {
+        std::vector<uint32_t> robotRadius(robot_nr_, 0);
+        if(_type == routerType::multiThreadSrr)
+           multiRobotRouter_ = std::make_unique<MultiRobotRouterThreadedSrr>(robot_nr_, robotRadius, _nr_threads);
+        else
+           multiRobotRouter_ = std::make_unique<MultiRobotRouter>(robot_nr_, robotRadius);
     }
 
 

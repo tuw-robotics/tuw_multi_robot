@@ -119,12 +119,19 @@ namespace multi_robot_router
                 voronoi,
                 random
             };
+            enum class routerType
+            {
+                singleThread,
+                multiThreadSrr
+            };
             graphType graphMode_ = graphType::voronoi;
             goalMode goalMode_ = goalMode::use_voronoi_goal;
             float routerTimeLimit_s_ = 10.0;
             bool segmentOptimizations_= false;
             bool speedRescheduling_ = true;
             bool priorityRescheduling_ = true;
+                         
+            void setPlannerType(routerType _type, uint32_t _nr_threads);
     };
 }
 #endif // PLANNER_H

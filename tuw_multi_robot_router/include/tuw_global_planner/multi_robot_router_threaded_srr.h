@@ -43,7 +43,7 @@ namespace multi_robot_router
     class MultiRobotRouterThreadedSrr : public MultiRobotRouter
     {
         public:
-            MultiRobotRouterThreadedSrr(const uint32_t _nr_robots, const std::vector<uint32_t> &_robotRadius);
+            MultiRobotRouterThreadedSrr(const uint32_t _nr_robots, const std::vector<uint32_t> &_robotRadius, const uint32_t _threads);
             virtual void setRobotNr(const uint32_t _nr_robots);
             virtual void setRobotRadius(const std::vector<uint32_t> &_radius);
             virtual bool getRoutingTable(const std::vector<Segment> &_graph, const std::vector<uint32_t> &_startSegments, const std::vector<uint32_t> &_goalSegments, std::vector<std::vector<Checkpoint>> &_routingTable, const float &_timeLimit);

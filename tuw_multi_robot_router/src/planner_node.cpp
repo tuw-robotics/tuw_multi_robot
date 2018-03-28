@@ -139,6 +139,13 @@ namespace multi_robot_router
 
     void Planner_Node::parametersCallback(tuw_multi_robot_router::MultiRobotRouterConfig &config, uint32_t level)
     {
+        //Important set router before settings 
+        uint32_t threads = config.nr_threads;
+        if(config.router_type == 1)
+            setPlannerType(routerType::multiThreadSrr, threads);
+        else
+            setPlannerType(routerType::singleThread, 1);
+    
         if(config.collision_resolver == 0)
             setCollisionResolutionType(SegmentExpander::CollisionResolverType::none);
         else if(config.collision_resolver == 1)
@@ -163,6 +170,8 @@ namespace multi_robot_router
         priorityRescheduling_ = config.priority_rescheduling;
         speedRescheduling_ = config.speed_rescheduling;
         segmentOptimizations_ = config.path_endpoint_optimization;
+        
+          
     }
 
     void Planner_Node::mapCallback(const nav_msgs::OccupancyGrid &_map)
