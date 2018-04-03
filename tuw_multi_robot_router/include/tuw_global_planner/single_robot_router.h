@@ -50,16 +50,46 @@ namespace multi_robot_router
     class SingleRobotRouter
     {
         public:
+            /** 
+             * @brief constructor 
+             */
             SingleRobotRouter();
+            /** 
+             * @brief copy constructor 
+             */
             SingleRobotRouter(const SingleRobotRouter &srr);
+            /**
+             * @brief calculates a route candidate coordinated with other robots by the given route Coordinated
+             * @param _start the start vertex
+             * @param _goal the goal vertex
+             * @param path_coordinator the used route coordinater to coordinate with other robots
+             * @param _robotDiameter the diameter of the robot
+             * @param _robotSpeed the selected robot speed (multiplier)
+             * @param path the found route candidate
+             * @param _maxIterations the maximum allowed iterations of the loop
+             * @returns returns true if a route candidate is found
+             */
             bool getRouteCandidate(const uint32_t _start, const uint32_t _goal, const RouteCoordinatorWrapper &path_coordinator, const uint32_t _robotDiameter, const float &_robotSpeed, std::vector<RouteVertex> &path, const uint32_t _maxIterations);
-            bool getRouteCandidate(const uint32_t _start, const uint32_t _goal, const RouteCoordinatorWrapper &path_coordinator, const uint32_t _robotDiameter, const float &_robotSpeed, const uint32_t _maxIterations);
             
+            /**
+             * @brief returns the found robot collisions while planning
+             * @returns the found robot collisions 
+             */
             const std::vector<uint32_t> &getRobotCollisions() const;
+            /**
+             * @brief generates the search graph out of the given graph (and optimizes it)
+             * @param _graph the main graph
+             * @param minSegmentWidth_ used to optimize the graph (e.g. if no robot has less than d in size all segments with less space than d can be removed) 
+             */
             void initSearchGraph(const std::vector<Segment> &_graph, const uint32_t minSegmentWidth_ = 0);
+            /**
+             * @brief sets the collisionResolver used 
+             */
             void setCollisionResolver(const SegmentExpander::CollisionResolverType cRes);
+            /**
+             * @brief returns the result of the last planning attempt 
+             */
             bool getLastResult();
-            std::vector<RouteVertex> &getLastRoute();
         private:
             void resetAttempt();
             std::unique_ptr<SegmentExpander> segment_expander_;

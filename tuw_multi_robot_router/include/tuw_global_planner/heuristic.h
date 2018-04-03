@@ -36,6 +36,12 @@ namespace multi_robot_router
     class Heuristic
     {
         public:
+            /**
+             * @brief calculates the euclidean distance to the end vertex
+             * @param _next the current vertex the heuristic is calculated for
+             * @param _end the goal vertex for calculations
+             * @returns the euclidean distance to the goal
+             */
             float calcHeuristic(const Vertex &_next, const Vertex &_end) const
             {
                 float nx = (_next.getSegment().getStart()[0] + _next.getSegment().getEnd()[0]) / 2;

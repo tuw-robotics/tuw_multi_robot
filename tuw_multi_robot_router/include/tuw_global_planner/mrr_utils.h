@@ -6,15 +6,7 @@
 
 namespace multi_robot_router
 {
-    struct PotentialPoint
-    {
-        Eigen::Vector2d point;
-        float potential;
-        PotentialPoint(float _x, float _y, float _potential) : point(_x, _y), potential(_potential) {};
-        PotentialPoint(): PotentialPoint(0, 0, 0) {};
-    } ;
-
-
+    //Checkpoint used in a Route 
     class Checkpoint
     {
         public:
@@ -29,6 +21,9 @@ namespace multi_robot_router
             Eigen::Vector2d end;
             std::vector<Precondition> preconditions;
 
+            /**
+             * @brief constructor to assign Checkpoint from a Route Vertex used in route candidates
+             */
             Checkpoint(const RouteVertex &_v)
             {
                 segId = _v.getSegment().getSegmentId();
@@ -47,6 +42,9 @@ namespace multi_robot_router
             Checkpoint(): segId(-1)
             { }
 
+            /**
+             * @brief adds or updates a precondition of the checkpoint
+             */
             void updatePreconditions(const Precondition &n_pc)
             {
                 bool updatedPc = false;
@@ -68,6 +66,9 @@ namespace multi_robot_router
             }
             
             
+            /**
+             * @brief adds or updates multiple preconditions of the checkpoint
+             */
             void updatePreconditions(const std::vector<Precondition> &n_pcs)
             {
                 for(const Checkpoint::Precondition &n_pc : n_pcs)

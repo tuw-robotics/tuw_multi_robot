@@ -40,9 +40,30 @@ namespace multi_robot_router
         public:
             EmptyResolution();
 
+            /**
+            * @brief resets the session (setting the new route querry and potential calculator)
+            * @param _route_querry the route coordinator to coordinate paths
+            * @param _pCalc the potential calculator for assigning potential to expanded Vertices
+            * @param _robot_radius the radius of the current robot
+            */
             void resetSession(const RouteCoordinatorWrapper *_route_querry, const PotentialCalculator *_pCalc, const uint32_t _robot_radius);
+            /**
+             * @brief resolves a found collision between two robots. 
+             * @param _current the last expanded vertex 
+             * @param _next the vertex to expand to 
+             * @param _collision the index of the colliding robot
+             * @returns a vector of references to Vertices where the Potential Expander can continue expanding
+             */
             std::vector<std::reference_wrapper<Vertex>> resolve(Vertex &_current, Vertex &_next, int32_t _collision);
+            /**
+             * @brief returns amount of robot collisions found in each resolve try after resetSession
+             * @returns a std::vector where the index is the robot index and the value the number of collisions with this robot 
+             */
             const std::vector<uint32_t> &getRobotCollisions() const;
+            /**
+             * @brief increases the collision count of one robot
+             * @param _coll the robot elected for increasing its collisions
+             */
             void saveCollision(const uint32_t _coll);
 
         private:

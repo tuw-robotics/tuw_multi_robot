@@ -51,12 +51,36 @@ namespace multi_robot_router
                 backtracking,
                 avoidance
             };
+            /**
+             * @brief constructor
+             * @param _h the heuristic used (A-Star, Dijkstra, ...)
+             * @param _pCalc the used Potential Calculator for the expander
+             * @param _cRes the used collision resolution strategy 
+             */
             SegmentExpander(const Heuristic &_h, const PotentialCalculator &_pCalc, const CollisionResolverType _cRes);
-
+            /**
+             * @brief assigns all Vertices in the Search graph with a potential according to the distance to the start
+             * @param _p the route coordinator to coordinate the route with other robots 
+             * @param _start the start Vertex 
+             * @param _end the end Vertex 
+             * @returns if the goal was found
+            */
             bool calculatePotentials(const RouteCoordinatorWrapper *_p, Vertex &_start, Vertex &_end, const uint32_t _maxIterations, const uint32_t _radius);
+            /**
+             * @brief returns the found robotCollisions while planning 
+             */
             const std::vector<uint32_t> &getRobotCollisions() const;
+            /**
+             * @brief resets the session 
+             */
             void reset();
+            /**
+             * @brief Sets the multiplier to reduce a robots speed (pCalc...)
+             */
             void setSpeed(const float &_speed);
+            /**
+             * @brief sets the desired collision resolver  
+             */
             void setCollisionResolver(const CollisionResolverType cRes);
         private:
             template <class T, class S, class C>
@@ -73,12 +97,15 @@ namespace multi_robot_router
                 }
             };
 
-
+            //assigns the potential to all necessary vertices
             Vertex *expandVoronoi(Vertex &_start, Vertex &_end, const uint32_t _cycles);
+            //assigns the next Vertex with the given potential
             void addExpansoionCandidate(Vertex &_current, Vertex &_next, Vertex &_end);
+            //adds teh first expenstion candidate
             void addStartExpansionCandidate(Vertex &_start, Vertex &_current, Vertex &_next, Vertex &_end);
+            //Resolves start issues when start and goal point is on the same segment
             void resolveStartCollision(Vertex &_start, Vertex &_end);
-
+            //checks if a list contains a specific vertex (seg id)
             bool containsVertex(const Vertex &_v, const std::vector< std::reference_wrapper< Vertex > > &_list) const;
 
             std::priority_queue<Vertex *, std::vector<Vertex *>, greaterSegmentWrapper> seg_queue_;

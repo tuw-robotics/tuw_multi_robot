@@ -242,7 +242,7 @@ namespace multi_robot_router
                 {
                     if(i == startCount)
                     {
-                        std::cout << "should not happen" << std::endl;
+                        ROS_INFO("Failed coordinator");
                         return false;
                     }
 

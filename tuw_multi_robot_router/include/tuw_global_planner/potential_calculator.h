@@ -36,10 +36,31 @@ namespace multi_robot_router
     class PotentialCalculator
     {
         public:
+            /**
+             * @brief constructor
+             */
             PotentialCalculator();
+            /**
+            * @brief constructor
+            * @param _multiplier the multiplier used to multiply the potential with (used for reducing robots speeds)
+            */
             PotentialCalculator(const float &_multiplier);
+            /**
+            * @brief sets the Potential multiplier
+            * @param _multiplier the multiplier used to multiply the potential with (used for reducing robots speeds)
+            */
             void SetMultiplier(const float &_multiplier);
+            /**
+             * @brief calculates the potential for a vertex
+             * @param _vertex the vertext used for the calculation
+             * @returns the calculated Potential 
+             */
             float CalculatePotential(const Vertex &_vertex) const;
+            /**
+             * @brief calculates the potential for a segment
+             * @param _segment the segment used for the calculation
+             * @returns the calculated Potential 
+             */
             float CalculatePotential(const Segment &_segment) const;
 
         private:

@@ -39,8 +39,16 @@ namespace multi_robot_router
     {
         public:
             Traceback() {}
+            /**
+             * @brief traces back the graph to find the shortest route of the graph
+             * @param _startSeg the start Segment
+             * @param _endSeg the goal Segment
+             * @param _path the path found
+             * @returns if a route is found 
+             */
             virtual bool getPath(const Vertex &_startSeg, const Vertex &_endSeg, std::vector<RouteVertex> &_path) const;
         private:
+            //returns if _succ is a _successor of _vertex
             virtual bool isSuccessor(const Vertex *_vertex, const Vertex *_succ) const;
     };
 }

@@ -38,23 +38,69 @@
 #include <tuw_global_planner/speed_scheduler.h>
 #include <tuw_global_planner/segment_expander.h>
 
+//TODO replan
 namespace multi_robot_router
 {
+    /**
+     * @brief standard multi robot router without multi threading (Works best in practice)
+     */
     class MultiRobotRouter : protected RouteGenerator
     {
         public:
+            /**
+             * @brief constructor
+             * @param _nr_robots the number of robots to plan
+             * @param _robotRadius a vector with size _nr_robots which contains every robots radius 
+             */
             MultiRobotRouter(const uint32_t _nr_robots, const std::vector<uint32_t> &_robotRadius);
+            /** 
+             * @brief sets the number of robots used
+             * @param _nr_robot the number of robots 
+             */
             virtual void setRobotNr(const uint32_t _nr_robots);
+            /**
+             * @brief sets the robot radius for every robot
+             * @param _radius vector with length _nr_robots to set all robo radii
+             */
             virtual void setRobotRadius(const std::vector<uint32_t> &_radius);
+            /**
+             * @brief computes the routing table according to the given start and goal _goalSegments
+             * @param _graph the base graph used to plan a path 
+             * @param _startSegments for each robot the id of the start segment
+             * @param _goalSegments for each robot the id of the goal segment
+             * @param _routingTable the reference to the found routing table
+             * @param _timeLimit the (approximate) maximum time the planner is allowed to use 
+             * @returns if a routing table is found
+             */
             virtual bool getRoutingTable(const std::vector<Segment> &_graph, const std::vector<uint32_t> &_startSegments, const std::vector<uint32_t> &_goalSegments, std::vector<std::vector<Checkpoint>> &_routingTable, const float &_timeLimit);
+            /**
+             * @brief returns the number of attemps to reschedul the priorities taken
+             * @returns the number of attemps to reschedul the priorities taken
+             */
             virtual const uint32_t getPriorityScheduleAttempts() const;
+            /**
+             * @brief returns the number of attemps to limit the maximum speed of a robot taken
+             * @returns the number of attemps to limit the maximum speed of a robot taken
+             */
             virtual const uint32_t getSpeedScheduleAttempts() const;
+            /**
+             * @brief sets the CollisionResolverType used to resolve occured robot collisions 
+             * @param cRes the CollisionResolver typ  
+             */
             virtual void setCollisionResolver(const SegmentExpander::CollisionResolverType cRes);
+            /**
+             * @brief enables or disables priority rescheduling 
+             */
             virtual void setPriorityRescheduling(const bool _status);
+            /**
+             * @brief enables or disables speed rescheduling 
+             */
             virtual void setSpeedRescheduling(const bool _status);
         private:
             void resetAttempt(const std::vector< Segment > &_graph);
+            // attemps to find a routing table according to a given priority and speed schedule
             bool planPaths(const std::vector<uint32_t> &_priorityList, const std::vector<float> &_speedList, const std::vector<uint32_t> &_startSegments, const std::vector<uint32_t> &_goalSegments, const uint32_t _firstSchedule, std::vector<std::vector<RouteVertex>> &_routeCandidates, uint32_t &_robot);
+            
             PriorityScheduler priority_scheduler_;
             SpeedScheduler speed_scheduler_;
             std::unique_ptr<RouteCoordinator> route_coordinator_;

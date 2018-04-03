@@ -50,8 +50,17 @@ namespace multi_robot_router
     class Planner_Node :  Planner
     {
         public:
+            /**
+             * @brief constructor 
+             */
             Planner_Node(ros::NodeHandle &n);
+            /**
+             * @brief publishes an empty RoutingTable 
+             */
             void PublishEmpty();
+            /**
+             * @brief publishes a RoutingTable 
+             */
             void Publish();
             ros::NodeHandle                 n_;      ///< Node handler to the root node
             ros::NodeHandle                 n_param_;///< Node handler to the current node
@@ -88,6 +97,7 @@ namespace multi_robot_router
             size_t                              current_graph_hash_;
             int                                 id_;
 
+            
             void parametersCallback(tuw_multi_robot_router::MultiRobotRouterConfig &config, uint32_t level);
             void odomCallback(const ros::MessageEvent<nav_msgs::Odometry const> &_event, int _topic);
             void graphCallback(const tuw_multi_robot_msgs::VoronoiGraph &msg);

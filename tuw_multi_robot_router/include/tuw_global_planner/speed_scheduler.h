@@ -36,13 +36,35 @@ namespace multi_robot_router
 {
     class SpeedScheduler
     {
-        public:     SpeedScheduler(const uint32_t _nrRobots);
-        public:     void reset(const uint32_t  _nrRobots);
-        public:     bool rescheduleSpeeds(const uint32_t  _collidingRobot, const std::vector< uint32_t > &_collsisions, std::vector< float > &_newSchedule, int32_t &_firstRobotToReplan);
-        public:     const std::vector<float> &getActualSpeeds();
+      public: 
+        /**
+         * @brief constructor
+         * @param _nrRobots the number of robots used for speed rescheduling
+         */    
+        SpeedScheduler(const uint32_t _nrRobots);
+        /**
+         * @brief resets the speed rescheduler (all speeds to max)
+         * @param _nrRobots the number of robots used for speed rescheduling 
+         */
+        void reset(const uint32_t  _nrRobots);
+        /**
+          * @brief reduces a selected robots maximum speed 
+          * @param _collidingRobot the robot which has failed to find a path (therefore a robot with higher priority has to reduce its speed)
+          * @param _collisions the collisions the _collidiongRobot has encounterd with other ones
+          * @param _newSchedule the new speed Schedule
+          * @param _firstRobotToReplan the robot with reduced speed
+          * @returns if a new speed schedule is found
+          */
+        bool rescheduleSpeeds(const uint32_t  _collidingRobot, const std::vector< uint32_t > &_collsisions, std::vector< float > &_newSchedule, int32_t &_firstRobotToReplan);
+        /**
+         * @brief returns the computed speed schedule
+         * @returns the speed schedule 
+         */
+        const std::vector<float> &getActualSpeeds();
 
-        protected:  std::vector<std::vector<float>> checkedSchedules_;
-        protected:  std::vector<float> actualSpeedSchedule_;
+        protected:  
+          std::vector<std::vector<float>> checkedSchedules_;
+          std::vector<float> actualSpeedSchedule_;
     };
 }
 #endif // HEURISTIC_H

@@ -34,8 +34,7 @@
 #include <boost/functional/hash.hpp>
 
 //TODO add Weights from robots...
-//TODO multithreaded planner ; multithreded goal selector
-//TODO optimization
+//TODO multithreded goal selector
 
 int main(int argc, char **argv)
 {

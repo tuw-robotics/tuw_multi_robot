@@ -43,8 +43,29 @@ namespace multi_robot_router
     class PointExpander
     {
         public:
+            /**
+             * @brief initializes the point expander with a distance map
+             * @param _map a cv::Mat containing a distance_transformed map (e.g. opencv disttransform)
+             */
             void initialize(const cv::Mat &_map);
+            /** 
+             * @brief searches the first occurence of a point in the goals_ list and returns the index
+             * @details used to find the closes segment to the start point. The goals are usually the centerpoints of the considered segments with the segment id. If a path is allready found the expander can be started again to find the nth furthest segment to optimize the path.  
+             * @param _start the start point on the map
+             * @param _cycles the maximum number of cycles used to compute a goal
+             * @param _potential the potential map to assign the weights
+             * @param _goals a map containing goal points mapped to an index
+             * @param _optimizationSteps the _optimizationSteps' goal node is taken to optimize paths
+             * @param _foundPoint the found goal point
+             * @param _segIdx the found index
+             * @param _radius the robot _radius
+             * @returns true if a point was found
+             */
             bool findGoalOnMap(const Eigen::Vector2d &_start, const uint32_t &_cycles, float *_potential, const std::map<uint32_t, Eigen::Vector2d> &_goals, const uint32_t &_optimizationSteps, Eigen::Vector2d &_foundPoint, int32_t &_segIdx, const uint32_t &_radius);
+            /**
+             * @brief returns the distance to the closest obstacle for a point
+             * @param vec the point which is used to calculate the distance to the closest obstacle 
+             */
             float getDistanceToObstacle(const Eigen::Vector2d &vec);
         private:
             template <class T, class S, class C>
