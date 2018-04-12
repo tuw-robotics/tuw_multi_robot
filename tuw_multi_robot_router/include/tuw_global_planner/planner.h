@@ -67,33 +67,33 @@ namespace multi_robot_router
              * @brief returns the found Routing Table
              * @param _robot the robot to whom the routing table belongs to
              */
-            const std::vector<Checkpoint> &getRoute(const uint32_t _robot);
+            const std::vector<Checkpoint> &getRoute(const uint32_t _robot) const;
 
             /**
              * @brief getter
              * @returns the duration of the planning attempt 
              */
-            uint32_t getDuration_ms();
+            uint32_t getDuration_ms() const;
             /**
              * @brief getter
              * @returns the Overall path length of the planning attempt 
              */
-            float getOverallPathLength();
+            float getOverallPathLength() const;
             /**
              * @brief getter
              * @returns the longest Path length of the planning attempt 
              */
-            float getLongestPathLength();
+            float getLongestPathLength() const;
             /**
              * @brief getter
              * @returns the priority reschedule attempts
              */
-            uint32_t getPriorityScheduleAttemps();
+            uint32_t getPriorityScheduleAttemps() const;
             /**
              * @brief getter
              * @returns the speed reschedule attempts
              */
-            uint32_t getSpeedScheduleAttemps();
+            uint32_t getSpeedScheduleAttemps() const;
 
 
             std::shared_ptr<float> potential_;
@@ -102,15 +102,20 @@ namespace multi_robot_router
             //find the right segments to start from
             bool calculateStartPoints(const std::vector<float> &_radius, const cv::Mat &_map, const float &resolution, const Eigen::Vector2d &origin, const std::vector<Segment> &_graph);
             //Find the segment if the graph is a voronoi one
-            int32_t getSegment(const std::vector<Segment> &_graph, const Eigen::Vector2d &_pose);
+            int32_t getSegment(const std::vector<Segment> &_graph, const Eigen::Vector2d &_pose) const;
             //Helper dist calculation
-            float distanceToSegment(const Segment &_s, const Eigen::Vector2d &_p);
+            float distanceToSegment(const Segment &_s, const Eigen::Vector2d &_p) const;
             //Checks if _seg is a leave of the graph and uses the closes neighbor as segment if the width of the leave is to small
-            bool resolveSegment(const std::vector< Segment > &_graph, const uint32_t &_segId, const Eigen::Vector2d &_originPoint, const float &_radius, uint32_t &_foundSeg);
+            bool resolveSegment(const std::vector< Segment > &_graph, const uint32_t &_segId, const Eigen::Vector2d &_originPoint, const float &_radius, uint32_t &_foundSeg) const;
             //for every path remove the first and last "segmentOptimizations_" number of segments if possible
             void optimizePaths(const std::vector<Segment> &_graph);
             //adds start and endpoints to the path
             void postprocessRoutingTable();
+            //Preprocessing endpoints for enpoint calculation threaded
+            bool preprocessEndpoints(const std::vector<float> &_radius, const float &resolution, const Eigen::Vector2d &origin, const std::vector<Segment> &_graph);
+            //Calculate endpoints
+            bool processEndpointsExpander(const cv::Mat &_map, const std::vector<Segment> &_graph, const Eigen::Vector2d &_realStart, const Eigen::Vector2d &_realGoal, Eigen::Vector2d &_voronoiStart, Eigen::Vector2d &_voronoiGoal, uint32_t &_segmentStart, uint32_t &_segmentGoal, const uint32_t _diameter, const uint32_t _index) const;
+
             
             
             uint32_t robot_nr_;
