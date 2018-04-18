@@ -90,10 +90,14 @@ namespace multi_robot_router
              * @brief returns the result of the last planning attempt 
              */
             bool getLastResult();
+            /**
+             * @brief returns the CollisionResolverType 
+             */
+            SegmentExpander::CollisionResolverType getCollisionResolverType() const;
         private:
             void resetAttempt();
-            std::unique_ptr<SegmentExpander> segment_expander_;
-            std::unique_ptr<Traceback> traceback_;
+            SegmentExpander segment_expander_;
+            Traceback traceback_;
             uint32_t robotDiameter_;
             //unique_ptr to keep references of Vertex (Heap), because the list is updated while runtime
             std::vector<std::unique_ptr<Vertex>> searchGraph_;

@@ -130,8 +130,10 @@ namespace multi_robot_router
             std::vector<uint32_t> goalSegments_;
             std::vector<uint32_t>  diameter_;
 
-            std::unique_ptr<PointExpander> pointExpander_;
-            std::unique_ptr<MultiRobotRouter> multiRobotRouter_;
+            PointExpander pointExpander_;
+            MultiRobotRouter *multiRobotRouter_;
+            MultiRobotRouter mrr_;
+            MultiRobotRouterThreadedSrr mrrTs_;
             std::vector<std::vector<Checkpoint>> routingTable_;
             float overallPathLength_;
             float longestPatLength_;

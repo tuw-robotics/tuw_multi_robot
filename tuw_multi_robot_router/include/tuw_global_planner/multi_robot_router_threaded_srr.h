@@ -46,19 +46,29 @@ namespace multi_robot_router
             /**
              * @brief constructor
              * @param _nr_robots the number of robots to plan
-             * @param _robotRadius a vector with size _nr_robots which contains every robots radius 
+             * @param _robotDiameter a vector with size _nr_robots which contains every robots diameter 
              */
-            MultiRobotRouterThreadedSrr(const uint32_t _nr_robots, const std::vector<uint32_t> &_robotRadius, const uint32_t _threads);
+            MultiRobotRouterThreadedSrr(const uint32_t _nr_robots, const std::vector<uint32_t> &_robotDiameter, const uint32_t _threads);
+            /**
+             * @brief constructor
+             * @param _nr_robots the number of robots to plan
+             */
+            MultiRobotRouterThreadedSrr(const uint32_t _nr_robots, const uint32_t _threads);
             /** 
              * @brief sets the number of robots used
              * @param _nr_robot the number of robots 
              */
             virtual void setRobotNr(const uint32_t _nr_robots);
             /**
-             * @brief sets the robot radius for every robot
-             * @param _radius vector with length _nr_robots to set all robo radii
+             * @brief sets the number of threads
+             * @param _threads the number of threads
              */
-            virtual void setRobotRadius(const std::vector<uint32_t> &_radius);
+            virtual void setThreads(const uint32_t _threads);
+            /**
+             * @brief sets the robot diameter for every robot
+             * @param _diameter vector with length _nr_robots to set all robo radii
+             */
+            virtual void setRobotDiameter(const std::vector<uint32_t> &_diameter);
             /**
              * @brief computes the routing table according to the given start and goal _goalSegments
              * @param _graph the base graph used to plan a path 
@@ -98,7 +108,8 @@ namespace multi_robot_router
             bool planPaths(const std::vector<uint32_t> &_priorityList, const std::vector<float> &_speedList, const std::vector<uint32_t> &_startSegments, const std::vector<uint32_t> &_goalSegments, const uint32_t _firstSchedule, std::vector<std::vector<RouteVertex>> &_routeCandidates, uint32_t &_robot);
             PriorityScheduler priority_scheduler_;
             SpeedScheduler speed_scheduler_;
-            std::unique_ptr<RouteCoordinator> route_coordinator_;
+            RouteCoordinator *route_coordinator_;
+            RouteCoordinatorTimed rct_;
             bool useSpeedRescheduler_ = true;
             bool usePriorityRescheduler_ = true;
 

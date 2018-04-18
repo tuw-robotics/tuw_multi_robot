@@ -57,7 +57,7 @@ namespace multi_robot_router
              * @param _pCalc the used Potential Calculator for the expander
              * @param _cRes the used collision resolution strategy 
              */
-            SegmentExpander(const Heuristic &_h, const PotentialCalculator &_pCalc, const CollisionResolverType _cRes);
+            SegmentExpander(const CollisionResolverType _cRes);
             /**
              * @brief assigns all Vertices in the Search graph with a potential according to the distance to the start
              * @param _p the route coordinator to coordinate the route with other robots 
@@ -82,6 +82,10 @@ namespace multi_robot_router
              * @brief sets the desired collision resolver  
              */
             void setCollisionResolver(const CollisionResolverType cRes);
+            /**
+             * @brief gets the currently used collision resolver 
+             */
+            CollisionResolverType getCollisionResolver() const;
         private:
             template <class T, class S, class C>
             void clearpq(std::priority_queue<T, S, C> &q)
@@ -113,13 +117,17 @@ namespace multi_robot_router
             uint32_t diameter_;
 
 
-            std::unique_ptr<Heuristic> hx_;
-            std::unique_ptr<PotentialCalculator> pCalc_;
-            std::unique_ptr<CollisionResolution> collision_resolution_;
+            Heuristic hx_;
+            PotentialCalculator pCalc_;
+            CollisionResolution *collision_resolution_;
+            AvoidanceResolution avr_;
+            BacktrackingResolution btr_;
+            EmptyResolution er_;
 
             const RouteCoordinatorWrapper *route_querry_;
             std::vector<uint32_t> collisions_robots_;
             std::vector<std::unique_ptr<Vertex>> startSegments_;
+            CollisionResolverType crType_;
     };
 }
 #endif

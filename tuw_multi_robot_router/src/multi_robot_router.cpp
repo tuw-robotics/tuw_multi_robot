@@ -35,12 +35,21 @@ namespace multi_robot_router
 {
 //TODO Multithreaded
 
-    MultiRobotRouter::MultiRobotRouter(const uint32_t _nr_robots, const std::vector<uint32_t> &_robotRadius) :  RouteGenerator(), priority_scheduler_(_nr_robots), speed_scheduler_(_nr_robots)
+    MultiRobotRouter::MultiRobotRouter(const uint32_t _nr_robots, const std::vector<uint32_t> &_robotDiameter) :  RouteGenerator(), priority_scheduler_(_nr_robots), speed_scheduler_(_nr_robots)
     {
-        route_coordinator_ = std::make_unique<RouteCoordinatorTimed>();
         setRobotNr(_nr_robots);
-        robotDiameter_ = _robotRadius;
+        robotDiameter_ = _robotDiameter;
+        route_coordinator_ = &rct_;
     }
+    
+    MultiRobotRouter::MultiRobotRouter(const uint32_t _nr_robots) :  RouteGenerator(), priority_scheduler_(_nr_robots), speed_scheduler_(_nr_robots)
+    {
+        setRobotNr(_nr_robots);
+        std::vector<uint32_t> robotDiameter(_nr_robots, 0);
+        robotDiameter_ = robotDiameter;
+        route_coordinator_ = &rct_;
+    }
+
 
     void MultiRobotRouter::setCollisionResolver(const SegmentExpander::CollisionResolverType cRes)
     {
@@ -54,7 +63,7 @@ namespace multi_robot_router
         priority_scheduler_.reset(_nr_robots);
     }
 
-    void MultiRobotRouter::setRobotRadius(const std::vector< uint32_t > &_diameter)
+    void MultiRobotRouter::setRobotDiameter(const std::vector< uint32_t > &_diameter)
     {
         robotDiameter_.clear();
         robotDiameter_ = _diameter;
@@ -137,7 +146,7 @@ namespace multi_robot_router
             priorityScheduleAttempts_++;
         }
         while(usePriorityRescheduler_ && duration < _timeLimit && !found && priority_scheduler_.reschedulePriorities(lastPlannedRobot, srr.getRobotCollisions(), priorityList, firstSchedule));
-        routingTable = generatePath(routeCandidates, *(route_coordinator_.get()));
+        routingTable = generatePath(routeCandidates, *route_coordinator_);
 
         return found;
     }
@@ -161,7 +170,7 @@ namespace multi_robot_router
 
             //route_coordinator_->setActive(_robot);
 
-            RouteCoordinatorWrapper rcWrapper(_robot, *route_coordinator_.get());
+            RouteCoordinatorWrapper rcWrapper(_robot, *route_coordinator_);
             //Worst case scenario: Search whole graph once + n * (move through whole graph to avoid other robot) -> graph.size() * (i+1) iterations
             if(!srr.getRouteCandidate(_startSegments[_robot], _goalSegments[_robot], rcWrapper, robotDiameter_[_robot], _speedList[_robot], _routeCandidates[_robot], maxIterationsSingleRobot_ * (i + 1)))
             {

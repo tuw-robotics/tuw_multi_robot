@@ -50,19 +50,24 @@ namespace multi_robot_router
             /**
              * @brief constructor
              * @param _nr_robots the number of robots to plan
-             * @param _robotRadius a vector with size _nr_robots which contains every robots radius 
+             * @param _robotDiameter a vector with size _nr_robots which contains every robots diameter 
              */
-            MultiRobotRouter(const uint32_t _nr_robots, const std::vector<uint32_t> &_robotRadius);
+            MultiRobotRouter(const uint32_t _nr_robots, const std::vector<uint32_t> &_robotDiameter);
+            /**
+             * @brief constructor
+             * @param _nr_robots the number of robots to plan
+             */
+            MultiRobotRouter(const uint32_t _nr_robots);
             /** 
              * @brief sets the number of robots used
              * @param _nr_robot the number of robots 
              */
             virtual void setRobotNr(const uint32_t _nr_robots);
             /**
-             * @brief sets the robot radius for every robot
-             * @param _radius vector with length _nr_robots to set all robo radii
+             * @brief sets the robot diameter for every robot
+             * @param _diameter vector with length _nr_robots to set all robo diameters
              */
-            virtual void setRobotRadius(const std::vector<uint32_t> &_radius);
+            virtual void setRobotDiameter(const std::vector<uint32_t> &_diameter);
             /**
              * @brief computes the routing table according to the given start and goal _goalSegments
              * @param _graph the base graph used to plan a path 
@@ -103,7 +108,8 @@ namespace multi_robot_router
             
             PriorityScheduler priority_scheduler_;
             SpeedScheduler speed_scheduler_;
-            std::unique_ptr<RouteCoordinator> route_coordinator_;
+            RouteCoordinator *route_coordinator_;
+            RouteCoordinatorTimed rct_;
             bool useSpeedRescheduler_ = true;
             bool usePriorityRescheduler_ = true;
 

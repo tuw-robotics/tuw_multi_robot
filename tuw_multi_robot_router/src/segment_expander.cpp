@@ -33,30 +33,32 @@
 
 namespace multi_robot_router
 {
-    SegmentExpander::SegmentExpander(const Heuristic &_h, const PotentialCalculator &_pCalc, const CollisionResolverType _cRes)
+    SegmentExpander::SegmentExpander(const CollisionResolverType _cRes) : avr_(TIME_OVERLAP), btr_(TIME_OVERLAP), er_()
     {
-        hx_ = std::make_unique<Heuristic>(_h);
-        pCalc_ = std::make_unique<PotentialCalculator>(_pCalc);
         setCollisionResolver(_cRes);
     }
 
     void SegmentExpander::setCollisionResolver(const CollisionResolverType _cRes)
     {
-
+        crType_ = _cRes;
         if(_cRes == CollisionResolverType::backtracking)
         {
-            collision_resolution_ = std::make_unique<BacktrackingResolution>(TIME_OVERLAP);
+            collision_resolution_ = &btr_;
         }
         else if(_cRes == CollisionResolverType::avoidance)
         {
-            collision_resolution_ = std::make_unique<AvoidanceResolution>(TIME_OVERLAP);
+            collision_resolution_ = &avr_;
         }
         else //if(_cRes == CollisionResolverType::none)
         {
-            collision_resolution_ = std::make_unique<EmptyResolution>();
+            collision_resolution_ = &er_;
         }
     }
 
+    SegmentExpander::CollisionResolverType SegmentExpander::getCollisionResolver() const
+    {
+        return crType_;
+    }
 
     void SegmentExpander::reset()
     {
@@ -75,10 +77,10 @@ namespace multi_robot_router
 
         int32_t collision = -1;
 
-        if(route_querry_->checkSegment(_next, _current.potential - TIME_OVERLAP, _current.potential + pCalc_->CalculatePotential(_next) + TIME_OVERLAP, diameter_, collision))
+        if(route_querry_->checkSegment(_next, _current.potential - TIME_OVERLAP, _current.potential + pCalc_.CalculatePotential(_next) + TIME_OVERLAP, diameter_, collision))
         {
-            float pot = _current.potential + pCalc_->CalculatePotential(_next);
-            float h = hx_->calcHeuristic(_next, _end);
+            float pot = _current.potential + pCalc_.CalculatePotential(_next);
+            float h = hx_.calcHeuristic(_next, _end);
             float weight = pot + h;
 
             _next.weight = weight;
@@ -103,7 +105,7 @@ namespace multi_robot_router
 
         int32_t collision;
 
-        if(!route_querry_->checkSegment(_next, _current.potential - TIME_OVERLAP, _current.potential + pCalc_->CalculatePotential(_next) + TIME_OVERLAP, diameter_, collision))
+        if(!route_querry_->checkSegment(_next, _current.potential - TIME_OVERLAP, _current.potential + pCalc_.CalculatePotential(_next) + TIME_OVERLAP, diameter_, collision))
         {
             if(collision != -1)
             {
@@ -111,7 +113,7 @@ namespace multi_robot_router
 
                 for(Vertex & res : resolutions)
                 {
-                    float h = hx_->calcHeuristic(res, _end);
+                    float h = hx_.calcHeuristic(res, _end);
                     res.weight =  res.potential + h;
 
                     if(res.getSegment().getSegmentId() == _end.getSegment().getSegmentId())                 //Should not happen but safety first :D
@@ -127,8 +129,8 @@ namespace multi_robot_router
         }
 
 
-        float pot = _current.potential + pCalc_->CalculatePotential(_next);
-        float h = hx_->calcHeuristic(_next, _end);
+        float pot = _current.potential + pCalc_.CalculatePotential(_next);
+        float h = hx_.calcHeuristic(_next, _end);
         float weight = pot + h;
 
         _next.weight = weight;
@@ -148,7 +150,7 @@ namespace multi_robot_router
         route_querry_ = _p;
 
         collisions_robots_.clear();
-        collision_resolution_->resetSession(_p, pCalc_.get(), _diameter);
+        collision_resolution_->resetSession(_p, &pCalc_, _diameter);
         diameter_ = _diameter;
 
         Vertex *foundEnd = expandVoronoi(_start, _end, _maxIterations);
@@ -179,7 +181,7 @@ namespace multi_robot_router
             startSegments_.emplace_back(std::make_unique<Vertex>(_start));
             Vertex &start = *(startSegments_.back().get());
             start.predecessor_ = NULL;
-            start.potential = pCalc_->CalculatePotential(start);
+            start.potential = pCalc_.CalculatePotential(start);
             start.collision = -1;
 
             const std::vector< std::reference_wrapper< Vertex > > &n_succ = start.getPlanningSuccessors();
@@ -214,7 +216,7 @@ namespace multi_robot_router
         {
             _start.collision = -1;
             _start.predecessor_ = NULL;
-            _start.potential = pCalc_->CalculatePotential(_start);
+            _start.potential = pCalc_.CalculatePotential(_start);
             clearpq(seg_queue_);
             int32_t collision = -1;
 
@@ -245,7 +247,7 @@ namespace multi_robot_router
 
     void SegmentExpander::setSpeed(const float &_speed)
     {
-        pCalc_->SetMultiplier(_speed);
+        pCalc_.SetMultiplier(_speed);
     }
 
     Vertex *SegmentExpander::expandVoronoi(Vertex &_start, Vertex &_end, const uint32_t _cycles)
@@ -308,4 +310,5 @@ namespace multi_robot_router
     {
         return collision_resolution_->getRobotCollisions();
     }
+    
 }

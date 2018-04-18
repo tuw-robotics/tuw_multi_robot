@@ -34,16 +34,13 @@
 
 namespace multi_robot_router
 {
-//TODO Multithreaded
-
-    MultiRobotRouterThreadedSrr::MultiRobotRouterThreadedSrr(const uint32_t _nr_robots, const std::vector<uint32_t> &_robotRadius, const uint32_t _threads) : MultiRobotRouter(_nr_robots, _robotRadius), priority_scheduler_(_nr_robots), speed_scheduler_(_nr_robots)
+    MultiRobotRouterThreadedSrr::MultiRobotRouterThreadedSrr(const uint32_t _nr_robots, const std::vector<uint32_t> &_robotDiameter, const uint32_t _threads) : MultiRobotRouter(_nr_robots, _robotDiameter), priority_scheduler_(_nr_robots), speed_scheduler_(_nr_robots)
     {
-        route_coordinator_ = std::make_unique<RouteCoordinatorTimed>();
-        threads_ = _threads;
+        setThreads(_threads);
         setRobotNr(_nr_robots);
-        robotDiameter_ = _robotRadius;
+        robotDiameter_ = _robotDiameter;
+        route_coordinator_ = &rct_;
 
-        //TODO
         for(uint32_t i = 0; i < threads_; i++)
         {
             SingleRobotRouter sr;
@@ -51,7 +48,29 @@ namespace multi_robot_router
         }
         
     }
+    
+    MultiRobotRouterThreadedSrr::MultiRobotRouterThreadedSrr(const uint32_t _nr_robots, const uint32_t _threads) : MultiRobotRouter(_nr_robots), priority_scheduler_(_nr_robots), speed_scheduler_(_nr_robots)
+    {
+        setThreads(_threads);
+        setRobotNr(_nr_robots);
+        std::vector<uint32_t> robotRadius(_nr_robots, 0);
+        robotDiameter_ = robotRadius;
+        route_coordinator_ = &rct_;
 
+        for(uint32_t i = 0; i < threads_; i++)
+        {
+            SingleRobotRouter sr;
+            srr.push_back(sr);
+        }
+    }
+
+
+    void MultiRobotRouterThreadedSrr::setThreads(const uint32_t _threads)
+    {
+        threads_ = _threads;
+    }
+    
+    
     void MultiRobotRouterThreadedSrr::setCollisionResolver(const SegmentExpander::CollisionResolverType cRes)
     {
         cResType_ = cRes;
@@ -64,7 +83,7 @@ namespace multi_robot_router
         priority_scheduler_.reset(_nr_robots);
     }
 
-    void MultiRobotRouterThreadedSrr::setRobotRadius(const std::vector< uint32_t > &_diameter)
+    void MultiRobotRouterThreadedSrr::setRobotDiameter(const std::vector< uint32_t > &_diameter)
     {
         robotDiameter_.clear();
         robotDiameter_ = _diameter;
@@ -153,7 +172,7 @@ namespace multi_robot_router
         }
         while(usePriorityRescheduler_ && duration < _timeLimit && !found && priority_scheduler_.reschedulePriorities(lastPlannedRobot, robotCollisions_[lastPlannedRobot], priorityList, firstSchedule));
 
-        routingTable = generatePath(routeCandidates, *(route_coordinator_.get()));
+        routingTable = generatePath(routeCandidates, *route_coordinator_);
 
         return found;
     }
@@ -186,7 +205,7 @@ namespace multi_robot_router
             for(int i =  startCount; i < maxCount; i++)
             {
                 uint32_t robot = _priorityList[i];
-                RouteCoordinatorWrapper rcW(robot, *(route_coordinator_.get()));
+                RouteCoordinatorWrapper rcW(robot, *route_coordinator_);
                 rcWrappers.push_back(rcW);
             }
 

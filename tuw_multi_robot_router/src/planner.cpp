@@ -45,12 +45,12 @@ namespace multi_robot_router
     Planner::Planner(const uint32_t _nr_robots) :
         robot_poses_(_nr_robots),
         goals_(_nr_robots),
-        pose_received_(_nr_robots, false)
+        pose_received_(_nr_robots, false),
+        mrr_(_nr_robots),
+        mrrTs_(_nr_robots, 8)
     {
         robot_nr_ = _nr_robots;
-        pointExpander_ = std::make_unique<PointExpander>();
         std::vector<uint32_t> robotRadius(robot_nr_, 0);
-        //multiRobotRouter_ = std::make_unique<MultiRobotRouterThreadedSrr>(robot_nr_, robotRadius, 8);
         setPlannerType(routerType::multiThreadSrr, 8);
     }
 
@@ -61,12 +61,10 @@ namespace multi_robot_router
 
     void Planner::setPlannerType(Planner::routerType _type, uint32_t _nr_threads)
     {
-        std::vector<uint32_t> robotRadius(robot_nr_, 0);
-
         if(_type == routerType::multiThreadSrr)
-            multiRobotRouter_ = std::make_unique<MultiRobotRouterThreadedSrr>(robot_nr_, robotRadius, _nr_threads);
+            multiRobotRouter_ = &mrrTs_;
         else
-            multiRobotRouter_ = std::make_unique<MultiRobotRouter>(robot_nr_, robotRadius);
+            multiRobotRouter_ = &mrr_;
     }
 
 
@@ -108,13 +106,13 @@ namespace multi_robot_router
             diameter_[i] = 2 * ((float) _radius[i]) / resolution;
 
 
-            if(pointExpander_->getDistanceToObstacle(realStart_[i]) < diameter_[i] / 2)
+            if(pointExpander_.getDistanceToObstacle(realStart_[i]) < diameter_[i] / 2)
             {
                 ROS_INFO("Start of robot %i is to close to an obstacle", i);
                 return false;
             }
 
-            if(pointExpander_->getDistanceToObstacle(realGoals_[i]) < diameter_[i] / 2)
+            if(pointExpander_.getDistanceToObstacle(realGoals_[i]) < diameter_[i] / 2)
             {
                 ROS_INFO("Goal of robot %i is to close to an obstacle", i);
                 return false;
@@ -365,7 +363,7 @@ namespace multi_robot_router
         }
 
         ROS_INFO("=========================================================");
-        pointExpander_->initialize(_map);
+        pointExpander_.initialize(_map);
         goals_ = _goals;
 
         if(!calculateStartPoints(_radius, _map, _resolution, _origin, _graph))
@@ -385,7 +383,7 @@ namespace multi_robot_router
             diameter.push_back(2 * ((float) _radius[i]) / _resolution);
         }
 
-        multiRobotRouter_->setRobotRadius(diameter);
+        multiRobotRouter_->setRobotDiameter(diameter);
         multiRobotRouter_->setPriorityRescheduling(priorityRescheduling_);
         multiRobotRouter_->setSpeedRescheduling(speedRescheduling_);
         routingTable_.clear();
