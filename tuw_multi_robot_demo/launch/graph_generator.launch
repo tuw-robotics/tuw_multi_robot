@@ -4,7 +4,7 @@
     <arg name="room" default="cave" /> 
 
     <node pkg="tuw_voronoi_graph" type="tuw_voronoi_graph_node" name="graph_generator" output="screen">
-        <param name="graph_path" value="$(find tuw_multi_robot_demo)/cfg/graph/$(arg room)/" />
+        <param name="graph_path" value="$(find tuw_multi_robot_demo)/cfg/graph/$(arg room)/cache/" />
         <rosparam command="load" file="$(find tuw_multi_robot_demo)/cfg/graph/$(arg room)/graph.yaml"/>
     </node>
 </launch>
