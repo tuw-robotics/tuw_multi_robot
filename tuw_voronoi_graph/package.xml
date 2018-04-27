@@ -2,15 +2,7 @@
 <package format="2">
   <name>tuw_voronoi_graph</name>
   <version>0.0.0</version>
-  <description>This package includes a voronoi-map-generator, a voronoi-map-saver, a voronoi-map-server and a graph-generator-node. 
-
-The _voronoi-map-generator-node_ receives a pixel map ([occupancy\_grid](http://docs.ros.org/api/nav_msgs/html/msg/OccupancyGrid.html)) and converts it into a [grid\_map](http://wiki.ros.org/grid_map) including the original map, the distance transform of the map and the voronoi path of the map.
-
-The _voronoi-map-saver-node_ saves a published grid\_map in the given directory.
-
-The _voronoi-map-generator-node_ publishes a saved grid\_map from a given directory.
-
-The _graph-generator-node_ receives a grid\_map like the one published from voronoi-map-generator-node and converts it into a graph message for use in tuw\_multi\_robot\_route\_planner.</description>
+  <description>The voronoi package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->

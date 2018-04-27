@@ -1,0 +1,2007 @@
+header:
+  seq: 0
+  stamp:
+    secs: 0
+    nsecs: 0
+  frame_id: ''
+poses:
+- id: ''
+  position:
+    x: -18
+    y: 34
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 22
+    y: -30
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 18
+    y: -10
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 34
+    y: 34
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -18
+    y: 22
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 34
+    y: -38
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 6
+    y: -18
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 14
+    y: 34
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 6
+    y: -26
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -30
+    y: -26
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -14
+    y: 34
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -26
+    y: 34
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 10
+    y: -14
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -22
+    y: -10
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 26
+    y: -30
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -14
+    y: -38
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 18
+    y: 10
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -34
+    y: 34
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 10
+    y: 34
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 26
+    y: 10
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 18
+    y: 38
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 26
+    y: 6
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 18
+    y: -22
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 30
+    y: 38
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 18
+    y: -14
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -38
+    y: -10
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 14
+    y: 18
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -34
+    y: 14
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -38
+    y: 22
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -30
+    y: 34
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 10
+    y: 38
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 34
+    y: -18
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -38
+    y: 30
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -10
+    y: 30
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 38
+    y: 18
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -6
+    y: -26
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -30
+    y: 30
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 6
+    y: -22
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -22
+    y: 22
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -10
+    y: -6
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -6
+    y: -38
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 10
+    y: 26
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -26
+    y: -6
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 22
+    y: 38
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -34
+    y: 10
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 30
+    y: 34
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -18
+    y: -26
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -14
+    y: -14
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 34
+    y: 10
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -10
+    y: 34
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -18
+    y: -38
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -22
+    y: -38
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 34
+    y: 26
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 38
+    y: 22
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 26
+    y: -14
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 18
+    y: -26
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 22
+    y: -18
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 26
+    y: 26
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -10
+    y: 14
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -6
+    y: 6
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -34
+    y: -26
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 22
+    y: 30
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 14
+    y: -14
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 26
+    y: -26
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -6
+    y: -34
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -10
+    y: -38
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -30
+    y: -30
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 38
+    y: -22
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 34
+    y: 22
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -22
+    y: 18
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -14
+    y: 30
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -34
+    y: 38
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 6
+    y: -6
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 14
+    y: -18
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 18
+    y: 6
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -26
+    y: 22
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 34
+    y: -6
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -6
+    y: 34
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 30
+    y: -18
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 34
+    y: 30
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 18
+    y: 26
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -26
+    y: -22
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 22
+    y: -22
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -6
+    y: 26
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 6
+    y: 10
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 22
+    y: 34
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -6
+    y: 30
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -30
+    y: -6
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 26
+    y: -18
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 14
+    y: -26
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 18
+    y: 34
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 6
+    y: 6
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -38
+    y: 10
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -6
+    y: -22
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 10
+    y: 18
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 30
+    y: 26
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -22
+    y: 34
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -10
+    y: 10
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 34
+    y: -34
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 26
+    y: 22
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 38
+    y: -18
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -14
+    y: 10
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -14
+    y: 38
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -6
+    y: -30
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 14
+    y: -22
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -22
+    y: -18
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -14
+    y: 14
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 18
+    y: -34
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -26
+    y: -26
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -14
+    y: -26
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -6
+    y: 22
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 10
+    y: 22
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 26
+    y: -10
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 38
+    y: -10
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -26
+    y: 10
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -10
+    y: -34
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 30
+    y: -14
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 26
+    y: 34
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -22
+    y: -22
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 14
+    y: 30
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 26
+    y: 30
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 30
+    y: -38
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -18
+    y: -10
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 6
+    y: -34
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -18
+    y: -22
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -10
+    y: 6
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -38
+    y: 6
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 18
+    y: -18
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -14
+    y: -10
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 34
+    y: -30
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -34
+    y: -34
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 14
+    y: -6
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -22
+    y: 14
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -30
+    y: 38
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -22
+    y: 6
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -26
+    y: 30
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 34
+    y: 6
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 18
+    y: 22
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -38
+    y: 14
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 6
+    y: -10
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -38
+    y: -14
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -38
+    y: 34
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 14
+    y: -30
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -26
+    y: -10
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -30
+    y: -10
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -22
+    y: 30
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 38
+    y: 14
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -14
+    y: -18
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 34
+    y: 38
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 22
+    y: 18
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -6
+    y: -18
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -38
+    y: -30
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -22
+    y: 38
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -14
+    y: -30
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 10
+    y: 6
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 14
+    y: 26
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 38
+    y: 10
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -30
+    y: -38
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 10
+    y: -22
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 6
+    y: 14
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 22
+    y: -14
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 30
+    y: -30
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 10
+    y: 14
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 18
+    y: -30
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 26
+    y: 38
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 30
+    y: 22
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -14
+    y: 6
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -14
+    y: 22
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 30
+    y: 14
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -26
+    y: -30
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -34
+    y: -30
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -38
+    y: -18
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -22
+    y: 10
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -38
+    y: -26
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -18
+    y: 38
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -34
+    y: 18
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -26
+    y: 6
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 34
+    y: -22
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 26
+    y: -34
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 30
+    y: 10
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -34
+    y: -10
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 14
+    y: -10
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -38
+    y: -6
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 38
+    y: -14
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 10
+    y: 30
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -38
+    y: 26
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 22
+    y: 26
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -18
+    y: -34
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 38
+    y: -26
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 30
+    y: -26
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -18
+    y: 26
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 6
+    y: 22
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -10
+    y: 38
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -38
+    y: -22
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 14
+    y: 22
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -22
+    y: -6
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -30
+    y: 22
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: -30
+    y: 10
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 14
+    y: 10
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0 
+- id: ''
+  position:
+    x: 30
+    y: -6
+    z: 0.0
+  orientation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0

@@ -59,10 +59,6 @@ namespace voronoi_graph
         topicSegments_ = "/segments";
         n_param_.param("segments_topic", topicSegments_, topicSegments_);
 
-        frameGlobalMap_ = "map";
-        n_param_.param("map_frame", frameGlobalMap_, frameGlobalMap_);
-        frameVoronoiMap_ = "voronoi_map";
-        n_param_.param("voronoi_frame", frameVoronoiMap_, frameVoronoiMap_);
 
         path_length_ = 0.9;   //meter
         n_param_.param("segment_length", path_length_, path_length_);
@@ -74,7 +70,7 @@ namespace voronoi_graph
         n_param_.param("opt_end_segments", endSegmentOptimization_, endSegmentOptimization_);
         endSegmentOptimization_ = std::min<float>(endSegmentOptimization_, 0.7 * path_length_);
 
-        graphPath_ = "/home/benjamin/temp/testmap/";
+        graphPath_ = "/.";
         n_param_.param("graph_path", graphPath_, graphPath_);
 
         if(graphPath_.back() != '/')
