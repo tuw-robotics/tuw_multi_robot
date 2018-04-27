@@ -137,29 +137,30 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
- include
+  include
   ${catkin_INCLUDE_DIRS}
+  ${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake
 )
 
 ## Declare a C++ library
- add_library(${PROJECT_NAME}
-	src/planner.cpp
-	src/srr_utils.cpp
-	src/point_expander.cpp
+add_library(${PROJECT_NAME}
+    src/planner.cpp
+    src/srr_utils.cpp
+    src/point_expander.cpp
     src/multi_robot_router.cpp
     src/multi_robot_router_threaded_srr.cpp
-	src/single_robot_router.cpp
-	src/segment_expander.cpp
-	src/route_coordinator_timed.cpp
-	src/traceback.cpp
-	src/route_generator.cpp
-	src/backtracking_resolution.cpp
-	src/avoidance_resolution.cpp
+    src/single_robot_router.cpp
+    src/segment_expander.cpp
+    src/route_coordinator_timed.cpp
+    src/traceback.cpp
+    src/route_generator.cpp
+    src/backtracking_resolution.cpp
+    src/avoidance_resolution.cpp
     src/empty_resolution.cpp
-	src/priority_scheduler.cpp
-	src/potential_calculator.cpp
-	src/speed_scheduler.cpp
-	src/route_coordinator.cpp
+    src/priority_scheduler.cpp
+    src/potential_calculator.cpp
+    src/speed_scheduler.cpp
+    src/route_coordinator.cpp
  )
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 

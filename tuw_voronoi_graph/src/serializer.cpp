@@ -133,7 +133,7 @@ namespace voronoi_graph
     void Serializer::save(const std::string &_mapPath, const std::vector<std::shared_ptr<Segment>> &_segs, const Eigen::Vector2d &_origin, const float &_resolution)
     {
         if(!boost::filesystem::exists(_mapPath))
-            boost::filesystem::create_directory(_mapPath);
+            boost::filesystem::create_directories(_mapPath);
 
 
         //Save map info (Length of segments)
