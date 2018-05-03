@@ -11,6 +11,7 @@ add_compile_options(-std=c++14)
 find_package(catkin REQUIRED COMPONENTS
   rviz
   roscpp
+  nav_msgs
   tuw_multi_robot_msgs
 )
 
@@ -71,7 +72,6 @@ find_package(Eigen3 REQUIRED)
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   tuw_geometry_msgs#   tuw_nav_msgs
 # )
 
 ################################################
@@ -106,7 +106,7 @@ find_package(Eigen3 REQUIRED)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES tuw_voronoi_rviz
-#  CATKIN_DEPENDS rviz tuw_geometry_msgs tuw_nav_msgs voronoi_segmentation
+   CATKIN_DEPENDS rviz nav_msgs tuw_multi_robot_msgs
 #  DEPENDS system_lib
 )
 

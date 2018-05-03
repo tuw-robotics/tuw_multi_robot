@@ -3,17 +3,17 @@
 <launch>
 
   <arg name="room"                  default="cave"            />
-  <arg name="use_rviz"              default="true"            />
-  <arg name="use_stage"             default="true"            />
-  <arg name="use_map_server"        default="true"            />
-  <arg name="use_planner"           default="true"            />
-  <arg name="use_controller"        default="true"            />
-  <arg name="use_graph_generator"   default="true"            />
+  <arg name="launch_rviz"              default="true"            />
+  <arg name="launch_stage"             default="true"            />
+  <arg name="launch_map_server"        default="true"            />
+  <arg name="launch_planner"           default="true"            />
+  <arg name="launch_controller"        default="true"            />
+  <arg name="launch_graph_generator"   default="true"            />
   <arg name="cfg"                   default="default"         />
-  <arg name="use_path_synchronizer" default="false"           />
+  <arg name="launch_path_synchronizer" default="false"           />
 
   <!-- map server -->
-  <group if="$(arg use_map_server)">
+  <group if="$(arg launch_map_server)">
         <include file="$(find tuw_multi_robot_demo)/launch/map_server.launch">
         <arg name="room" value="$(arg room)" />
         </include>
@@ -21,40 +21,40 @@
 
 
   <!-- start rviz -->
-  <group if="$(arg use_rviz)">
+  <group if="$(arg launch_rviz)">
 	  <include file="$(find tuw_multi_robot_demo)/launch/rviz.launch">
 		<arg name="cfg" value="$(arg cfg)"/> 
 	  </include>
   </group>
 
 
-  <group if="$(arg use_stage)">
+  <group if="$(arg launch_stage)">
 	  <include file="$(find tuw_multi_robot_demo)/launch/stage.launch">
 	    <arg name="room" value="$(arg room)" />
 	  </include>
   </group>
 
     
-  <group if="$(arg use_planner)">
+  <group if="$(arg launch_planner)">
 	  <include file="$(find tuw_multi_robot_demo)/launch/multi_robot.launch">
 	    <arg name="cfg" value="$(arg cfg)" />
 	  </include>
   </group>
 	
-  <group if="$(arg use_controller)">
+  <group if="$(arg launch_controller)">
 	  <include file="$(find tuw_multi_robot_demo)/launch/controller.launch">
 	    <arg name="cfg" value="$(arg cfg)" />
 	  </include>
   </group>
 
 
-  <group if="$(arg use_graph_generator)">
+  <group if="$(arg launch_graph_generator)">
 	  <include file="$(find tuw_multi_robot_demo)/launch/graph_generator.launch">
 	    <arg name="room" value="$(arg room)" />
 	  </include>
   </group>
 
-  <group if="$(arg use_path_synchronizer)">
+  <group if="$(arg launch_path_synchronizer)">
 	  <include file="$(find tuw_multi_robot_demo)/launch/path_synchronizer.launch">
 	    <arg name="cfg" value="$(arg cfg)" />
 	  </include>
