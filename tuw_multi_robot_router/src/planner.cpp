@@ -437,8 +437,11 @@ namespace multi_robot_router
         if(routingTable_.size() > 1)
             return;
 
-        routingTable_[0].erase(routingTable_[0].begin(), routingTable_[0].begin() + 1);
-        routingTable_[0].erase(routingTable_[0].end() - 1, routingTable_[0].end());
+        if(routingTable_.size() > 2)
+        {
+            routingTable_[0].erase(routingTable_[0].begin(), routingTable_[0].begin() + 1);
+            routingTable_[0].erase(routingTable_[0].end() - 1, routingTable_[0].end());
+        }
     }
 
 

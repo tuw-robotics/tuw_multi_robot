@@ -189,12 +189,15 @@ namespace tuw_multi_robot_route_to_path
 
             ps.width = seg.width;               //Its the radius :D
 
-            //TODO
-            float angle = atan2(seg.end.position.y - seg.start.position.y, seg.end.position.x - seg.start.position.x);
+            double r, p, y;
+            tf::Quaternion q(seg.end.orientation.x, seg.end.orientation.y, seg.end.orientation.z, seg.end.orientation.w);
+            tf::Matrix3x3(q).getRPY(r,p,y);
+            
+            //float angle = atan2(seg.end.position.y - seg.start.position.y, seg.end.position.x - seg.start.position.x);
 
             spp.p[0] = seg.end.position.x;
             spp.p[1] = seg.end.position.y;
-            spp.p[2] = angle;
+            spp.p[2] = y;//angle;
 
             for(const tuw_multi_robot_msgs::PathPrecondition & pc : seg.preconditions)
             {

@@ -77,6 +77,7 @@ namespace multi_robot_router
             ros::Subscriber                     subGoalSet_;
             ros::Subscriber                     subMap_;
             ros::Subscriber                     subVoronoiGraph_;
+            ros::Subscriber                     subSingleGoal_;
 
             std::vector<std::string>            robot_names_;
             cv::Mat                             distMap_;
@@ -102,6 +103,7 @@ namespace multi_robot_router
             void odomCallback(const ros::MessageEvent<nav_msgs::Odometry const> &_event, int _topic);
             void graphCallback(const tuw_multi_robot_msgs::VoronoiGraph &msg);
             void goalsCallback(const tuw_multi_robot_msgs::PoseIdArray &_goals);
+            void singleGoalCallback(const geometry_msgs::PoseStamped &_goals);
             void mapCallback(const nav_msgs::OccupancyGrid &_map);
             size_t getHash(const std::vector<signed char> &_map, const Eigen::Vector2d &_origin, const float &_resolution);
             size_t getHash(const std::vector<Segment> &_graph);

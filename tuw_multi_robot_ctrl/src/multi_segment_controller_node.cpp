@@ -165,10 +165,13 @@ namespace velocity_controller
         {
             PathPoint pt;
 
-            //TODO ANGLE
             pt.x = seg.end.position.x;
             pt.y = seg.end.position.y;
-            pt.theta = 0;
+            
+            double roll, pitch, yaw;
+            tf::Quaternion q(seg.end.orientation.x, seg.end.orientation.y, seg.end.orientation.z, seg.end.orientation.w);
+            tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
+            pt.theta = yaw;
 
             for(const tuw_multi_robot_msgs::PathPrecondition & pc : seg.preconditions)
             {

@@ -126,11 +126,16 @@ namespace multi_robot_router
         }
 
         subGoalSet_ = _n.subscribe(goal_topic_, 1, &Planner_Node::goalsCallback, this);
+        //Adding subscriber if only one robot is used for planning to use the standard rvis goals button
+        if(robot_names_.size() == 1)
+        {
+            subSingleGoal_ = _n.subscribe("goal", 1, &Planner_Node::singleGoalCallback, this);
+        }
+        
         subMap_ = _n.subscribe(map_topic_, 1, &Planner_Node::mapCallback, this);
         subVoronoiGraph_ = _n.subscribe(voronoi_topic_, 1, &Planner_Node::graphCallback, this);
 
         pubPlannerStatus_ = _n.advertise<tuw_multi_robot_msgs::PlannerStatus> (planner_status_topic_, 1);
-        
         
         call_type = boost::bind(&Planner_Node::parametersCallback, this, _1, _2);
         param_server.setCallback(call_type);
@@ -261,6 +266,22 @@ namespace multi_robot_router
         got_graph_ = true;
     }
 
+    void Planner_Node::singleGoalCallback(const geometry_msgs::PoseStamped &_goal)
+    {
+        tuw_multi_robot_msgs::PoseIdArray pa;
+        pa.header = _goal.header;
+        
+        
+        tuw_multi_robot_msgs::PoseId pi;
+        
+        pi.id = "0";
+        pi.orientation = _goal.pose.orientation;
+        pi.position = _goal.pose.position;
+        pa.poses.push_back(pi);
+        
+        goalsCallback(pa);
+    }
+    
 
     void Planner_Node::goalsCallback(const tuw_multi_robot_msgs::PoseIdArray &_goals)
     {
@@ -273,7 +294,6 @@ namespace multi_robot_router
             Eigen::Vector3d p;
             tf::Quaternion q((*it).orientation.x, (*it).orientation.y, (*it).orientation.z, (*it).orientation.w);
             tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
-            ROS_INFO("q %f %f %f %f r %f p %f y %f", q.x(), q.y(), q.z(), q.w(), roll, pitch, yaw);
             
             p[0] = (*it).position.x;
             p[1] = (*it).position.y;     
