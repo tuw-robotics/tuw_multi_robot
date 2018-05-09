@@ -58,7 +58,7 @@ namespace multi_robot_router
             * @param _map the grid_map used to find the start and goal segments of the path
             * @param _graph the full graph of the map used for planning the path
             */
-            bool makePlan(const std::vector< Eigen::Vector2d > &_goals, const std::vector<float> &_radius, const cv::Mat &_map, const float &_resolution, const Eigen::Vector2d &_origin, const std::vector<Segment> &_graph);
+            bool makePlan(const std::vector< Eigen::Vector3d > &_goals, const std::vector<float> &_radius, const cv::Mat &_map, const float &_resolution, const Eigen::Vector2d &_origin, const std::vector<Segment> &_graph);
             /**
              * @brief sets the CollisionResolverType used 
              */
@@ -68,7 +68,6 @@ namespace multi_robot_router
              * @param _robot the robot to whom the routing table belongs to
              */
             const std::vector<Checkpoint> &getRoute(const uint32_t _robot) const;
-
             /**
              * @brief getter
              * @returns the duration of the planning attempt 
@@ -121,7 +120,7 @@ namespace multi_robot_router
             uint32_t robot_nr_;
             std::vector<bool> pose_received_;
             std::vector<Eigen::Vector2d> robot_poses_;
-            std::vector<Eigen::Vector2d> goals_;
+            std::vector<Eigen::Vector3d> goals_;
             std::vector<Eigen::Vector2d> realGoals_;
             std::vector<Eigen::Vector2d> realStart_;
             std::vector<Eigen::Vector2d> voronoiGoals_;

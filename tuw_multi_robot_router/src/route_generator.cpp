@@ -73,6 +73,10 @@ namespace multi_robot_router
             ps.end[1] = _element.getSegment().getStart()[1];
             ps.start[0] = _element.getSegment().getEnd()[0];
             ps.start[1] = _element.getSegment().getEnd()[1];
+            
+            float angle = atan2(ps.start[1] - ps.end[1], ps.start[0] - ps.end[0]);
+            ps.start[2] = angle;
+            ps.end[2] = angle;
         }
         else
         {
@@ -81,6 +85,10 @@ namespace multi_robot_router
             ps.end[1] = _element.getSegment().getEnd()[1];
             ps.start[0] = _element.getSegment().getStart()[0];
             ps.start[1] = _element.getSegment().getStart()[1];
+            
+            float angle = atan2(ps.end[1] - ps.start[1], ps.end[0] - ps.start[0]);
+            ps.start[2] = angle;
+            ps.end[2] = angle;
         }
 
         return ps;

@@ -349,7 +349,7 @@ namespace multi_robot_router
         return false;
     }
 
-    bool Planner::makePlan(const std::vector< Eigen::Vector2d > &_goals, const std::vector<float> &_radius, const cv::Mat &_map, const float &_resolution, const Eigen::Vector2d &_origin, const std::vector<Segment> &_graph)
+    bool Planner::makePlan(const std::vector< Eigen::Vector3d > &_goals, const std::vector<float> &_radius, const cv::Mat &_map, const float &_resolution, const Eigen::Vector2d &_origin, const std::vector<Segment> &_graph)
     {
         auto t1 = std::chrono::high_resolution_clock::now();
         std::clock_t startcputime = std::clock();
@@ -413,7 +413,7 @@ namespace multi_robot_router
 
             for(Checkpoint & seg : path)
             {
-                Eigen::Vector2d vec = (seg.end - seg.start);
+                Eigen::Vector3d vec = (seg.end - seg.start);
                 float lengthVertex = std::sqrt(vec[0] * vec[0] + vec[1] * vec[1]);
                 overallPathLength_ += lengthVertex;
                 lengthPath += lengthVertex;
@@ -448,18 +448,32 @@ namespace multi_robot_router
         {
             for(int i = 0; i < routingTable_.size(); i++)
             {
-                routingTable_[i].front().start = voronoiStart_[i];
-                routingTable_[i].back().end = voronoiGoals_[i];
+                routingTable_[i].front().start[0] = voronoiStart_[i][0];
+                routingTable_[i].front().start[1] = voronoiStart_[i][1];
+                routingTable_[i].back().end[0] = voronoiGoals_[i][0];
+                routingTable_[i].back().end[1] = voronoiGoals_[i][1];
+                routingTable_[i].back().end[2] = goals_[i][2];
             }
         }
         else if(goalMode_ == goalMode::use_map_goal)
         {
             for(int i = 0; i < routingTable_.size(); i++)
             {
-                routingTable_[i].front().start = realStart_[i];
-                routingTable_[i].back().end = realGoals_[i];
+                routingTable_[i].front().start[0] = realStart_[i][0];
+                routingTable_[i].front().start[1] = realStart_[i][1];
+                routingTable_[i].back().end[0] = realGoals_[i][0];
+                routingTable_[i].back().end[1] = realGoals_[i][1];
+                routingTable_[i].back().end[2] = goals_[i][2];
             }
         }
+        else
+        {
+            for(int i = 0; i < routingTable_.size(); i++)
+            {
+                routingTable_[i].back().end[2] = goals_[i][2];
+            }
+        }     
+        
     }
 
 

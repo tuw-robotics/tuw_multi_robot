@@ -181,18 +181,19 @@ namespace tuw_multi_robot_route_to_path
             SyncedPathPoint spp;
             PathSegment ps;
 
-            ps.start[0] = seg.start.x;
-            ps.start[1] = seg.start.y;
+            ps.start[0] = seg.start.position.x;
+            ps.start[1] = seg.start.position.y;
 
-            ps.goal[0] = seg.end.x;
-            ps.goal[1] = seg.end.y;
+            ps.goal[0] = seg.end.position.x;
+            ps.goal[1] = seg.end.position.y;
 
             ps.width = seg.width;               //Its the radius :D
 
-            float angle = atan2(seg.end.y - seg.start.y, seg.end.x - seg.start.x);
+            //TODO
+            float angle = atan2(seg.end.position.y - seg.start.position.y, seg.end.position.x - seg.start.position.x);
 
-            spp.p[0] = seg.end.x;
-            spp.p[1] = seg.end.y;
+            spp.p[0] = seg.end.position.x;
+            spp.p[1] = seg.end.position.y;
             spp.p[2] = angle;
 
             for(const tuw_multi_robot_msgs::PathPrecondition & pc : seg.preconditions)

@@ -3,6 +3,7 @@
 
 #include <eigen3/Eigen/Dense>
 #include <tuw_global_planner/srr_utils.h>
+#include <ros/ros.h>
 
 namespace multi_robot_router
 {
@@ -17,8 +18,8 @@ namespace multi_robot_router
             };
 
             uint32_t segId;
-            Eigen::Vector2d start;
-            Eigen::Vector2d end;
+            Eigen::Vector3d start;
+            Eigen::Vector3d end;
             std::vector<Precondition> preconditions;
 
             /**
@@ -30,13 +31,27 @@ namespace multi_robot_router
 
                 if(_v.direction == RouteVertex::path_direction::start_to_end)
                 {
-                    start = _v.getSegment().getStart();
-                    end = _v.getSegment().getEnd();
+                    Eigen::Vector2d s = _v.getSegment().getStart();
+                    start[0] = s[0];
+                    start[1] = s[1];
+                    start[2] = atan2(end[1] - start[1], end[0] - start[0]);
+                    
+                    Eigen::Vector2d e = _v.getSegment().getEnd();
+                    end[0] = e[0];
+                    end[1] = e[1];
+                    end[2] = atan2(end[1] - start[1], end[0] - start[0]);
                 }
                 else
                 {
-                    start = _v.getSegment().getEnd();
-                    end = _v.getSegment().getStart();
+                    Eigen::Vector2d s = _v.getSegment().getEnd();
+                    start[0] = s[0];
+                    start[1] = s[1];
+                    start[2] = atan2(start[1] - end[1], start[0] - end[0]);
+                    
+                    Eigen::Vector2d e = _v.getSegment().getStart();
+                    end[0] = e[0];
+                    end[1] = e[1];
+                    end[2] = atan2(start[1] - end[1], start[0] - end[0]);
                 }
             }
             Checkpoint(): segId(-1)

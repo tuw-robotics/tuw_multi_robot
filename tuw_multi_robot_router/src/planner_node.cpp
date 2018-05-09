@@ -32,9 +32,9 @@
 #include <tuw_multi_robot_msgs/SegmentPath.h>
 #include <chrono>
 #include <boost/functional/hash.hpp>
+#include <tf/tf.h>
 
 //TODO add Weights from robots...
-//TODO multithreded goal selector
 
 int main(int argc, char **argv)
 {
@@ -265,13 +265,19 @@ namespace multi_robot_router
     void Planner_Node::goalsCallback(const tuw_multi_robot_msgs::PoseIdArray &_goals)
     {
         //Goals have to be orderd
-        std::vector<Eigen::Vector2d> goals;
+        std::vector<Eigen::Vector3d> goals;
 
         for(auto it = _goals.poses.begin(); it != _goals.poses.end(); it++)
         {
-            Eigen::Vector2d p;
+            double roll, pitch, yaw;
+            Eigen::Vector3d p;
+            tf::Quaternion q((*it).orientation.x, (*it).orientation.y, (*it).orientation.z, (*it).orientation.w);
+            tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
+            ROS_INFO("q %f %f %f %f r %f p %f y %f", q.x(), q.y(), q.z(), q.w(), roll, pitch, yaw);
+            
             p[0] = (*it).position.x;
-            p[1] = (*it).position.y;
+            p[1] = (*it).position.y;     
+            p[2] = yaw;
             goals.push_back(p);
         }
 
@@ -350,32 +356,38 @@ namespace multi_robot_router
             const std::vector< Checkpoint > &route = getRoute(i);
 
             //Add first point
-            geometry_msgs::PoseStamped p;
-            p.header.seq = 0;
-            p.header.stamp = ros::Time::now();
-            p.header.frame_id = "map";
+            geometry_msgs::PoseStamped pose_1;
+            pose_1.header.seq = 0;
+            pose_1.header.stamp = ros::Time::now();
+            pose_1.header.frame_id = "map";
 
-            Eigen::Vector2d pos = route[0].start * mapResolution_;
-            p.pose.position.x = pos[0] + mapOrigin_[0];
-            p.pose.position.y = pos[1] + mapOrigin_[1];
+            Eigen::Vector2d pos(route[0].start[0] * mapResolution_, route[0].start[1] * mapResolution_);
+            pose_1.pose.position.x = pos[0] + mapOrigin_[0];
+            pose_1.pose.position.y = pos[1] + mapOrigin_[1];
 
-            p.pose.orientation.w = 1;
-            ros_path.poses.push_back(p);
+            pose_1.pose.orientation.w = 1;
+            ros_path.poses.push_back(pose_1);
 
             //Add other points
             for(const Checkpoint & c : route)
             {
-                geometry_msgs::PoseStamped p;
-                p.header.seq = 0;
-                p.header.stamp = ros::Time::now();
-                p.header.frame_id = "map";
+                geometry_msgs::PoseStamped pose;
+                pose.header.seq = 0;
+                pose.header.stamp = ros::Time::now();
+                pose.header.frame_id = "map";
 
-                Eigen::Vector2d pos = c.end * mapResolution_;
-                p.pose.position.x = pos[0] + mapOrigin_[0];
-                p.pose.position.y = pos[1] + mapOrigin_[1];
+                Eigen::Vector2d pos(c.end[0] * mapResolution_, c.end[1] * mapResolution_);
+                pose.pose.position.x = pos[0] + mapOrigin_[0];
+                pose.pose.position.y = pos[1] + mapOrigin_[1];
 
-                p.pose.orientation.w = 1;
-                ros_path.poses.push_back(p);
+                tf::Quaternion q;
+                q.setEuler(0,0,c.end[2]);
+                
+                pose.pose.orientation.w = q.w();
+                pose.pose.orientation.x = q.x();
+                pose.pose.orientation.y = q.y();
+                pose.pose.orientation.z = q.z();
+                ros_path.poses.push_back(pose);
             }
 
             pubPaths_[i].publish(ros_path);
@@ -389,32 +401,44 @@ namespace multi_robot_router
             ros_path.header.frame_id = "map";
             const std::vector< Checkpoint > &route = getRoute(i);
 
-            for(const Checkpoint & c : route)
+            for(const Checkpoint & cp : route)
             {
-                tuw_multi_robot_msgs::PathSegment s;
+                tuw_multi_robot_msgs::PathSegment seg;
 
-                Eigen::Vector2d posS = c.start * mapResolution_;
+                Eigen::Vector2d posStart(cp.start[0] * mapResolution_, cp.start[1] * mapResolution_);
+                tf::Quaternion qStart;
+                qStart.setEuler(0,0,cp.start[2]);
 
-                s.start.x = posS[0] + mapOrigin_[0];
-                s.start.y = posS[1] + mapOrigin_[1];
+                seg.start.position.x = posStart[0] + mapOrigin_[0];
+                seg.start.position.y = posStart[1] + mapOrigin_[1];
+                seg.start.orientation.w = qStart.w();
+                seg.start.orientation.x = qStart.x();
+                seg.start.orientation.y = qStart.y();
+                seg.start.orientation.z = qStart.z();
 
-                Eigen::Vector2d posE = c.end * mapResolution_;
+                Eigen::Vector2d posEnd(cp.end[0] * mapResolution_, cp.end[1] * mapResolution_);
+                tf::Quaternion qEnd;
+                qEnd.setEuler(0,0,cp.end[2]);
 
-                s.end.x = posE[0] + mapOrigin_[0];
-                s.end.y = posE[1] + mapOrigin_[1];
+                seg.end.position.x = posEnd[0] + mapOrigin_[0];
+                seg.end.position.y = posEnd[1] + mapOrigin_[1];
+                seg.end.orientation.w = qEnd.w();
+                seg.end.orientation.x = qEnd.x();
+                seg.end.orientation.y = qEnd.y();
+                seg.end.orientation.z = qEnd.z();
 
-                s.segId = c.segId;
-                s.width = graph_[c.segId].width() * mapResolution_;
+                seg.segId = cp.segId;
+                seg.width = graph_[cp.segId].width() * mapResolution_;
 
-                for(int j = 0; j < c.preconditions.size(); j++)
+                for(int j = 0; j < cp.preconditions.size(); j++)
                 {
                     tuw_multi_robot_msgs::PathPrecondition pc;
-                    pc.robotId = c.preconditions[j].robotId;
-                    pc.stepCondition = c.preconditions[j].stepCondition;
-                    s.preconditions.push_back(pc);
+                    pc.robotId = cp.preconditions[j].robotId;
+                    pc.stepCondition = cp.preconditions[j].stepCondition;
+                    seg.preconditions.push_back(pc);
                 }
 
-                ros_path.poses.push_back(s);
+                ros_path.poses.push_back(seg);
             }
 
             pubSegPaths_[i].publish(ros_path);

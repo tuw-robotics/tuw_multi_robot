@@ -165,8 +165,9 @@ namespace velocity_controller
         {
             PathPoint pt;
 
-            pt.x = seg.end.x;
-            pt.y = seg.end.y;
+            //TODO ANGLE
+            pt.x = seg.end.position.x;
+            pt.y = seg.end.position.y;
             pt.theta = 0;
 
             for(const tuw_multi_robot_msgs::PathPrecondition & pc : seg.preconditions)

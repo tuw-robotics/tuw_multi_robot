@@ -160,7 +160,10 @@ namespace tuw_multi_robot_rviz
 					  tuw_multi_robot_msgs::PoseId pose;
 					  pose.position.x = position.x;
 					  pose.position.y = position.y;
-					  
+                      pose.orientation.x = 0;
+                      pose.orientation.y = 0;
+                      pose.orientation.z = 0;
+                      pose.orientation.w = 1;
 					  array.poses.push_back(pose);
 					}
 					
