@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package format="2">
+<package>
   <name>tuw_multi_robot_demo</name>
   <version>0.0.0</version>
   <description>The tuw_multi_robot_demo package</description>
@@ -51,6 +51,8 @@
   <!-- Use doc_depend for packages you need only for building documentation: -->
   <!--   <doc_depend>doxygen</doc_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
+  <run_depend>map_server</run_depend>
+  <run_depend>stage_ros</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
