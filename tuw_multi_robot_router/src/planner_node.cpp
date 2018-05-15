@@ -141,7 +141,7 @@ namespace multi_robot_router
         param_server.setCallback(call_type);
     }
 
-    void Planner_Node::parametersCallback(tuw_multi_robot_router::MultiRobotRouterConfig &config, uint32_t level)
+    void Planner_Node::parametersCallback(tuw_multi_robot_router::routerConfig &config, uint32_t level)
     {
         //Important set router before settings 
         uint32_t threads = config.nr_threads;

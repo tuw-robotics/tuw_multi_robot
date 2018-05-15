@@ -39,7 +39,7 @@
 #include <nav_msgs/OccupancyGrid.h>
 #include <tuw_multi_robot_msgs/PlannerStatus.h>
 #include <dynamic_reconfigure/server.h>
-#include <tuw_multi_robot_router/MultiRobotRouterConfig.h>
+#include <tuw_multi_robot_router/routerConfig.h>
 
 #include <tuw_global_planner/planner.h>
 #include <tuw_global_planner/mrr_utils.h>
@@ -67,8 +67,8 @@ namespace multi_robot_router
             std::unique_ptr<ros::Rate>      rate_;
 
         private:
-            dynamic_reconfigure::Server<tuw_multi_robot_router::MultiRobotRouterConfig> param_server;
-            dynamic_reconfigure::Server<tuw_multi_robot_router::MultiRobotRouterConfig>::CallbackType call_type;
+            dynamic_reconfigure::Server<tuw_multi_robot_router::routerConfig> param_server;
+            dynamic_reconfigure::Server<tuw_multi_robot_router::routerConfig>::CallbackType call_type;
             std::vector<ros::Publisher>         pubPaths_;
             std::vector<ros::Publisher>         pubSegPaths_;
             ros::Publisher                      pubPlannerStatus_;
@@ -99,7 +99,7 @@ namespace multi_robot_router
             int                                 id_;
 
             
-            void parametersCallback(tuw_multi_robot_router::MultiRobotRouterConfig &config, uint32_t level);
+            void parametersCallback(tuw_multi_robot_router::routerConfig &config, uint32_t level);
             void odomCallback(const ros::MessageEvent<nav_msgs::Odometry const> &_event, int _topic);
             void graphCallback(const tuw_multi_robot_msgs::VoronoiGraph &msg);
             void goalsCallback(const tuw_multi_robot_msgs::PoseIdArray &_goals);
