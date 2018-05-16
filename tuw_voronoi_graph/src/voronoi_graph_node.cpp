@@ -5,7 +5,7 @@
 #include <voronoi_segmentation/voronoi_graph_generator.h>
 #include <memory>
 #include <boost/functional/hash.hpp>
-#include <tuw_multi_robot_msgs/VoronoiGraph.h>
+#include <tuw_multi_robot_msgs/Graph.h>
 #include <string>
 
 void publishTf(std::string mapName);
@@ -80,7 +80,7 @@ namespace voronoi_graph
 
         subMap_       = n.subscribe(topicGlobalMap_, 1, &VoronoiGeneratorNode::globalMapCallback, this);
         //pubVoronoiMap_    = n.advertise<nav_msgs::OccupancyGrid>(topicVoronoiMap_, 1);                        //DEBUG
-        pubSegments_  = n.advertise<tuw_multi_robot_msgs::VoronoiGraph>(topicSegments_, 1);
+        pubSegments_  = n.advertise<tuw_multi_robot_msgs::Graph>(topicSegments_, 1);
 
 
         //ros::Rate(1).sleep();
@@ -155,7 +155,7 @@ namespace voronoi_graph
 
     void VoronoiGeneratorNode::publishSegments()
     {
-        tuw_multi_robot_msgs::VoronoiGraph graph;
+        tuw_multi_robot_msgs::Graph graph;
         graph.header.frame_id = "map";
         graph.header.seq = 0;
         graph.header.stamp = ros::Time::now();
@@ -175,7 +175,7 @@ namespace voronoi_graph
 
             seg.id = (*it)->GetId();
             seg.length = (*it)->GetLength();
-            seg.minPathSpace = (*it)->GetMinPathSpace();
+            seg.width = (*it)->GetMinPathSpace();
 
             std::vector< Eigen::Vector2d >  path = (*it)->GetPath();
 
@@ -194,7 +194,7 @@ namespace voronoi_graph
 
             for(int i = 0; i < predecessors.size(); i++)
             {
-                seg.predecessor.push_back(predecessors[i]->GetId());
+                seg.predecessors.push_back(predecessors[i]->GetId());
             }
 
             std::vector< std::shared_ptr< Segment > > successors = (*it)->GetSuccessors();
@@ -204,7 +204,7 @@ namespace voronoi_graph
                 seg.successors.push_back(successors[i]->GetId());
             }
 
-            graph.segments.push_back(seg);
+            graph.vertices.push_back(seg);
         }
 
         pubSegments_.publish(graph);

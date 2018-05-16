@@ -115,7 +115,7 @@ void VoronoiGraphDisplay::updatePathScale()
 }
 
 // This is our callback to handle an incoming message.
-void VoronoiGraphDisplay::processMessage ( const  tuw_multi_robot_msgs::VoronoiGraph::ConstPtr& msg ) {
+void VoronoiGraphDisplay::processMessage ( const  tuw_multi_robot_msgs::Graph::ConstPtr& msg ) {
     // Here we call the rviz::FrameManager to get the transform from the
     // fixed frame to the frame in the header of this Imu message.  If
     // it fails, we can't do anything else so we return.

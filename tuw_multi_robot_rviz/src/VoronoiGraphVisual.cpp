@@ -61,7 +61,7 @@ VoronoiGraphVisual::~VoronoiGraphVisual() {
     scene_manager_->destroySceneNode ( frame_node_ );
 }
 
-void VoronoiGraphVisual::setMessage ( const tuw_multi_robot_msgs::VoronoiGraph::ConstPtr& msg ) 
+void VoronoiGraphVisual::setMessage ( const tuw_multi_robot_msgs::Graph::ConstPtr& msg ) 
 {
     static double timeOld_;
     if( timeOld_ == msg->header.stamp.toSec() )
@@ -70,11 +70,11 @@ void VoronoiGraphVisual::setMessage ( const tuw_multi_robot_msgs::VoronoiGraph::
 	}
     timeOld_ = msg->header.stamp.toSec();
     
-    pathLine.resize ( msg->segments.size() );
+    pathLine.resize ( msg->vertices.size() );
 	crossingShape.resize( pathLine.size() * 2);
     for( size_t i = 0; i < pathLine.size(); ++i) 
 	{ 
-		tuw_multi_robot_msgs::Vertex seg = msg->segments[i];
+		tuw_multi_robot_msgs::Vertex seg = msg->vertices[i];
 		geometry_msgs::Point p1 = seg.path.front();
 		geometry_msgs::Point p2 = seg.path.back();
 		

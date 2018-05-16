@@ -29,7 +29,7 @@
 
 #include <tuw_global_planner/planner_node.h>
 #include <tuw_global_planner/srr_utils.h>
-#include <tuw_multi_robot_msgs/SegmentPath.h>
+#include <tuw_multi_robot_msgs/Route.h>
 #include <chrono>
 #include <boost/functional/hash.hpp>
 #include <tf/tf.h>
@@ -122,7 +122,7 @@ namespace multi_robot_router
         {
             subOdom_[i] = _n.subscribe<nav_msgs::Odometry> (robot_names_[i] + "/" + odom_topic_, 1, boost::bind(&Planner_Node::odomCallback, this, _1, i));
             pubPaths_[i] = _n.advertise<nav_msgs::Path> (robot_names_[i] + "/" + path_topic_, 1);
-            pubSegPaths_[i] = _n.advertise<tuw_multi_robot_msgs::SegmentPath> (robot_names_[i] + "/" + segpath_topic_, 1);
+            pubSegPaths_[i] = _n.advertise<tuw_multi_robot_msgs::Route> (robot_names_[i] + "/" + segpath_topic_, 1);
         }
 
         subGoalSet_ = _n.subscribe(goal_topic_, 1, &Planner_Node::goalsCallback, this);
@@ -223,11 +223,11 @@ namespace multi_robot_router
     }
 
 
-    void Planner_Node::graphCallback(const tuw_multi_robot_msgs::VoronoiGraph &msg)
+    void Planner_Node::graphCallback(const tuw_multi_robot_msgs::Graph &msg)
     {
         std::vector<Segment> graph;
 
-        for(const tuw_multi_robot_msgs::Vertex & segment : msg.segments)
+        for(const tuw_multi_robot_msgs::Vertex & segment : msg.vertices)
         {
             std::vector<Eigen::Vector2d> points;
 
@@ -245,12 +245,12 @@ namespace multi_robot_router
 
             std::vector<uint32_t> predecessors;
 
-            for(const auto & pred : segment.predecessor)
+            for(const auto & pred : segment.predecessors)
             {
                 predecessors.emplace_back(pred);
             }
 
-            graph.emplace_back(segment.id, points, successors, predecessors, segment.minPathSpace);
+            graph.emplace_back(segment.id, points, successors, predecessors, segment.width);
         }
 
         std::sort(graph.begin(), graph.end(), sortSegments);
@@ -347,7 +347,7 @@ namespace multi_robot_router
 
         for(int i = 0; i < robot_names_.size(); i++)
         {
-            tuw_multi_robot_msgs::SegmentPath ros_path;
+            tuw_multi_robot_msgs::Route ros_path;
             ros_path.header.seq = 0;
             ros_path.header.stamp = ros::Time::now();
             ros_path.header.frame_id = "map";
@@ -415,7 +415,7 @@ namespace multi_robot_router
 
         for(int i = 0; i < robot_names_.size(); i++)
         {
-            tuw_multi_robot_msgs::SegmentPath ros_path;
+            tuw_multi_robot_msgs::Route ros_path;
             ros_path.header.seq = 0;
             ros_path.header.stamp = ros::Time::now();
             ros_path.header.frame_id = "map";
@@ -423,7 +423,7 @@ namespace multi_robot_router
 
             for(const Checkpoint & cp : route)
             {
-                tuw_multi_robot_msgs::PathSegment seg;
+                tuw_multi_robot_msgs::RouteSegment seg;
 
                 Eigen::Vector2d posStart(cp.start[0] * mapResolution_, cp.start[1] * mapResolution_);
                 tf::Quaternion qStart;
@@ -447,18 +447,18 @@ namespace multi_robot_router
                 seg.end.orientation.y = qEnd.y();
                 seg.end.orientation.z = qEnd.z();
 
-                seg.segId = cp.segId;
+                seg.segment_id = cp.segId;
                 seg.width = graph_[cp.segId].width() * mapResolution_;
 
                 for(int j = 0; j < cp.preconditions.size(); j++)
                 {
-                    tuw_multi_robot_msgs::PathPrecondition pc;
-                    pc.robotId = cp.preconditions[j].robotId;
-                    pc.stepCondition = cp.preconditions[j].stepCondition;
+                    tuw_multi_robot_msgs::RoutePrecondition pc;
+                    pc.robot_id = cp.preconditions[j].robotId;
+                    pc.step_condition = cp.preconditions[j].stepCondition;
                     seg.preconditions.push_back(pc);
                 }
 
-                ros_path.poses.push_back(seg);
+                ros_path.segments.push_back(seg);
             }
 
             pubSegPaths_[i].publish(ros_path);
@@ -468,10 +468,10 @@ namespace multi_robot_router
         tuw_multi_robot_msgs::PlannerStatus ps;
         ps.id = id_;
         ps.success = 1;
-        ps.overallPathLength = (int32_t)getOverallPathLength();
-        ps.longestPathLength = (int32_t)getLongestPathLength();
-        ps.prioritySchedulingAttemps = (int32_t)getPriorityScheduleAttemps();
-        ps.speedSchedulingAttemps = (int32_t)getSpeedScheduleAttemps();
+        ps.overall_path_length = (int32_t)getOverallPathLength();
+        ps.longest_path_length = (int32_t)getLongestPathLength();
+        ps.priority_scheduling_attemps = (int32_t)getPriorityScheduleAttemps();
+        ps.speed_scheduling_attemps = (int32_t)getSpeedScheduleAttemps();
         ps.duration = (int32_t)getDuration_ms();
 
         pubPlannerStatus_.publish(ps);

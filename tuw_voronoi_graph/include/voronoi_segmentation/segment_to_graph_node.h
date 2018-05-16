@@ -32,7 +32,7 @@
 #include <ros/ros.h>
 #include <memory>
 #include <tuw_multi_robot_msgs/Vertex.h>
-#include <tuw_multi_robot_msgs/VoronoiGraph.h>
+#include <tuw_multi_robot_msgs/Graph.h>
 #include <geometry_msgs/Point.h>
 
 #include <eigen3/Eigen/Dense>
@@ -65,7 +65,7 @@ namespace voronoi_graph
             std::string             segment_topic_;
             double                  path_length_;
 
-            tuw_multi_robot_msgs::VoronoiGraph current_graph_;
+            tuw_multi_robot_msgs::Graph current_graph_;
 
             void readSegments();
             std::vector<int> findNeighbors(std::vector<PathSeg> &_graph, Eigen::Vector2d _point, int _segment);

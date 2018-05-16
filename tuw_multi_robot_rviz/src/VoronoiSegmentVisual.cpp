@@ -61,7 +61,7 @@ VoronoiSegmentVisual::~VoronoiSegmentVisual() {
     scene_manager_->destroySceneNode ( frame_node_ );
 }
 
-void VoronoiSegmentVisual::setMessage ( const tuw_multi_robot_msgs::VoronoiGraph::ConstPtr& msg ) 
+void VoronoiSegmentVisual::setMessage ( const tuw_multi_robot_msgs::Graph::ConstPtr& msg ) 
 {
     static double timeOld_;
     if( timeOld_ == msg->header.stamp.toSec() )
@@ -70,10 +70,10 @@ void VoronoiSegmentVisual::setMessage ( const tuw_multi_robot_msgs::VoronoiGraph
 	}
     timeOld_ = msg->header.stamp.toSec();
     
-    pathLine.resize ( msg->segments.size() * 4);
-    for( size_t i = 0; i < msg->segments.size(); ++i) 
+    pathLine.resize ( msg->vertices.size() * 4);
+    for( size_t i = 0; i < msg->vertices.size(); ++i) 
 	{ 
-		tuw_multi_robot_msgs::Vertex seg = msg->segments[i];
+		tuw_multi_robot_msgs::Vertex seg = msg->vertices[i];
 		geometry_msgs::Point p1 = seg.path.front();
 		geometry_msgs::Point p2 = seg.path.back();
 		
@@ -87,8 +87,8 @@ void VoronoiSegmentVisual::setMessage ( const tuw_multi_robot_msgs::VoronoiGraph
 		float z1 = p1.z*msg->resolution-msg->origin.position.z;
 		float z2 = p2.z*msg->resolution-msg->origin.position.z;
 		
-		Line l1 = offsetLine(l, msg->resolution * (0.5 + seg.minPathSpace));
-		Line l2 = offsetLine(l, msg->resolution * (-0.5 - seg.minPathSpace));
+		Line l1 = offsetLine(l, msg->resolution * (0.5 + seg.width));
+		Line l2 = offsetLine(l, msg->resolution * (-0.5 - seg.width));
 		
 		pathLine[i*4].reset ( new rviz::Line ( scene_manager_, frame_node_ ) );
 		pathLine[i*4]->setColor ( colorPath_ );

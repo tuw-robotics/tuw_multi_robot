@@ -32,7 +32,7 @@
 #include <ros/ros.h>
 #include <nav_msgs/Path.h>
 #include <nav_msgs/Odometry.h>
-#include <tuw_multi_robot_msgs/SegmentPath.h>
+#include <tuw_multi_robot_msgs/Route.h>
 #include <tuw_multi_robot_route_to_path/RobotRouteToPath.h>
 #include <tuw_multi_robot_route_to_path/RobotStateObserver.h>
 
@@ -65,7 +65,7 @@ namespace  tuw_multi_robot_route_to_path
 
 
         private  : void subOdomCb(const ros::MessageEvent<nav_msgs::Odometry const>& _event, int _topic);
-        private  : void subSegPathCb(const ros::MessageEvent<tuw_multi_robot_msgs::SegmentPath const>& _event, int _topic);
+        private  : void subSegPathCb(const ros::MessageEvent<tuw_multi_robot_msgs::Route const>& _event, int _topic);
 
         private : std::vector<RobotRouteToPath>             converter_;
         private : std::vector<RobotStateObserver>           observer_;

@@ -68,7 +68,7 @@ namespace voronoi_graph
         path_length_ = 0.9;   //meter
         n_param_.param("segment_length", path_length_, path_length_);
 
-        pubSegments_ = _n.advertise<tuw_multi_robot_msgs::VoronoiGraph>(segment_topic_, 1);
+        pubSegments_ = _n.advertise<tuw_multi_robot_msgs::Graph>(segment_topic_, 1);
 
         readSegments();
     }
@@ -103,7 +103,7 @@ namespace voronoi_graph
 
         //TODO Precompute
 
-        current_graph_.segments.clear();
+        current_graph_.vertices.clear();
         current_graph_.header.frame_id = "map";
         current_graph_.header.seq = 0;
         current_graph_.header.stamp = ros::Time::now();
@@ -118,7 +118,7 @@ namespace voronoi_graph
 
 
             v.length = (graph[i].start - graph[i].end).norm();
-            v.minPathSpace = graph[i].width / resolution;
+            v.width = graph[i].width / resolution;
 
             geometry_msgs::Point start;
             start.x = graph[i].start[0];
@@ -136,7 +136,7 @@ namespace voronoi_graph
 
             for(int pr : pred)
             {
-                v.predecessor.push_back(pr);
+                v.predecessors.push_back(pr);
             }
 
             std::vector<int> succ = findNeighbors(graph, graph[i].end, i);
@@ -146,7 +146,7 @@ namespace voronoi_graph
                 v.successors.push_back(sr);
             }
 
-            current_graph_.segments.push_back(v);
+            current_graph_.vertices.push_back(v);
         }
 
         ROS_INFO("Segments parsed");

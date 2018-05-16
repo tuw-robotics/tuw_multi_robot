@@ -34,7 +34,7 @@
 #include <tuw_multi_robot_msgs/PoseIdArray.h>
 #include <tuw_multi_robot_msgs/PoseId.h>
 #include <nav_msgs/Odometry.h>
-#include <tuw_multi_robot_msgs/VoronoiGraph.h>
+#include <tuw_multi_robot_msgs/Graph.h>
 #include <nav_msgs/Path.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <tuw_multi_robot_msgs/PlannerStatus.h>
@@ -101,7 +101,7 @@ namespace multi_robot_router
             
             void parametersCallback(tuw_multi_robot_router::routerConfig &config, uint32_t level);
             void odomCallback(const ros::MessageEvent<nav_msgs::Odometry const> &_event, int _topic);
-            void graphCallback(const tuw_multi_robot_msgs::VoronoiGraph &msg);
+            void graphCallback(const tuw_multi_robot_msgs::Graph &msg);
             void goalsCallback(const tuw_multi_robot_msgs::PoseIdArray &_goals);
             void singleGoalCallback(const geometry_msgs::PoseStamped &_goals);
             void mapCallback(const nav_msgs::OccupancyGrid &_map);

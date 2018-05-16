@@ -105,7 +105,7 @@ namespace velocity_controller
         {
             pubCmdVel_[i] = n.advertise<geometry_msgs::Twist>(robot_names_[i] + "/" + topic_cmdVel_, 1);
             subOdom_[i] = n.subscribe<nav_msgs::Odometry> (robot_names_[i] + "/" + topic_odom_, 1, boost::bind(&MultiSegmentControllerNode::subOdomCb, this, _1, i));
-            subPath_[i] = n.subscribe<tuw_multi_robot_msgs::SegmentPath> (robot_names_[i] + "/" + topic_path_, 1, boost::bind(&MultiSegmentControllerNode::subPathCb, this, _1, i));
+            subPath_[i] = n.subscribe<tuw_multi_robot_msgs::Route> (robot_names_[i] + "/" + topic_path_, 1, boost::bind(&MultiSegmentControllerNode::subPathCb, this, _1, i));
             subCtrl_[i] = n.subscribe<std_msgs::String> (robot_names_[i] + "/" + topic_ctrl_, 1, boost::bind(&MultiSegmentControllerNode::subCtrlCb, this, _1, i));
         }
     }
@@ -151,17 +151,17 @@ namespace velocity_controller
         }
     }
 
-    void velocity_controller::MultiSegmentControllerNode::subPathCb(const ros::MessageEvent< const tuw_multi_robot_msgs::SegmentPath >& _event, int _topic)
+    void velocity_controller::MultiSegmentControllerNode::subPathCb(const ros::MessageEvent< const tuw_multi_robot_msgs::Route >& _event, int _topic)
     {
-        const tuw_multi_robot_msgs::SegmentPath_< std::allocator< void > >::ConstPtr& path = _event.getMessage();
+        const tuw_multi_robot_msgs::Route_< std::allocator< void > >::ConstPtr& path = _event.getMessage();
 
         std::vector<PathPoint> localPath;
 
-        if(path->poses.size() == 0)
+        if(path->segments.size() == 0)
             return;
 
 
-        for(const tuw_multi_robot_msgs::PathSegment & seg : path->poses)
+        for(const tuw_multi_robot_msgs::RouteSegment & seg : path->segments)
         {
             PathPoint pt;
 
@@ -173,11 +173,11 @@ namespace velocity_controller
             tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
             pt.theta = yaw;
 
-            for(const tuw_multi_robot_msgs::PathPrecondition & pc : seg.preconditions)
+            for(const tuw_multi_robot_msgs::RoutePrecondition & pc : seg.preconditions)
             {
                 PathPrecondition p;
-                p.robot = pc.robotId;
-                p.stepCondition = pc.stepCondition;
+                p.robot = pc.robot_id;
+                p.stepCondition = pc.step_condition;
                 pt.precondition.push_back(p);
             }
 

@@ -105,7 +105,7 @@ namespace tuw_multi_robot_route_to_path
             pubPath_[i] = n.advertise<nav_msgs::Path>(robot_names_[i] + "/" + topic_path_, 100);
 
             subOdometry_[i] = n.subscribe<nav_msgs::Odometry> (robot_names_[i] + "/" + topic_odom_, 1, boost::bind(&MultiRobotRouteToPathNode::subOdomCb, this, _1, i));
-            subSegPath_[i] = n.subscribe<tuw_multi_robot_msgs::SegmentPath> (robot_names_[i] + "/" + topic_seg_path_, 1, boost::bind(&MultiRobotRouteToPathNode::subSegPathCb, this, _1, i));
+            subSegPath_[i] = n.subscribe<tuw_multi_robot_msgs::Route> (robot_names_[i] + "/" + topic_seg_path_, 1, boost::bind(&MultiRobotRouteToPathNode::subSegPathCb, this, _1, i));
         }
     }
 
@@ -165,18 +165,18 @@ namespace tuw_multi_robot_route_to_path
         pubPath_[_topic].publish(path);
     }
 
-    void MultiRobotRouteToPathNode::subSegPathCb(const ros::MessageEvent< const tuw_multi_robot_msgs::SegmentPath >& _event, int _topic)
+    void MultiRobotRouteToPathNode::subSegPathCb(const ros::MessageEvent< const tuw_multi_robot_msgs::Route >& _event, int _topic)
     {
-        const tuw_multi_robot_msgs::SegmentPath_< std::allocator< void > >::ConstPtr& path = _event.getMessage();
+        const tuw_multi_robot_msgs::Route_< std::allocator< void > >::ConstPtr& path = _event.getMessage();
 
         std::vector<SyncedPathPoint> localPath;
         std::vector<PathSegment> segPath;
 
-        if(path->poses.size() == 0)
+        if(path->segments.size() == 0)
             return;
 
 
-        for(const tuw_multi_robot_msgs::PathSegment & seg : path->poses)
+        for(const tuw_multi_robot_msgs::RouteSegment & seg : path->segments)
         {
             SyncedPathPoint spp;
             PathSegment ps;
@@ -199,11 +199,11 @@ namespace tuw_multi_robot_route_to_path
             spp.p[1] = seg.end.position.y;
             spp.p[2] = y;//angle;
 
-            for(const tuw_multi_robot_msgs::PathPrecondition & pc : seg.preconditions)
+            for(const tuw_multi_robot_msgs::RoutePrecondition & pc : seg.preconditions)
             {
                 PathPrecondition prec;
-                prec.robot_no = pc.robotId;
-                prec.step = pc.stepCondition;
+                prec.robot_no = pc.robot_id;
+                prec.step = pc.step_condition;
 
                 spp.sync.push_back(prec);
             }

@@ -30,7 +30,7 @@
 #ifndef VORONOIGRAPHVISUAL_H
 #define VORONOIGRAPHVISUAL_H
 
-#include <tuw_multi_robot_msgs/VoronoiGraph.h>
+#include <tuw_multi_robot_msgs/Graph.h>
 #include <geometry_msgs/Vector3.h>
 
 
@@ -70,7 +70,7 @@ public:
   virtual ~VoronoiGraphVisual();
 
   // Configure the visual to show the data in the message.
-  void setMessage( const tuw_multi_robot_msgs::VoronoiGraph::ConstPtr& msg );
+  void setMessage( const tuw_multi_robot_msgs::Graph::ConstPtr& msg );
 
   // Set the pose of the coordinate frame the message refers to.
   // These could be done inside setMessage(), but that would require

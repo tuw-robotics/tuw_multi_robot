@@ -8,7 +8,7 @@
 #include <nav_msgs/Odometry.h>
 #include <nav_msgs/Path.h>
 #include <std_msgs/String.h>
-#include <tuw_multi_robot_msgs/SegmentPath.h>
+#include <tuw_multi_robot_msgs/Route.h>
 
 #include <simple_velocity_controller/segment_controller.h>
 #include <memory>
@@ -56,7 +56,7 @@ namespace  velocity_controller
 
         private:    std::vector<std::string>            robot_names_;
         private  : void subOdomCb ( const ros::MessageEvent<nav_msgs::Odometry const>& _event, int _topic );
-        private  : void subPathCb ( const ros::MessageEvent<tuw_multi_robot_msgs::SegmentPath const>& _event, int _topic );
+        private  : void subPathCb ( const ros::MessageEvent<tuw_multi_robot_msgs::Route const>& _event, int _topic );
         private  : void subCtrlCb ( const ros::MessageEvent<std_msgs::String const>& _event, int _topic );
 
         private : std::vector<SegmentController>         controller;
