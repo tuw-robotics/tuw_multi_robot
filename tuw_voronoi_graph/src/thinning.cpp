@@ -282,7 +282,7 @@ namespace voronoi_graph
 
 
 
-                    if(pAct > 1)   //Dont look for duplex saddle points at the edges of the map
+                    if(pAct > 1 && i > 1 && j > 1 && i < src.rows - 2 && j < src.cols - 2)   //Dont look for duplex saddle points at the edges of the map
                     {
 
                         //Find duplex saddle points
