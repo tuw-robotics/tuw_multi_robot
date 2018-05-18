@@ -1,5 +1,5 @@
 #include <ros/ros.h>
-#include <tuw_voronoi_map/serializer.h>
+#include <tuw_serialization/serializer.h>
 #include <memory>
 #include <opencv/cv.hpp>
 #include <queue>
@@ -9,22 +9,36 @@
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-
 using namespace cv;
 
-namespace voronoi_graph
+namespace tuw_graph
 {
 #define GRAPH_INFO_NAME     "graphInfo"
 #define TREE_INFO_NAME      "treeInfo"
-#define DATA_NAME           "data"
+#define DATA_NAME           "graphData"
 
     Serializer::Serializer()
     {
 
     }
 
+    std::size_t Serializer::getHash(const std::vector<signed char> &_map, Eigen::Vector2d _origin, float _resolution)
+    {
+        std::size_t seed = 0;
+
+        boost::hash_combine(seed, _origin[0]);
+        boost::hash_combine(seed, _origin[1]);
+        boost::hash_combine(seed, _resolution);
+
+        for(const signed char & val : _map)
+        {
+            boost::hash_combine(seed, val);
+        }
+
+        return seed;
+    }
+    
+    
     bool Serializer::load(const std::string &_mapPath, std::vector<std::shared_ptr<Segment>> &_segs, Eigen::Vector2d &_origin, float &_resolution)
     {
 
@@ -74,8 +88,8 @@ namespace voronoi_graph
 
         GraphSerializer graph(segs);
         std::ifstream ifsDist(_mapPath + DATA_NAME);
-        boost::archive::binary_iarchive iaDist(ifsDist);
-        iaDist >> graph;
+        boost::archive::xml_iarchive iaDist(ifsDist);
+        iaDist >> boost::serialization::make_nvp("graph",graph);
 
         _segs.clear();
 
@@ -163,8 +177,8 @@ namespace voronoi_graph
         GraphSerializer graph(segs);
 
         std::ofstream ofsGraph(_mapPath + DATA_NAME);
-        boost::archive::binary_oarchive oaGraph(ofsGraph);
-        oaGraph << graph;
+        boost::archive::xml_oarchive oaGraph(ofsGraph);
+        oaGraph <<  boost::serialization::make_nvp("graph", graph);
         ofsGraph.close();
     }
 

@@ -8,15 +8,15 @@
 #include <nav_msgs/OccupancyGrid.h>
 
 #include <tuw_voronoi_map/voronoi_path_generator.h>
-#include <voronoi_segmentation/voronoi_graph_generator.h>
+#include <tuw_voronoi_graph/voronoi_graph_generator.h>
 
-#include <tuw_voronoi_map/serializer.h>
+#include <tuw_serialization/serializer.h>
 
-namespace voronoi_graph
+namespace tuw_graph
 {
 
 
-    class VoronoiGeneratorNode : public VoronoiPathGenerator, public VoronoiGraphGenerator, public Serializer
+    class VoronoiGeneratorNode : public voronoi_map::VoronoiPathGenerator, public VoronoiGraphGenerator, public Serializer
     {
 
         public:
@@ -30,7 +30,6 @@ namespace voronoi_graph
 
         private:
             void globalMapCallback(const nav_msgs::OccupancyGrid::ConstPtr& _map);
-            size_t getHash(const std::vector<signed char> &_map, Eigen::Vector2d _origin, float _resolution);
             void createGraph(const nav_msgs::OccupancyGrid::ConstPtr& _map, size_t _map_hash);
             bool loadGraph(size_t hash);
             

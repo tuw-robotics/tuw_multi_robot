@@ -33,11 +33,11 @@
 #include <memory>
 #include <queue>
 #include <vector>
-#include <voronoi_segmentation/segment.h>
-#include <voronoi_segmentation/crossing.h>
+#include <tuw_voronoi_graph/segment.h>
+#include <tuw_voronoi_graph/crossing.h>
 #include <opencv/cv.hpp>
 
-namespace voronoi_graph
+namespace tuw_graph
 {
 
     class Segment_Expander

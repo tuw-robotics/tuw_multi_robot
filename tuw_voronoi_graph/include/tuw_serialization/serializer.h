@@ -5,18 +5,19 @@
 #include <nav_msgs/OccupancyGrid.h>
 #include <memory>
 #include <opencv/cv.h>
-#include <voronoi_segmentation/segment.h>
+#include <tuw_voronoi_graph/segment.h>
 
 #include <fstream>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
 
 #define DEFAULT_MAP_NAME    "voronoi_map"
 #include <eigen3/Eigen/Dense>
 #include <opencv/cv.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/functional/hash.hpp>
 
-namespace voronoi_graph
+namespace tuw_graph
 {
 
     class PointSerializer
@@ -220,6 +221,7 @@ namespace voronoi_graph
             Serializer();
             void save(const std::string &_mapPath, const std::vector<std::shared_ptr<Segment>> &_segs, const Eigen::Vector2d &_origin, const float &_resolution);
             bool load(const std::string &_mapPath, std::vector<std::shared_ptr<Segment>> &_segs, Eigen::Vector2d &_origin, float &_resolution);
+            size_t getHash(const std::vector<signed char> &_map, Eigen::Vector2d _origin, float _resolution);
     };
 
 }

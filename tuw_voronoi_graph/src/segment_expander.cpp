@@ -26,10 +26,10 @@
  *
  */
 
-#include <voronoi_segmentation/segment_expander.h>
+#include <tuw_voronoi_graph/segment_expander.h>
 #include <ros/ros.h> //DEBUG
 
-namespace voronoi_graph
+namespace tuw_graph
 {
     Segment_Expander::Segment_Expander()
     {

@@ -26,7 +26,7 @@
  *
  */
 
-#include <voronoi_segmentation/segment_to_graph_node.h>
+#include <tuw_voronoi_graph/segment_to_graph_node.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <tf/tf.h>
 #include <boost/functional/hash.hpp>
@@ -40,7 +40,7 @@ int main(int argc, char **argv)
 
     ros::Rate r(0.3);
 
-    voronoi_graph::SegmentToGraphNode node(n);
+    tuw_graph::SegmentToGraphNode node(n);
 
     while(ros::ok())
     {
@@ -53,7 +53,7 @@ int main(int argc, char **argv)
 }
 
 
-namespace voronoi_graph
+namespace tuw_graph
 {
     SegmentToGraphNode::SegmentToGraphNode(ros::NodeHandle &_n) :
         n_(_n),
@@ -171,3 +171,4 @@ namespace voronoi_graph
     }
 
 }
+

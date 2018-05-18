@@ -26,10 +26,10 @@
  *
  */
 
-#include <voronoi_segmentation/voronoi_graph_generator.h>
+#include <tuw_voronoi_graph/voronoi_graph_generator.h>
 
 
-namespace voronoi_graph
+namespace tuw_graph
 {
     VoronoiGraphGenerator::VoronoiGraphGenerator()
     {

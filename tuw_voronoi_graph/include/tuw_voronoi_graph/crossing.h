@@ -26,49 +26,28 @@
  *
  */
 
-#ifndef SEGMENT_TO_GRAPH_NODE_H
-#define SEGMENT_TO_GRAPH_NODE_H
+#ifndef CROSSING_H
+#define CROSSING_H
 
 #include <ros/ros.h>
-#include <memory>
-#include <tuw_multi_robot_msgs/Vertex.h>
-#include <tuw_multi_robot_msgs/Graph.h>
-#include <geometry_msgs/Point.h>
+#include <tuw_voronoi_graph/segment.h>
 
-#include <eigen3/Eigen/Dense>
 
-namespace voronoi_graph
+namespace tuw_graph
 {
-    struct PathSeg
-    {
-        Eigen::Vector2d start;
-        Eigen::Vector2d end;
-        float width;
-        PathSeg(Eigen::Vector2d _s, Eigen::Vector2d _e, double _w) : start(_s), end(_e), width(_w)  {  }
-    };
-
-    class SegmentToGraphNode
+    class Crossing
     {
         public:
-            SegmentToGraphNode(ros::NodeHandle &n);
-            void Publish();
-            ros::NodeHandle             n_;      ///< Node handler to the root node
-            ros::NodeHandle             n_param_;///< Node handler to the current node
-            std::unique_ptr<ros::Rate>  rate_;
+            Crossing(const std::vector<Eigen::Vector2d> &_segment_points);
+            bool TryAddSegment(std::shared_ptr<Segment> _seg);
+            Eigen::Vector2d getCenter();
 
-            
         private:
-            ros::Publisher               pubSegments_;
-
-
-            std::string             segment_file_;
-            std::string             segment_topic_;
-            double                  path_length_;
-
-            tuw_multi_robot_msgs::Graph current_graph_;
-
-            void readSegments();
-            std::vector<int> findNeighbors(std::vector<PathSeg> &_graph, Eigen::Vector2d _point, int _segment);
+            std::vector<Eigen::Vector2d> surroundingPoints_;
+            std::vector<std::shared_ptr<Segment>> segments_start_;
+            std::vector<std::shared_ptr<Segment>> segments_end_;
+            Eigen::Vector2d center_;
     };
 }
+
 #endif // PLANNER_NODE_H

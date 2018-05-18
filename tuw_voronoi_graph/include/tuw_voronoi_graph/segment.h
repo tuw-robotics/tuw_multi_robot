@@ -32,7 +32,7 @@
 #include <ros/ros.h>
 #include <eigen3/Eigen/Dense>
 
-namespace voronoi_graph
+namespace tuw_graph
 {
     class Segment
     {

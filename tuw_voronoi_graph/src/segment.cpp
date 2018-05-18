@@ -26,10 +26,10 @@
  *
  */
 
-#include <voronoi_segmentation/segment.h>
+#include <tuw_voronoi_graph/segment.h>
 #include <limits>
 
-namespace voronoi_graph
+namespace tuw_graph
 {
     int Segment::static_id_ = 0;
 

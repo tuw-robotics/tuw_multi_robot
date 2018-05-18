@@ -127,20 +127,38 @@ include_directories(
 )
 
 
+add_library(graph_serialization_lib
+  src/serializer.cpp
+)
+target_link_libraries(graph_serialization_lib ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${Boost_SERIALIZATION_LIBRARY})
+
+
 add_library(voronoi_path_lib
   src/voronoi_path_generator.cpp
   src/thinning.cpp
+)
+target_link_libraries(voronoi_path_lib ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+
+add_library(voronoi_graph_lib
   src/voronoi_graph_generator.cpp
   src/segment.cpp
   src/segment_expander.cpp
   src/crossing.cpp
-  src/serializer.cpp
 )
-target_link_libraries(voronoi_path_lib ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${Boost_SERIALIZATION_LIBRARY})
+target_link_libraries(voronoi_path_lib graph_serialization_lib voronoi_graph_lib ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+
+add_library(dxf_graph_lib
+    src/dxf_to_graph.cpp
+    src/dxf_creation_interface.cpp
+)
+target_link_libraries(dxf_graph_lib graph_serialization_lib voronoi_graph_lib ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} dxflib)
+
 
 add_executable(tuw_voronoi_graph_node src/voronoi_graph_node.cpp)
 target_link_libraries(tuw_voronoi_graph_node voronoi_path_lib)
 
+add_executable(tuw_dxf_graph_node src/dxf_to_graph_node.cpp)
+target_link_libraries(tuw_dxf_graph_node dxf_graph_lib)
 
 add_executable(tuw_segment_to_graph_node src/segment_to_graph_node.cpp)
 target_link_libraries(tuw_segment_to_graph_node

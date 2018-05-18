@@ -2,9 +2,8 @@
 #include <nav_msgs/OccupancyGrid.h>
 #include <tuw_voronoi_map/voronoi_path_generator.h>
 #include <tuw_voronoi_graph/voronoi_graph_node.h>
-#include <voronoi_segmentation/voronoi_graph_generator.h>
+#include <tuw_voronoi_graph/voronoi_graph_generator.h>
 #include <memory>
-#include <boost/functional/hash.hpp>
 #include <tuw_multi_robot_msgs/Graph.h>
 #include <string>
 
@@ -18,7 +17,7 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "voronoi_graph_node");     /// initializes the ros node with default name
     ros::NodeHandle n;
 
-    voronoi_graph::VoronoiGeneratorNode mapNode(n);
+    tuw_graph::VoronoiGeneratorNode mapNode(n);
 
     ros::Rate r(0.5);
 
@@ -41,9 +40,9 @@ int main(int argc, char** argv)
 }
 
 
-namespace voronoi_graph
+namespace tuw_graph
 {
-    VoronoiGeneratorNode::VoronoiGeneratorNode(ros::NodeHandle & n) :  voronoi_graph::VoronoiPathGenerator(), VoronoiGraphGenerator(), n_(n), n_param_("~"), Serializer()
+    VoronoiGeneratorNode::VoronoiGeneratorNode(ros::NodeHandle & n) :  voronoi_map::VoronoiPathGenerator(), VoronoiGraphGenerator(), n_(n), n_param_("~"), Serializer()
     {
 
         topicGlobalMap_ = "/map";
@@ -244,19 +243,4 @@ namespace voronoi_graph
         //pubVoronoiMap_.publish(grid);
     }
 
-    std::size_t VoronoiGeneratorNode::getHash(const std::vector<signed char> &_map, Eigen::Vector2d _origin, float _resolution)
-    {
-        std::size_t seed = 0;
-
-        boost::hash_combine(seed, _origin[0]);
-        boost::hash_combine(seed, _origin[1]);
-        boost::hash_combine(seed, _resolution);
-
-        for(const signed char & val : _map)
-        {
-            boost::hash_combine(seed, val);
-        }
-
-        return seed;
-    }
 }

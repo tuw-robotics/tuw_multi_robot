@@ -26,20 +26,32 @@
  *
  */
 
-#ifndef VORONOI_GRAPH_GENERATOR_H
-#define VORONOI_GRAPH_GENERATOR_H
+#include <tuw_voronoi_graph/dxf_to_graph.h>
+#include <dxflib/dl_dxf.h>
+#include <tuw_voronoi_graph/dxf_creation_interface.h>
+#include <sstream>
 
-#include <ros/ros.h>
-#include <voronoi_segmentation/segment.h>
-#include <voronoi_segmentation/segment_expander.h>
-
-namespace voronoi_graph
-{
-    class VoronoiGraphGenerator
+namespace tuw_graph
+{    
+    void DxfToGraph::parseGraph(const std::string &_dxfPath, float _segLength)
     {
-        public:     VoronoiGraphGenerator();
-        public:     std::vector<std::shared_ptr<Segment>> calcSegments(cv::Mat &_map, cv::Mat &_distField, cv::Mat &_voronoiPath, float * potential, float _path_length, float _optimizeCrossingPixels, float _optimizeEndSegmentsPixel);
+        int errorCount = 0;
+        DxfCreationInterface creationInterface;
 
-    };
+        DL_Dxf dxf;
+
+        if(!dxf.in("/home/benjamin/temp/drawing.dxf", &creationInterface))
+        {
+            std::cerr << "drawing.dxf could not be opened.\n";
+        }
+        
+        std::cout << "finish" << std::endl;
+
+    }
+
+    void DxfToGraph::serializeGraph(const std::string &_graphPath)
+    {
+
+    }
+
 }
-#endif // PLANNER_NODE_H

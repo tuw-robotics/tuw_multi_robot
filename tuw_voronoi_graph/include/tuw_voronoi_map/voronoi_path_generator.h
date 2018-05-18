@@ -8,7 +8,7 @@
 
 #define DEFAULT_MAP_NAME    "voronoi_map"
 
-namespace voronoi_graph
+namespace voronoi_map
 {
     class VoronoiPathGenerator
     {

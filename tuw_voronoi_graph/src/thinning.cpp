@@ -1,7 +1,7 @@
 #include <tuw_voronoi_map/thinning.h>
 #include <ros/ros.h>
 
-namespace voronoi_graph
+namespace voronoi_map
 {
 
     void sceletonize_iteration(cv::Mat& img, int iter)

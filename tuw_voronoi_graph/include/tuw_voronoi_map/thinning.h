@@ -4,7 +4,7 @@
 #include <opencv/cv.h>
 #include <queue>
 
-namespace voronoi_graph
+namespace voronoi_map
 {
   
   /**

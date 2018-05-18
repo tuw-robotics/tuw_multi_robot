@@ -26,11 +26,11 @@
  *
  */
 
-#include <voronoi_segmentation/crossing.h>
+#include <tuw_voronoi_graph/crossing.h>
 #include <limits>
 
 
-namespace voronoi_graph
+namespace tuw_graph
 {
     Crossing::Crossing(const std::vector< Eigen::Vector2d > &_segment_points) : segments_start_(), segments_end_()
     {

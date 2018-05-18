@@ -26,28 +26,20 @@
  *
  */
 
-#ifndef CROSSING_H
-#define CROSSING_H
+#ifndef DXF_TO_GRAPH_H
+#define DXF_TO_GRAPH_H
 
-#include <ros/ros.h>
-#include <voronoi_segmentation/segment.h>
+#include <string>
+#include <tuw_serialization/serializer.h>
 
-
-namespace voronoi_graph
+namespace tuw_graph
 {
-    class Crossing
+    class DxfToGraph
     {
-        public:
-            Crossing(const std::vector<Eigen::Vector2d> &_segment_points);
-            bool TryAddSegment(std::shared_ptr<Segment> _seg);
-            Eigen::Vector2d getCenter();
-
-        private:
-            std::vector<Eigen::Vector2d> surroundingPoints_;
-            std::vector<std::shared_ptr<Segment>> segments_start_;
-            std::vector<std::shared_ptr<Segment>> segments_end_;
-            Eigen::Vector2d center_;
+        public:            
+            void parseGraph(const std::string &_dxfPath, float _segLength);
+            void serializeGraph(const std::string &_graphPath);
+            
     };
 }
-
 #endif // PLANNER_NODE_H
