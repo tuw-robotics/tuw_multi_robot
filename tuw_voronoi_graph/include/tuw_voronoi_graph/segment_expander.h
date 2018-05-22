@@ -50,7 +50,7 @@ namespace tuw_graph
             std::vector<std::vector<Eigen::Vector2d>> calcEndpoints(float *_potential);
             std::vector<std::pair<Eigen::Vector2d, Eigen::Vector2d>> getSegments(const std::vector<std::vector<Eigen::Vector2d>> &_endPoints, float *_potential);
             Eigen::Vector2d getSegmentNeighbour(const Eigen::Vector2d &_p, const std::vector< std::vector< Eigen::Vector2d > > &_endpoints);                                          //TODO Deprecated
-            std::vector< std::shared_ptr<Segment> > getGraph(const std::vector<std::vector<Eigen::Vector2d>> &_endPoints, float *_potential, float _max_length, float _optimizePixelsCrossing, float _optimizePixelsEndSegments);
+            std::vector< Segment > getGraph(const std::vector<std::vector<Eigen::Vector2d>> &_endPoints, float *_potential, float _max_length, float _optimizePixelsCrossing, float _optimizePixelsEndSegments);
 
         private:
             std::unique_ptr<float[]> distance_field_;
@@ -126,8 +126,8 @@ namespace tuw_graph
             bool isEndpoint(Index &_current, const std::vector<std::vector<Eigen::Vector2d>> &_endpoints);
             void removeEndpoint(Index _current, std::vector<std::vector<Eigen::Vector2d>> &_endpoints);
             bool checkSegmentPoint(const Index &_point);
-            void optimizeSegments(std::vector<std::shared_ptr<Segment>> &_segments, float _maxPixelsCrossing, float _maxPixelsEndSeg);
-            void optimizeSegmentsAroundPoint(std::vector<std::shared_ptr<Segment>> &_segments, const Eigen::Vector2d &pt, float maxPixels, int startIndex);
+            void optimizeSegments(std::vector<Segment> &_segments, float _maxPixelsCrossing, float _maxPixelsEndSeg);
+            void optimizeSegmentsAroundPoint(std::vector<Segment> &_segments, const Eigen::Vector2d &pt, float maxPixels, int startIndex);
     };
 
 }

@@ -39,7 +39,7 @@ namespace tuw_graph
     }
     
     
-    bool Serializer::load(const std::string &_mapPath, std::vector<std::shared_ptr<Segment>> &_segs, Eigen::Vector2d &_origin, float &_resolution)
+    bool Serializer::load(const std::string &_mapPath, std::vector<Segment> &_segs, Eigen::Vector2d &_origin, float &_resolution)
     {
 
         boost::filesystem::path graf(_mapPath + GRAPH_INFO_NAME);
@@ -67,8 +67,6 @@ namespace tuw_graph
         assert(ifti.good());
         boost::archive::xml_iarchive xmlti(ifti);
         xmlti >> boost::serialization::make_nvp("TreeInfo", t);
-
-        int *preds = t.Predecessors.get();
 
         _origin[0] = g.Origin.x;
         _origin[1] = g.Origin.y;
@@ -104,34 +102,31 @@ namespace tuw_graph
                 pts.emplace_back(ptPtr[j].x, ptPtr[j].y);
             }
 
-            _segs.push_back(std::make_shared<Segment>(pts, graph.segments_[i].minDistance));
+            Segment s(pts, graph.segments_[i].minDistance);
+            _segs.push_back(s);//std::make_shared<Segment>(pts, graph.segments_[i].minDistance));
         }
 
 
         //Add Dependancies
         for(int i = 0; i < graph.Length; i++)
         {
-            std::vector<std::shared_ptr<Segment>> predecessors;
-            std::vector<std::shared_ptr<Segment>> successors;
+            std::vector<uint32_t> predecessors;
+            std::vector<uint32_t> successors;
 
             for(int j = 0; j < graph.segments_[i].predecessorLength; j++)
             {
                 int *predPtr = graph.segments_[i].predecessors.get();
 
-                if(!_segs[i]->ContainsPredecessor(_segs[predPtr[j]]))
-                    _segs[i]->AddPredecessor(_segs[predPtr[j]]);
+                if(!_segs[i].ContainsPredecessor(predPtr[j]))
+                    _segs[i].AddPredecessor(predPtr[j]);
             }
 
             for(int j = 0; j < graph.segments_[i].successorLength; j++)
             {
                 int *succPtr = graph.segments_[i].successors.get();
-
                 
-                int num = succPtr[j];
-                std::shared_ptr<Segment> seg = _segs[succPtr[j]];
-                
-                if(!_segs[i]->ContainsSuccessor(_segs[succPtr[j]]))
-                    _segs[i]->AddSuccessor(_segs[succPtr[j]]);
+                if(!_segs[i].ContainsSuccessor(succPtr[j]))
+                    _segs[i].AddSuccessor(succPtr[j]);
             }
 
 
@@ -144,7 +139,7 @@ namespace tuw_graph
      * @brief saves the map in the given location
      * @param mapInfo the name of the mapInfo file
      **/
-    void Serializer::save(const std::string &_mapPath, const std::vector<std::shared_ptr<Segment>> &_segs, const Eigen::Vector2d &_origin, const float &_resolution)
+    void Serializer::save(const std::string &_mapPath, const std::vector<Segment> &_segs, const Eigen::Vector2d &_origin, const float &_resolution)
     {
         if(!boost::filesystem::exists(_mapPath))
             boost::filesystem::create_directories(_mapPath);

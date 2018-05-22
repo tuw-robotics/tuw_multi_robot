@@ -35,7 +35,6 @@ namespace tuw_graph
 {    
     void DxfToGraph::parseGraph(const std::string &_dxfPath, const float _segLength, const float _segWidth)
     {
-        int errorCount = 0;
         DxfLineArcParser creationInterface;
 
         DL_Dxf dxf;
@@ -85,7 +84,7 @@ namespace tuw_graph
         Eigen::Vector2d increment = (end - start) / splits;
         Eigen::Vector2d current = start;
         
-        for(int i = 0; i < splits; i++)
+        for(uint32_t i = 0; i < splits; i++)
         {
             Line l(current, current + increment);
             segments.push_back(l);

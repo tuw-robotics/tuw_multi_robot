@@ -44,9 +44,9 @@ int main(int argc, char** argv)
 namespace tuw_graph
 {
     DxfToGraphNode::DxfToGraphNode(ros::NodeHandle &n) :
+        DxfToGraph(),
         n_(n),
-        n_param_("~"),
-        DxfToGraph()
+        n_param_("~")
     {
         dxfPath_ = "segments.dxf";
         n_param_.param("dxf_path", dxfPath_, dxfPath_);

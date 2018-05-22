@@ -38,7 +38,7 @@ namespace tuw_graph
     class VoronoiGraphGenerator
     {
         public:     VoronoiGraphGenerator();
-        public:     std::vector<std::shared_ptr<Segment>> calcSegments(cv::Mat &_map, cv::Mat &_distField, cv::Mat &_voronoiPath, float * potential, float _path_length, float _optimizeCrossingPixels, float _optimizeEndSegmentsPixel);
+        public:     std::vector<Segment> calcSegments(cv::Mat &_map, cv::Mat &_distField, cv::Mat &_voronoiPath, float * potential, float _path_length, float _optimizeCrossingPixels, float _optimizeEndSegmentsPixel);
 
     };
 }

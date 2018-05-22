@@ -75,16 +75,16 @@ namespace tuw_graph
     class TreeInfo
     {
         public:
-            TreeInfo(std::vector<std::shared_ptr<Segment>> _segs) : TreeInfo(_segs.size())
+            TreeInfo(std::vector<Segment> _segs) : TreeInfo(_segs.size())
             {
-                for(int i = 0; i < _segs.size(); i++)
+                for(uint32_t i = 0; i < _segs.size(); i++)
                 {
                     int * pred = Predecessors.get();
                     int * succ = Successors.get();
                     int * point = Points.get();
-                    pred[i] = _segs[i]->GetPredecessors().size();
-                    succ[i] = _segs[i]->GetSuccessors().size();
-                    point[i] = _segs[i]->GetPath().size();
+                    pred[i] = _segs[i].GetPredecessors().size();
+                    succ[i] = _segs[i].GetSuccessors().size();
+                    point[i] = _segs[i].GetPath().size();
                 }
             }
             TreeInfo(int _length)
@@ -136,12 +136,12 @@ namespace tuw_graph
 
             }
 
-            SegmentSerializer(std::shared_ptr<Segment> _s) :
-                SegmentSerializer(_s->GetId(), _s->GetPredecessors(), _s->GetSuccessors(), _s->GetMinPathSpace(), _s->GetPath())
+            SegmentSerializer(const Segment &_s) :
+                SegmentSerializer(_s.GetId(), _s.GetPredecessors(), _s.GetSuccessors(), _s.GetMinPathSpace(), _s.GetPath())
             {
             }
 
-            SegmentSerializer(int _id, std::vector<std::shared_ptr<Segment>> _predecessors, std::vector<std::shared_ptr<Segment>> _successors, float _minDistance, std::vector<Eigen::Vector2d> _points):
+            SegmentSerializer(const uint32_t _id, std::vector<int32_t> _predecessors, std::vector<int32_t> _successors, float _minDistance, std::vector<Eigen::Vector2d> _points):
                 SegmentSerializer(_predecessors.size(), _successors.size(), _points.size())
             {
                 id = _id;
@@ -154,15 +154,15 @@ namespace tuw_graph
 
                 for(int i = 0; i < predecessorLength; i++)
                 {
-                    pred[i] = _predecessors[i]->GetId();
+                    pred[i] = _predecessors[i];
                 }
 
                 for(int i = 0; i < successorLength; i++)
                 {
-                    succ[i] = _successors[i]->GetId();
+                    succ[i] = _successors[i];
                 }
 
-                for(int i = 0; i < _points.size(); i++)
+                for(uint32_t i = 0; i < _points.size(); i++)
                 {
                     PointSerializer p(_points[i]);
                     pts[i] = p;
@@ -219,8 +219,8 @@ namespace tuw_graph
     {
         public:
             Serializer();
-            void save(const std::string &_mapPath, const std::vector<std::shared_ptr<Segment>> &_segs, const Eigen::Vector2d &_origin, const float &_resolution);
-            bool load(const std::string &_mapPath, std::vector<std::shared_ptr<Segment>> &_segs, Eigen::Vector2d &_origin, float &_resolution);
+            void save(const std::string &_mapPath, const std::vector<Segment> &_segs, const Eigen::Vector2d &_origin, const float &_resolution);
+            bool load(const std::string &_mapPath, std::vector<Segment> &_segs, Eigen::Vector2d &_origin, float &_resolution);
             size_t getHash(const std::vector<signed char> &_map, Eigen::Vector2d _origin, float _resolution);
     };
 

@@ -36,7 +36,7 @@ namespace tuw_graph
 
     }
 
-    std::vector<std::shared_ptr< Segment>> VoronoiGraphGenerator::calcSegments(cv::Mat &_map, cv::Mat &_distField, cv::Mat &_voronoiPath, float* potential, float _path_length, float _optimizeCrossingPixels, float _optimizeEndSegmentsPixel)
+    std::vector<Segment> VoronoiGraphGenerator::calcSegments(cv::Mat &_map, cv::Mat &_distField, cv::Mat &_voronoiPath, float* potential, float _path_length, float _optimizeCrossingPixels, float _optimizeEndSegmentsPixel)
     {
         Segment_Expander exp;
         exp.Initialize(_map, _distField, _voronoiPath);
@@ -50,16 +50,16 @@ namespace tuw_graph
         exp.Initialize(_map, _distField, _voronoiPath);
         std::fill(potential, potential + nx * ny, -1);
 
-        std::vector<std::shared_ptr<Segment>> segs = exp.getGraph(points, potential, _path_length, _optimizeCrossingPixels, _optimizeEndSegmentsPixel);
+        std::vector<Segment> segs = exp.getGraph(points, potential, _path_length, _optimizeCrossingPixels, _optimizeEndSegmentsPixel);
 
-        for(int i = 0; i < segs.size(); i++)
+        for(uint32_t i = 0; i < segs.size(); i++)
         {
 //             ROS_INFO("Segment %i", segs[i]->GetId());
 //             ROS_INFO("\t (%f/%f) (%f/%f)", segs[i]->getStart()[0], segs[i]->getStart()[1], segs[i]->getEnd()[0], segs[i]->getEnd()[1]);
 //             ROS_INFO("\t l: %i l: %f", segs[i]->GetLength(), segs[i]->GetMinPathSpace());
 
-            std::vector<std::shared_ptr<Segment>> predecessors = segs[i]->GetPredecessors();
-            std::vector<std::shared_ptr<Segment>> successors = segs[i]->GetSuccessors();
+            std::vector<int32_t> predecessors = segs[i].GetPredecessors();
+            std::vector<int32_t> successors = segs[i].GetSuccessors();
 
 
 //             for(int j = 0; j < predecessors.size(); j++)
@@ -79,6 +79,6 @@ namespace tuw_graph
 //         ROS_INFO(" ");
 //         ROS_INFO(" ");
 
-        return std::vector<std::shared_ptr<Segment>>(segs);
+        return std::vector<Segment>(segs);
     }
 }

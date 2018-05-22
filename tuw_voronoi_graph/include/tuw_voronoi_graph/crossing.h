@@ -39,14 +39,15 @@ namespace tuw_graph
     {
         public:
             Crossing(const std::vector<Eigen::Vector2d> &_segment_points);
-            bool TryAddSegment(std::shared_ptr<Segment> _seg);
-            Eigen::Vector2d getCenter();
-
+            bool TryAddSegment(Segment &_seg);
+            Eigen::Vector2d getCenter() const;
+            void setSegmentReference(const std::shared_ptr<std::vector<Segment>> &segs);
         private:
             std::vector<Eigen::Vector2d> surroundingPoints_;
-            std::vector<std::shared_ptr<Segment>> segments_start_;
-            std::vector<std::shared_ptr<Segment>> segments_end_;
+            std::vector<uint32_t> segments_start_;
+            std::vector<uint32_t> segments_end_;
             Eigen::Vector2d center_;
+            std::shared_ptr<std::vector<Segment>> segmentReference_;
     };
 }
 

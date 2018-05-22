@@ -56,7 +56,7 @@ namespace tuw_graph
             cv::Mat                                 voronoiMap_;
             float                                   path_length_;
             std::unique_ptr<float[]>                potential;
-            std::vector<std::shared_ptr<Segment>>   segments_;
+            std::vector<Segment>                    segments_;
             int                                     smoothing_;
             float                                   crossingOptimization_;
             float                                   endSegmentOptimization_;

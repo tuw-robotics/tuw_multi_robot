@@ -58,117 +58,117 @@ namespace tuw_graph
 
     }
 
-    void Segment_Expander::optimizeSegments(std::vector<std::shared_ptr<Segment>> &_segments, float _maxPixelsCrossing, float _maxPixelsEndSegment)
+    void Segment_Expander:: optimizeSegments(std::vector<Segment> &_segments, float _maxPixelsCrossing, float _maxPixelsEndSegment)
     {
-        for(int i = 0; i < _segments.size(); i++)
+        for(uint32_t i = 0; i < _segments.size(); i++)
         {
-            if((_segments[i]->getStart() - _segments[i]->getEnd()).norm() < _maxPixelsEndSegment && (_segments[i]->GetPredecessors().size() == 0 || _segments[i]->GetSuccessors().size() == 0))
+            if((_segments[i].getStart() - _segments[i].getEnd()).norm() < _maxPixelsEndSegment && (_segments[i].GetPredecessors().size() == 0 || _segments[i].GetSuccessors().size() == 0))
             {
-                _segments[i]->SetId(-1);
+                _segments[i].SetId(-1);
                 _segments.erase(_segments.begin() + i);
             }
         }
 
-        for(int i = 0; i < _segments.size(); i++)
+        for(uint32_t i = 0; i < _segments.size(); i++)
         {
-            if(!_segments[i]->getOptStart())
+            if(!_segments[i].getOptStart())
             {
-                optimizeSegmentsAroundPoint(_segments, _segments[i]->getStart(), _maxPixelsCrossing, i);
+                optimizeSegmentsAroundPoint(_segments, _segments[i].getStart(), _maxPixelsCrossing, i);
             }
 
-            if(!_segments[i]->getOptEnd())
+            if(!_segments[i].getOptEnd())
             {
-                optimizeSegmentsAroundPoint(_segments, _segments[i]->getEnd(), _maxPixelsCrossing, i);
+                optimizeSegmentsAroundPoint(_segments, _segments[i].getEnd(), _maxPixelsCrossing, i);
             }
         }
 
-        for(int i = 0; i < _segments.size(); i++)
+        for(uint32_t i = 0; i < _segments.size(); i++)
         {
-            if((_segments[i]->getStart() - _segments[i]->getEnd()).norm() == 0)
+            if((_segments[i].getStart() - _segments[i].getEnd()).norm() == 0)
             {
-                _segments[i]->SetId(-1);
+                _segments[i].SetId(-1);
                 _segments.erase(_segments.begin() + i);
                 i--;
             }
         }
 
-        for(int i = 0; i < _segments.size(); i++)
+        for(uint32_t i = 0; i < _segments.size(); i++)
         {
-            _segments[i]->cleanNeighbors();
-            _segments[i]->SetId(i);
+            _segments[i].cleanNeighbors();
+            _segments[i].SetId(i);
         }
     }
 
 
-    void Segment_Expander::optimizeSegmentsAroundPoint(std::vector<std::shared_ptr<Segment>> &_segments, const Eigen::Vector2d &pt, float maxPixels, int startIndex)
+    void Segment_Expander::optimizeSegmentsAroundPoint(std::vector<Segment> &_segments, const Eigen::Vector2d &pt, float maxPixels, int startIndex)
     {
-        std::vector<std::shared_ptr<Segment>> connectedSegmnetsStart;
-        std::vector<std::shared_ptr<Segment>> connectedSegmnetsEnd;
+        std::vector<Segment> connectedSegmnetsStart;
+        std::vector<Segment> connectedSegmnetsEnd;
 
 
-        for(int i = startIndex; i < _segments.size(); i++)
+        for(uint32_t i = startIndex; i < _segments.size(); i++)
         {
-            if(!_segments[i]->getOptStart())
+            if(!_segments[i].getOptStart())
             {
-                if((_segments[i]->getStart() - pt).norm() < maxPixels)
+                if((_segments[i].getStart() - pt).norm() < maxPixels)
                 {
                     connectedSegmnetsStart.push_back(_segments[i]);
-                    _segments[i]->setStart(pt);
-                    _segments[i]->getOptStart() = true;
+                    _segments[i].setStart(pt);
+                    _segments[i].getOptStart() = true;
                 }
             }
 
-            if(!_segments[i]->getOptEnd())
+            if(!_segments[i].getOptEnd())
             {
-                if((_segments[i]->getEnd() - pt).norm() < maxPixels)
+                if((_segments[i].getEnd() - pt).norm() < maxPixels)
                 {
                     connectedSegmnetsEnd.push_back(_segments[i]);
-                    _segments[i]->setEnd(pt);
-                    _segments[i]->getOptEnd() = true;
+                    _segments[i].setEnd(pt);
+                    _segments[i].getOptEnd() = true;
                 }
             }
         }
 
 
-        for(int i = 0; i < connectedSegmnetsStart.size(); i++)
+        for(uint32_t i = 0; i < connectedSegmnetsStart.size(); i++)
         {
-            for(int j = 0; j < connectedSegmnetsStart.size(); j++)
+            for(uint32_t j = 0; j < connectedSegmnetsStart.size(); j++)
             {
                 if(i != j)
                 {
-                    if(!connectedSegmnetsStart[i]->ContainsPredecessor(connectedSegmnetsStart[j]))
+                    if(!connectedSegmnetsStart[i].ContainsPredecessor(connectedSegmnetsStart[j].GetId()))
                     {
-                        connectedSegmnetsStart[i]->AddPredecessor(connectedSegmnetsStart[j]);
+                        connectedSegmnetsStart[i].AddPredecessor(connectedSegmnetsStart[j].GetId());
                     }
                 }
             }
 
-            for(int j = 0; j < connectedSegmnetsEnd.size(); j++)
+            for(uint32_t j = 0; j < connectedSegmnetsEnd.size(); j++)
             {
-                if(!connectedSegmnetsStart[i]->ContainsPredecessor(connectedSegmnetsEnd[j]))
+                if(!connectedSegmnetsStart[i].ContainsPredecessor(connectedSegmnetsEnd[j].GetId()))
                 {
-                    connectedSegmnetsStart[i]->AddPredecessor(connectedSegmnetsEnd[j]);
+                    connectedSegmnetsStart[i].AddPredecessor(connectedSegmnetsEnd[j].GetId());
                 }
             }
         }
 
-        for(int i = 0; i < connectedSegmnetsEnd.size(); i++)
+        for(uint32_t i = 0; i < connectedSegmnetsEnd.size(); i++)
         {
-            for(int j = 0; j < connectedSegmnetsStart.size(); j++)
+            for(uint32_t j = 0; j < connectedSegmnetsStart.size(); j++)
             {
-                if(!connectedSegmnetsEnd[i]->ContainsSuccessor(connectedSegmnetsStart[j]))
+                if(!connectedSegmnetsEnd[i].ContainsSuccessor(connectedSegmnetsStart[j].GetId()))
                 {
-                    connectedSegmnetsEnd[i]->AddSuccessor(connectedSegmnetsStart[j]);
+                    connectedSegmnetsEnd[i].AddSuccessor(connectedSegmnetsStart[j].GetId());
                 }
             }
 
-            for(int j = 0; j < connectedSegmnetsEnd.size(); j++)
+            for(uint32_t j = 0; j < connectedSegmnetsEnd.size(); j++)
             {
                 if(i != j)
                 {
-                    if(!connectedSegmnetsEnd[i]->ContainsSuccessor(connectedSegmnetsEnd[j]))
+                    if(!connectedSegmnetsEnd[i].ContainsSuccessor(connectedSegmnetsEnd[j].GetId()))
                     {
-                        connectedSegmnetsEnd[i]->AddSuccessor(connectedSegmnetsEnd[j]);
+                        connectedSegmnetsEnd[i].AddSuccessor(connectedSegmnetsEnd[j].GetId());
                     }
                 }
             }
@@ -177,33 +177,34 @@ namespace tuw_graph
     }
 
 
-    std::vector< std::shared_ptr<Segment> > Segment_Expander::getGraph(const std::vector<std::vector<Eigen::Vector2d>> &_endPoints, float* _potential,
+    std::vector< Segment > Segment_Expander::getGraph(const std::vector<std::vector<Eigen::Vector2d>> &_endPoints, float* _potential,
             float _max_length, float _optimizePixelsCrossing, float _optimizePixelsEndSegments)
     {
         Segment::ResetId();
 
-        std::vector< std::shared_ptr<Segment> > segments;
+        //To be able to change the segments in the crossing class it has to be somehow accessable over the heap -> shared_ptr
+        std::shared_ptr<std::vector< Segment >> segments = std::make_shared<std::vector<Segment>>();
         std::vector< std::vector< Eigen::Vector2d > >  endPoints = _endPoints;
 
         std::vector<Crossing> crossings_;
 
-        for(int i = 0; i < endPoints.size(); i++)
+        for(uint32_t i = 0; i < endPoints.size(); i++)
         {
             Crossing c(std::vector< Eigen::Vector2d > (endPoints[i]));
+            c.setSegmentReference(segments);
             crossings_.push_back(c);
         }
 
         while(endPoints.size() > 0)
         {
             std::vector<Eigen::Vector2d> startCrossing = endPoints.back();
-
             if(startCrossing.size() > 0)
             {
                 Eigen::Vector2d startPoint = startCrossing.back();
 
-                for(auto it = startCrossing.begin(); it != startCrossing.end(); ++it) //Occupie all Endpoints from the current crossing to avoid short segments
+                for(const Eigen::Vector2d &cVec : startCrossing)//auto it = startCrossing.begin(); it != startCrossing.end(); ++it) //Occupie all Endpoints from the current crossing to avoid short segments
                 {
-                    Index idx((*it)[0], (*it)[1], nx_, 0, 0, 0);
+                    Index idx(cVec[0], cVec[1], nx_, 0, 0, 0);
                     _potential[idx.i] = 0;
                 }
 
@@ -211,42 +212,35 @@ namespace tuw_graph
 
                 float min_d;
                 std::vector<Eigen::Vector2d> path = getPath(start, _potential, endPoints, min_d);
-
                 if(path.size() > 1 && path.size() <= _max_length)
                 {
                     std::vector<Eigen::Vector2d> p = std::vector<Eigen::Vector2d>(path);
                     Segment seg(p, 2 * min_d);
-                    segments.push_back(std::make_shared<Segment>(seg));
+                    segments->push_back(seg);
                 }
                 else if(path.size() > 1 && path.size() > _max_length)
                 {
                     float nr_paths = std::ceil((float)path.size() / _max_length);
                     float real_length = std::ceil((float)path.size() / nr_paths);
 
-                    std::vector< std::shared_ptr<Segment> > new_segs;
-
                     for(int i = 0; i < nr_paths; i++)
                     {
                         //Segment
                         std::vector<Eigen::Vector2d> path_n;
-
-                        for(int j = std::max<int>(0, i * real_length - 1); j <= (i + 1)*real_length - 1 && j < path.size(); j++)
+                        for(uint32_t j = std::max<int>(0, i * real_length - 1); j <= (i + 1)*real_length - 1 && j < path.size(); j++)
                         {
                             path_n.push_back( {path[j][0], path[j][1]});
                         }
 
                         float mind = getMinD(path_n);
-
                         Segment nSeg(std::vector<Eigen::Vector2d>(path_n), 2 * mind);
-                        new_segs.push_back(std::make_shared<Segment>(nSeg));
-
+                        
+                        segments->push_back(nSeg);
                         if(i > 0)
                         {
-                            new_segs[i - 1]->AddSuccessor(new_segs[i]);
-                            new_segs[i]->AddPredecessor(new_segs[i - 1]);
+                            (*segments)[segments->size() - 2].AddSuccessor((*segments)[segments->size() - 1].GetId());
+                            (*segments)[segments->size() - 1].AddPredecessor((*segments)[segments->size() - 2].GetId());
                         }
-
-                        segments.push_back(new_segs[i]);
                     }
                 }
 
@@ -258,18 +252,16 @@ namespace tuw_graph
             }
         }
 
-        for(auto it = segments.begin(); it != segments.end(); ++it)
+        for(Segment &s : (*segments))//auto it = segments.begin(); it != segments.end(); ++it)
         {
-            bool addedSegment = 0;
-
-            for(auto it_c = crossings_.begin(); it_c != crossings_.end(); ++it_c)
+            for(Crossing &c : crossings_)//auto it_c = crossings_.begin(); it_c != crossings_.end(); ++it_c)
             {
-                it_c->TryAddSegment((*it));
+                c.TryAddSegment(s);
             }
         }
 
-        optimizeSegments(segments, _optimizePixelsCrossing, _optimizePixelsEndSegments);
-        return segments;
+        optimizeSegments((*segments), _optimizePixelsCrossing, _optimizePixelsEndSegments);    //TODO buged
+        return (*segments);
     }
 
     float Segment_Expander::getMinD(const std::vector< Eigen::Vector2d > &_path)
@@ -692,11 +684,11 @@ namespace tuw_graph
 
     void Segment_Expander::removeEndpoint(Segment_Expander::Index _current, std::vector< std::vector< Eigen::Vector2d > >  &_endpoints)
     {
-        for(int j = 0; j < _endpoints.size(); j++)
+        for(uint32_t j = 0; j < _endpoints.size(); j++)
         {
             if(_endpoints[j].size() > 0)
             {
-                for(int i = 0; i < _endpoints[j].size(); i++)
+                for(uint32_t i = 0; i < _endpoints[j].size(); i++)
                 {
                     if((int)(_endpoints[j][i][0]) == _current.getX(nx_) && (int)(_endpoints[j][i][1]) == _current.getY(nx_))
                     {

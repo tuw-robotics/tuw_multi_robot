@@ -94,7 +94,7 @@ namespace tuw_graph
 
         std::vector<PathSeg> graph;
 
-        for(int i = 0; i < start_x.size(); i++)
+        for(uint32_t i = 0; i < start_x.size(); i++)
         {
             Eigen::Vector2d start((start_x[i] + origin_x) / resolution, (start_y[i] + origin_y) / resolution);
             Eigen::Vector2d end((end_x[i] + origin_x) / resolution, (end_y[i] + origin_y) / resolution);
@@ -111,7 +111,7 @@ namespace tuw_graph
         current_graph_.origin.position.y = origin_y ;
         current_graph_.resolution = resolution;
 
-        for(int i = 0; i < graph.size(); i++)
+        for(uint32_t i = 0; i < graph.size(); i++)
         {
             tuw_multi_robot_msgs::Vertex v;
             v.id = i;
@@ -152,11 +152,11 @@ namespace tuw_graph
         ROS_INFO("Segments parsed");
     }
 
-    std::vector<int> SegmentToGraphNode::findNeighbors(std::vector< PathSeg >& _graph, Eigen::Vector2d _point, int _segment)
+    std::vector<int32_t> SegmentToGraphNode::findNeighbors(std::vector< PathSeg >& _graph, Eigen::Vector2d _point, uint32_t _segment)
     {
-        std::vector<int> n;
+        std::vector<int32_t> n;
 
-        for(int i = 0; i < _graph.size(); i++)
+        for(uint32_t i = 0; i < _graph.size(); i++)
         {
             if(i != _segment)
             {

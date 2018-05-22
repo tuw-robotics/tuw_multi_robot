@@ -68,7 +68,7 @@ namespace tuw_graph
             tuw_multi_robot_msgs::Graph current_graph_;
 
             void readSegments();
-            std::vector<int> findNeighbors(std::vector<PathSeg> &_graph, Eigen::Vector2d _point, int _segment);
+            std::vector<int32_t> findNeighbors(std::vector<PathSeg> &_graph, Eigen::Vector2d _point, uint32_t _segment);
     };
 }
 #endif // PLANNER_NODE_H

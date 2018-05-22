@@ -42,13 +42,13 @@ int main(int argc, char** argv)
 
 namespace tuw_graph
 {
-    VoronoiGeneratorNode::VoronoiGeneratorNode(ros::NodeHandle & n) :  voronoi_map::VoronoiPathGenerator(), VoronoiGraphGenerator(), n_(n), n_param_("~"), Serializer()
+    VoronoiGeneratorNode::VoronoiGeneratorNode(ros::NodeHandle & n) : voronoi_map::VoronoiPathGenerator(), VoronoiGraphGenerator(), Serializer(), n_(n), n_param_("~")
     {
 
         topicGlobalMap_ = "/map";
         n_param_.param("map_topic", topicGlobalMap_, topicGlobalMap_);
 
-        smoothing_ = 15;
+        smoothing_ = 0;
         n_param_.param("map_smoothing", smoothing_, smoothing_);
 
 
@@ -59,17 +59,17 @@ namespace tuw_graph
         n_param_.param("segments_topic", topicSegments_, topicSegments_);
 
 
-        path_length_ = 0.9;   //meter
+        path_length_ = 1.0;   //meter
         n_param_.param("segment_length", path_length_, path_length_);
 
         crossingOptimization_ = 0.2;
         n_param_.param("opt_crossings", crossingOptimization_, crossingOptimization_);
 
-        endSegmentOptimization_ = 0.4;
+        endSegmentOptimization_ = 0.2;
         n_param_.param("opt_end_segments", endSegmentOptimization_, endSegmentOptimization_);
         endSegmentOptimization_ = std::min<float>(endSegmentOptimization_, 0.7 * path_length_);
 
-        graphPath_ = "/.";
+        graphPath_ = "/home/benjamin/temp/cache";
         n_param_.param("graph_path", graphPath_, graphPath_);
 
         if(graphPath_.back() != '/')
@@ -172,13 +172,13 @@ namespace tuw_graph
             seg.header.seq = 0;
             seg.header.stamp = ros::Time::now();
 
-            seg.id = (*it)->GetId();
-            seg.length = (*it)->GetLength();
-            seg.width = (*it)->GetMinPathSpace();
+            seg.id = (*it).GetId();
+            seg.length = (*it).GetLength();
+            seg.width = (*it).GetMinPathSpace();
 
-            std::vector< Eigen::Vector2d >  path = (*it)->GetPath();
+            std::vector< Eigen::Vector2d >  path = (*it).GetPath();
 
-            for(int i = 0; i < path.size(); i++)
+            for(uint32_t i = 0; i < path.size(); i++)
             {
                 geometry_msgs::Point pos;
                 pos.x = path[i][0];
@@ -189,18 +189,18 @@ namespace tuw_graph
             }
 
             //ROS_INFO("distORIG: %i/%i", (*it)->GetPredecessors().size(), (*it)->GetSuccessors().size());
-            std::vector< std::shared_ptr< Segment > > predecessors = (*it)->GetPredecessors();
+            std::vector< int32_t > predecessors = (*it).GetPredecessors();
 
-            for(int i = 0; i < predecessors.size(); i++)
+            for(uint32_t i = 0; i < predecessors.size(); i++)
             {
-                seg.predecessors.push_back(predecessors[i]->GetId());
+                seg.predecessors.push_back(predecessors[i]);
             }
 
-            std::vector< std::shared_ptr< Segment > > successors = (*it)->GetSuccessors();
+            std::vector< int32_t  > successors = (*it).GetSuccessors();
 
-            for(int i = 0; i < successors.size(); i++)
+            for(uint32_t i = 0; i < successors.size(); i++)
             {
-                seg.successors.push_back(successors[i]->GetId());
+                seg.successors.push_back(successors[i]);
             }
 
             graph.vertices.push_back(seg);
@@ -224,7 +224,7 @@ namespace tuw_graph
         grid.info.width = nx;
         grid.info.height = ny;
 
-        double wx, wy;
+        //double wx, wy;
         //costmap_->mapToWorld(0, 0, wx, wy);
         grid.info.origin.position.x = origin_[0];
         grid.info.origin.position.y =  origin_[1];

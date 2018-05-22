@@ -37,30 +37,30 @@ namespace tuw_graph
     class Segment
     {
         public:
-            Segment(const std::vector<Eigen::Vector2d> &_points, float _min_space);
-            Segment(int _id, const std::vector<Eigen::Vector2d> &_points, float _min_space);
+            Segment(const std::vector<Eigen::Vector2d> &_points, const float _min_space);
+            Segment(const uint32_t _id, const std::vector<Eigen::Vector2d> &_points, const float _min_space);
 
-            void AddPredecessor(const std::shared_ptr<Segment> &_predecessor);
-            void AddSuccessor(const std::shared_ptr<Segment> &_successor);
-            std::vector<Eigen::Vector2d> GetPath();
+            void AddPredecessor(const int32_t _predecessor);   
+            void AddSuccessor(const int32_t _successor);
+            std::vector<Eigen::Vector2d> GetPath() const;
             void SetPath(const std::vector<Eigen::Vector2d> &_path);
-            float GetMinPathSpace();
+            float GetMinPathSpace() const;
             void SetMinPathSpace(float _space);
-            int GetLength();
-            bool ContainsPredecessor(std::shared_ptr< Segment > _predecessor);
-            bool ContainsSuccessor(std::shared_ptr< Segment > _successor);
+            int GetLength() const;
+            bool ContainsPredecessor(const uint32_t _predecessor);
+            bool ContainsSuccessor(const uint32_t _successor);
             static void ResetId();            
             
-            Eigen::Vector2d getStart();
-            Eigen::Vector2d getEnd();
+            Eigen::Vector2d getStart() const;
+            Eigen::Vector2d getEnd() const;
 
             void setStart(Eigen::Vector2d _pt);
             void setEnd(Eigen::Vector2d _pt);
 
-            int GetId();
+            uint32_t GetId() const;
             void SetId(int _id);
-            std::vector<std::shared_ptr<Segment>> GetPredecessors();
-            std::vector<std::shared_ptr<Segment>> GetSuccessors();
+            std::vector<int32_t> GetPredecessors() const;
+            std::vector<int32_t> GetSuccessors() const;
 
             void cleanNeighbors();
             
@@ -73,8 +73,8 @@ namespace tuw_graph
             float length_;
             std::vector<Eigen::Vector2d> wayPoints_;
 
-            std::vector<std::shared_ptr<Segment>> successor_;
-            std::vector<std::shared_ptr<Segment>> predecessor_;
+            std::vector<int32_t> predecessor_;
+            std::vector<int32_t> successor_;
 
             static int static_id_;
             int id_;
