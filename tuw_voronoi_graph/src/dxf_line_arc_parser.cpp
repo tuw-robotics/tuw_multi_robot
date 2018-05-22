@@ -26,13 +26,49 @@
  *
  */
 
-#include <tuw_voronoi_graph/dxf_creation_interface.h>
+#include <tuw_voronoi_graph/dxf_line_arc_parser.h>
 #include <iostream>
 
 namespace tuw_graph
 {
-    void DxfCreationInterface::addLine(const DL_LineData &d)
+    void DxfLineArcParser::addLine(const DL_LineData &_line)
     {
-        std::cout << "line" << std::endl;
+        //Arc: start / end
+        lines_.push_back(_line);
     }
+    
+    void DxfLineArcParser::addArc(const DL_ArcData &_arc)
+    {
+        //Arc: center / radius / angle in pos rotational direction
+        arcs_.push_back(_arc);
+    }
+
+    void DxfLineArcParser::addCircle(const DL_CircleData &_circle)
+    {
+        //Arc: center / radius
+        circles_.push_back(_circle);
+    }
+    
+    void DxfLineArcParser::reset()
+    {
+        lines_.clear();
+        arcs_.clear();
+        circles_.clear();
+    }
+
+    const std::vector< DL_ArcData > &DxfLineArcParser::getArcs()
+    {
+        return arcs_;
+    }
+
+    const std::vector< DL_CircleData > &DxfLineArcParser::getCircles()
+    {
+        return circles_;
+    }
+
+    const std::vector< DL_LineData > &DxfLineArcParser::getLines()
+    {
+        return lines_;
+    }
+
 }

@@ -26,33 +26,29 @@
  *
  */
 
-#ifndef DXF_TO_GRAPH_H
-#define DXF_TO_GRAPH_H
+#ifndef DXF_CREATION_INTERFACE_H
+#define DXF_CREATION_INTERFACE_H
 
-#include <string>
-#include <tuw_serialization/serializer.h>
-#include <dxflib/dl_dxf.h>
+#include <dxflib/dl_creationadapter.h>
+#include <vector>
 
 namespace tuw_graph
 {
-    struct Line
+    class DxfLineArcParser : public DL_CreationAdapter 
     {
-        Eigen::Vector2d start;
-        Eigen::Vector2d end;
-        Line(Eigen::Vector2d _start, Eigen::Vector2d _end) : start(_start), end(_end) {}
-        Line() {}
-    };
-    
-    class DxfToGraph
-    {
-        public:            
-            void parseGraph(const std::string &_dxfPath, const float _segLength, const float _segWidth);
-            void serializeGraph(const std::string &_graphPath);
-            //void preprocessCircles();
-            //void preprocessArcs();
-        private:
-            std::vector<Line> splitLine(const DL_LineData &_line, const float _segLength);
-            std::vector<Segment> generateGraph(const std::vector<Eigen::Vector2d> &_lines, const float _segWidth);            
+    public:
+        virtual void addLine(const DL_LineData& _line);
+        virtual void addArc(const DL_ArcData& _arc);
+        virtual void addCircle(const DL_CircleData& _circle);
+        void reset();
+        const std::vector<DL_LineData> &getLines();
+        const std::vector<DL_ArcData> &getArcs();
+        const std::vector<DL_CircleData> &getCircles();
+    private:
+        std::vector<DL_LineData> lines_;
+        std::vector<DL_ArcData> arcs_;
+        std::vector<DL_CircleData> circles_;
     };
 }
-#endif // PLANNER_NODE_H
+
+#endif

@@ -149,7 +149,7 @@ target_link_libraries(voronoi_path_lib graph_serialization_lib voronoi_graph_lib
 
 add_library(dxf_graph_lib
     src/dxf_to_graph.cpp
-    src/dxf_creation_interface.cpp
+    src/dxf_line_arc_parser.cpp
 )
 target_link_libraries(dxf_graph_lib graph_serialization_lib voronoi_graph_lib ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} dxflib)
 

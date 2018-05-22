@@ -44,7 +44,8 @@ namespace tuw_graph
         private:
             std::string             dxfPath_;
             std::string             graphPath_;
-            double                  segmentLength_;
+            float                   segmentLength_;
+            float                   segmentWidth_;
     };
 }
 #endif // PLANNER_NODE_H

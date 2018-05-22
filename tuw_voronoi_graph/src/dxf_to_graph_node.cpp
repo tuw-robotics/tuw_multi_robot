@@ -16,9 +16,9 @@
  * THIS SOFTWARE IS PROVIDED BY <copyright holder> <email> ''AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL <copyright holder> <email> BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * DISCLAIMED. IN NO EVENT SHALL <copyright holder> <email> BE LIABLE FOR ANY
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
@@ -35,10 +35,7 @@ int main(int argc, char** argv)
     ros::NodeHandle n;
     
     tuw_graph::DxfToGraphNode dxf2graph (n);
-    
-    std::cout << "hello1" << std::endl;
     dxf2graph.writeGraph();
-    std::cout << "hello3" << std::endl;
     
     return 0;
 }
@@ -57,6 +54,9 @@ namespace tuw_graph
         segmentLength_ = 1.0;   //meter
         n_param_.param("segment_length", segmentLength_, segmentLength_);
 
+        segmentWidth_ = 1.0;   //meter
+        n_param_.param("segment_width", segmentWidth_, segmentWidth_);
+        
         graphPath_ = "graph";
         n_param_.param("dxf_path", graphPath_, graphPath_);
         
@@ -64,8 +64,7 @@ namespace tuw_graph
 
     void DxfToGraphNode::writeGraph()
     {
-        std::cout << "hello2" << std::endl;
-        parseGraph(dxfPath_, segmentLength_);
+        parseGraph(dxfPath_, segmentLength_, segmentWidth_);
         serializeGraph(graphPath_);
     }
 }
