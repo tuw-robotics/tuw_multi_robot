@@ -67,7 +67,7 @@ namespace tuw_graph
 
         endSegmentOptimization_ = 0.2;
         n_param_.param("opt_end_segments", endSegmentOptimization_, endSegmentOptimization_);
-        endSegmentOptimization_ = std::min<float>(endSegmentOptimization_, 0.7 * path_length_);
+        //endSegmentOptimization_ = std::min<float>(endSegmentOptimization_, 0.7 * path_length_);
 
         graphPath_ = "/home/benjamin/temp/cache";
         n_param_.param("graph_path", graphPath_, graphPath_);
@@ -189,14 +189,14 @@ namespace tuw_graph
             }
 
             //ROS_INFO("distORIG: %i/%i", (*it)->GetPredecessors().size(), (*it)->GetSuccessors().size());
-            std::vector< int32_t > predecessors = (*it).GetPredecessors();
+            std::vector< uint32_t > predecessors = (*it).GetPredecessors();
 
             for(uint32_t i = 0; i < predecessors.size(); i++)
             {
                 seg.predecessors.push_back(predecessors[i]);
             }
 
-            std::vector< int32_t  > successors = (*it).GetSuccessors();
+            std::vector< uint32_t  > successors = (*it).GetSuccessors();
 
             for(uint32_t i = 0; i < successors.size(); i++)
             {

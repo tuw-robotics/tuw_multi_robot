@@ -40,8 +40,8 @@ namespace tuw_graph
             Segment(const std::vector<Eigen::Vector2d> &_points, const float _min_space);
             Segment(const uint32_t _id, const std::vector<Eigen::Vector2d> &_points, const float _min_space);
 
-            void AddPredecessor(const int32_t _predecessor);   
-            void AddSuccessor(const int32_t _successor);
+            void AddPredecessor(const uint32_t _predecessor);   
+            void AddSuccessor(const uint32_t _successor);
             std::vector<Eigen::Vector2d> GetPath() const;
             void SetPath(const std::vector<Eigen::Vector2d> &_path);
             float GetMinPathSpace() const;
@@ -58,12 +58,13 @@ namespace tuw_graph
             void setEnd(Eigen::Vector2d _pt);
 
             uint32_t GetId() const;
-            void SetId(int _id);
-            std::vector<int32_t> GetPredecessors() const;
-            std::vector<int32_t> GetSuccessors() const;
+            void SetId(uint32_t _id);
+            std::vector<uint32_t> GetPredecessors() const;
+            std::vector<uint32_t> GetSuccessors() const;
 
             void cleanNeighbors();
-            
+            void cleanNeighbors(uint32_t _id);
+            void decreaseNeighborIdAbove(uint32_t _id);
             bool &getOptStart();
             bool &getOptEnd();
 
@@ -73,8 +74,8 @@ namespace tuw_graph
             float length_;
             std::vector<Eigen::Vector2d> wayPoints_;
 
-            std::vector<int32_t> predecessor_;
-            std::vector<int32_t> successor_;
+            std::vector<uint32_t> predecessor_;
+            std::vector<uint32_t> successor_;
 
             static int static_id_;
             int id_;

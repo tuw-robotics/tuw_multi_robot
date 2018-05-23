@@ -56,11 +56,53 @@ namespace tuw_graph
         }
     }
 
-    void Segment::AddPredecessor(const int32_t _predecessor)
+
+    void Segment::cleanNeighbors(uint32_t _id)
+    {
+        for(uint32_t i = 0; i < predecessor_.size(); i++)
+        {
+            if(predecessor_[i] == _id)
+            {
+                predecessor_.erase(predecessor_.begin() + i);
+            }
+        }
+        
+        for(uint32_t i = 0; i < successor_.size(); i++)
+        {
+            if(successor_[i] == _id)
+            {
+                successor_.erase(successor_.begin() + i);
+            }
+        }
+    }
+    
+    void Segment::decreaseNeighborIdAbove(uint32_t _id)
+    {
+        if(id_ >= _id)
+            id_--;
+        
+        for(uint32_t i = 0; i < predecessor_.size(); i++)
+        {
+            if(predecessor_[i] >= _id)
+            {
+                predecessor_[i]--;
+            }
+        }
+        
+        for(uint32_t i = 0; i < successor_.size(); i++)
+        {
+            if(successor_[i] >= _id)
+            {
+                successor_[i]--;
+            }
+        }
+    }
+    
+    void Segment::AddPredecessor(const uint32_t _predecessor)
     {
         predecessor_.push_back(_predecessor);
     }
-    void Segment::AddSuccessor(const int32_t _successor)
+    void Segment::AddSuccessor(const uint32_t _successor)
     {
         successor_.push_back(_successor);
     }
@@ -112,7 +154,7 @@ namespace tuw_graph
         return id_;
     }
 
-    void Segment::SetId(int _id)
+    void Segment::SetId(uint32_t _id)
     {
         id_ = _id;
     }
@@ -127,12 +169,12 @@ namespace tuw_graph
         return start_;
     }
 
-    std::vector< int32_t > Segment::GetPredecessors() const
+    std::vector<uint32_t > Segment::GetPredecessors() const
     {
         return predecessor_;
     }
 
-    std::vector< int32_t > Segment::GetSuccessors() const
+    std::vector<uint32_t > Segment::GetSuccessors() const
     {
         return successor_;
     }
@@ -141,7 +183,7 @@ namespace tuw_graph
     {
         for(const auto & pred : predecessor_)
         {
-            if(pred == (int32_t)_predecessor)
+            if(pred == _predecessor)
                 return true;
         }
 
@@ -153,7 +195,7 @@ namespace tuw_graph
     {
         for(uint32_t i = 0; i < successor_.size(); i++)
         {
-            if(successor_[i] == (int32_t)_successor)
+            if(successor_[i] == _successor)
                 return true;
         }
 

@@ -121,7 +121,7 @@ namespace tuw_graph
 
             float getMinD(const std::vector<Eigen::Vector2d> &_path);
 
-
+            void removeSegmentFromList(const uint32_t _id, std::vector<Segment> &_segments);
             void addExpansionCandidate(const Index &current, const Index &next, float* potential);
             bool isEndpoint(Index &_current, const std::vector<std::vector<Eigen::Vector2d>> &_endpoints);
             void removeEndpoint(Index _current, std::vector<std::vector<Eigen::Vector2d>> &_endpoints);

@@ -141,7 +141,7 @@ namespace tuw_graph
             {
             }
 
-            SegmentSerializer(const uint32_t _id, std::vector<int32_t> _predecessors, std::vector<int32_t> _successors, float _minDistance, std::vector<Eigen::Vector2d> _points):
+            SegmentSerializer(const uint32_t _id, std::vector<uint32_t> _predecessors, std::vector<uint32_t> _successors, float _minDistance, std::vector<Eigen::Vector2d> _points):
                 SegmentSerializer(_predecessors.size(), _successors.size(), _points.size())
             {
                 id = _id;
