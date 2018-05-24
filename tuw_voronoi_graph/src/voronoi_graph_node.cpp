@@ -11,7 +11,7 @@ void publishTf(std::string mapName);
 
 bool allowPublish = false;
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
 
     ros::init(argc, argv, "voronoi_graph_node");     /// initializes the ros node with default name
@@ -42,7 +42,7 @@ int main(int argc, char** argv)
 
 namespace tuw_graph
 {
-    VoronoiGeneratorNode::VoronoiGeneratorNode(ros::NodeHandle & n) : voronoi_map::VoronoiPathGenerator(), VoronoiGraphGenerator(), Serializer(), n_(n), n_param_("~")
+    VoronoiGeneratorNode::VoronoiGeneratorNode(ros::NodeHandle &n) : voronoi_map::VoronoiPathGenerator(), VoronoiGraphGenerator(), Serializer(), n_(n), n_param_("~")
     {
 
         topicGlobalMap_ = "/map";
@@ -75,7 +75,12 @@ namespace tuw_graph
         if(graphPath_.back() != '/')
             graphPath_ += "/";
 
-        
+
+        customGraphPath_ = "";
+        n_param_.param("custom_graph_path", customGraphPath_, customGraphPath_);
+
+        if(customGraphPath_.back() != '/' && customGraphPath_.size() != 0)
+            customGraphPath_ += "/";
 
         subMap_       = n.subscribe(topicGlobalMap_, 1, &VoronoiGeneratorNode::globalMapCallback, this);
         //pubVoronoiMap_    = n.advertise<nav_msgs::OccupancyGrid>(topicVoronoiMap_, 1);                        //DEBUG
@@ -86,7 +91,7 @@ namespace tuw_graph
         ros::spinOnce();
     }
 
-    void VoronoiGeneratorNode::globalMapCallback(const nav_msgs::OccupancyGrid::ConstPtr& _map)
+    void VoronoiGeneratorNode::globalMapCallback(const nav_msgs::OccupancyGrid::ConstPtr &_map)
     {
         std::vector<signed char> map = _map->data;
 
@@ -96,25 +101,33 @@ namespace tuw_graph
 
         size_t new_hash = getHash(map, origin, _map->info.resolution);
 
-        if(new_hash != current_map_hash_)
+        if(customGraphPath_.size() == 0)
         {
-            if(!loadGraph(new_hash))
+            if(new_hash != current_map_hash_)
             {
-                ROS_INFO("Graph generator: Graph not found! Generating new one!");
-                createGraph(_map, new_hash);
-            }
-            else
-            {
-                ROS_INFO("Graph generator: Graph loaded from memory");
-            }
+                if(!loadGraph(new_hash))
+                {
+                    ROS_INFO("Graph generator: Graph not found! Generating new one!");
+                    createGraph(_map, new_hash);
+                }
+                else
+                {
+                    ROS_INFO("Graph generator: Graph loaded from memory");
+                }
 
-            current_map_hash_ = new_hash;
+                current_map_hash_ = new_hash;
 
-            allowPublish = true;
+                allowPublish = true;
+            }
+        }
+        else
+        {
+            std::cout << "loading custom graph from: " << customGraphPath_ << std::endl;
+            std::cout << loadCustomGraph(customGraphPath_) << std::endl;
         }
     }
 
-    void VoronoiGeneratorNode::createGraph(const nav_msgs::OccupancyGrid::ConstPtr& _map, size_t _map_hash)
+    void VoronoiGeneratorNode::createGraph(const nav_msgs::OccupancyGrid::ConstPtr &_map, size_t _map_hash)
     {
         std::vector<signed char> map = _map->data;
 
@@ -144,11 +157,23 @@ namespace tuw_graph
 
     }
 
-    bool VoronoiGeneratorNode::loadGraph(std::size_t hash)
+    bool VoronoiGeneratorNode::loadGraph(std::size_t _hash)
     {
         segments_.clear();
         Segment::ResetId();
-        return load(graphPath_ + std::to_string(hash) + "/", segments_, origin_, resolution_);
+        return load(graphPath_ + std::to_string(_hash) + "/", segments_, origin_, resolution_);
+    }
+
+    bool VoronoiGeneratorNode::loadCustomGraph(std::string _path)
+    {
+        if(!allowPublish)
+        {
+            segments_.clear();
+            Segment::ResetId();
+            allowPublish = true;
+            return load(_path, segments_, origin_, resolution_);
+        }
+        return false;
     }
 
 

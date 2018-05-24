@@ -46,13 +46,18 @@ namespace tuw_graph
     class DxfToGraph
     {
         public:            
-            void parseGraph(const std::string &_dxfPath, const float _segLength, const float _segWidth);
-            void serializeGraph(const std::string &_graphPath);
-            //void preprocessCircles();
-            //void preprocessArcs();
+            bool parseGraph(const std::string &_dxfPath, const float _segLength, const float _segWidth);
+            void serializeGraph(const std::string &_graphPath) const;
         private:
-            std::vector<Line> splitLine(const DL_LineData &_line, const float _segLength);
-            std::vector<Segment> generateGraph(const std::vector<Eigen::Vector2d> &_lines, const float _segWidth);            
+            std::vector<Line> splitLine(const DL_LineData &_line, const float _segLength) const;
+            std::vector<Line> splitCircle(const DL_CircleData &_circle, const float _segLength) const;
+            std::vector<Line> splitArc(const DL_ArcData&_arc, const float _segLength) const;
+            bool getGraphData(const DL_ImageData& _image, float &_scale, Eigen::Vector2d &_offset) const;
+            std::vector<Segment> generateGraph(const std::vector<Line> &_lines, const float _segWidth, const float &_scale, const Eigen::Vector2d &_offset) const;   
+            
+            std::vector<Segment> graphData_;
+            float scale_;
+            Eigen::Vector2d offset_;
     };
 }
 #endif // PLANNER_NODE_H

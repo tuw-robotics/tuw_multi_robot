@@ -31,9 +31,7 @@
 
 namespace tuw_graph
 {
-    int Segment::static_id_ = 0;
-
-
+    uint32_t Segment::static_id_ = 0;
 
     void Segment::cleanNeighbors()
     {

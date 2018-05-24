@@ -30,6 +30,7 @@
 #define DXF_CREATION_INTERFACE_H
 
 #include <dxflib/dl_creationadapter.h>
+#include <dxflib/dl_entities.h>
 #include <vector>
 
 namespace tuw_graph
@@ -40,14 +41,19 @@ namespace tuw_graph
         virtual void addLine(const DL_LineData& _line);
         virtual void addArc(const DL_ArcData& _arc);
         virtual void addCircle(const DL_CircleData& _circle);
+        virtual void addImage(const DL_ImageData& _image);
         void reset();
         const std::vector<DL_LineData> &getLines();
         const std::vector<DL_ArcData> &getArcs();
         const std::vector<DL_CircleData> &getCircles();
+        const std::vector<DL_ImageData> &getImage();
     private:
         std::vector<DL_LineData> lines_;
         std::vector<DL_ArcData> arcs_;
         std::vector<DL_CircleData> circles_;
+        std::vector<DL_ImageData> images_;
+        bool imageFound_ = false;
+        bool error_ = false;
     };
 }
 

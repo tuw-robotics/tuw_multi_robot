@@ -31,7 +31,8 @@ namespace tuw_graph
         private:
             void globalMapCallback(const nav_msgs::OccupancyGrid::ConstPtr& _map);
             void createGraph(const nav_msgs::OccupancyGrid::ConstPtr& _map, size_t _map_hash);
-            bool loadGraph(size_t hash);
+            bool loadGraph(size_t _hash);
+            bool loadCustomGraph(std::string _path);
             
             
             ros::Publisher                          pubVoronoiMap_;
@@ -43,6 +44,7 @@ namespace tuw_graph
             std::string                             topicVoronoiMap_;
             std::string                             topicSegments_;
             std::string                             graphPath_;
+            std::string                             customGraphPath_;
     
             std::string                             frameGlobalMap_;
             std::string                             frameVoronoiMap_;

@@ -31,59 +31,72 @@
 #include <tuw_voronoi_graph/dxf_line_arc_parser.h>
 #include <sstream>
 
+#include <math.h>
+
 namespace tuw_graph
-{    
-    void DxfToGraph::parseGraph(const std::string &_dxfPath, const float _segLength, const float _segWidth)
+{
+    bool DxfToGraph::parseGraph(const std::string &_dxfPath, const float _segLength, const float _segWidth)
     {
         DxfLineArcParser creationInterface;
-
         DL_Dxf dxf;
 
-        if(!dxf.in("/home/benjamin/temp/drawing.dxf", &creationInterface))
+        if(!dxf.in(_dxfPath, &creationInterface))
         {
             std::cerr << "drawing.dxf could not be opened.\n";
-            return;
+            return false;
         }
-        
-        
-        const std::vector<DL_LineData> lines = creationInterface.getLines();
-        for(const DL_LineData &line : lines)
-        {
-            std::cout << "line: " << line.x1 << "/" << line.y1 << "\t-\t" << line.x2 << "/" << line.y2 << std::endl;
-            std::vector<Line> segs = splitLine(line, _segLength);
-            for(const Line &s : segs)
-            {
-                std::cout << "  seg: " << s.start[0] << "/" << s.start[1] << "\t-\t" << s.end[0] << "/" << s.end[1] << std::endl;
-            }
-            
-        }
-        
-        const std::vector<DL_CircleData> circles = creationInterface.getCircles();
-        for(const DL_CircleData &circle : circles)
-        {
-            std::cout << "circle: " << circle.cx << "/" << circle.cy << " r: " << circle.radius << std::endl;
-        }
-        
-        const std::vector<DL_ArcData> arcs = creationInterface.getArcs();
-        for(const DL_ArcData &arc : arcs)
-        {
-            std::cout << "arc: " << arc.cx << "/" << arc.cy << " r: " << arc.radius << " a_1: " << arc.angle1 << " a_2: " << arc.angle2 << std::endl;
-        }
-    }
-    
 
-    std::vector< Line > DxfToGraph::splitLine(const DL_LineData &_line, const float _segLength)
+        std::vector<Line> lineSegments;
+        const std::vector<DL_LineData> lines = creationInterface.getLines();
+
+        for(const DL_LineData & line : lines)
+        {
+            std::vector<Line> segs = splitLine(line, _segLength);
+            lineSegments.insert(lineSegments.end(), segs.begin(), segs.end());
+        }
+
+        const std::vector<DL_CircleData> circles = creationInterface.getCircles();
+
+        for(const DL_CircleData & circle : circles)
+        {
+            std::vector<Line> segs = splitCircle(circle, _segLength);
+            lineSegments.insert(lineSegments.end(), segs.begin(), segs.end());
+        }
+
+        const std::vector<DL_ArcData> arcs = creationInterface.getArcs();
+
+        for(const DL_ArcData & arc : arcs)
+        {
+            std::vector<Line> segs = splitArc(arc, _segLength);
+            lineSegments.insert(lineSegments.end(), segs.begin(), segs.end());
+        }
+
+        
+        std::vector<DL_ImageData> image = creationInterface.getImage();
+        if(image.size() > 1)
+            return false;
+        
+        if(!getGraphData(image[0], scale_, offset_))
+            return false;
+        
+        graphData_ = generateGraph(lineSegments, _segWidth, scale_, offset_);
+        
+        return true;
+    }
+
+
+    std::vector< Line > DxfToGraph::splitLine(const DL_LineData &_line, const float _segLength) const
     {
         std::vector<Line> segments;
         Eigen::Vector2d start(_line.x1, _line.y1);
         Eigen::Vector2d end(_line.x2, _line.y2);
-        
+
         float length = (end - start).norm();
         uint32_t splits = length / _segLength;
-        
+
         Eigen::Vector2d increment = (end - start) / splits;
         Eigen::Vector2d current = start;
-        
+
         for(uint32_t i = 0; i < splits; i++)
         {
             Line l(current, current + increment);
@@ -91,22 +104,118 @@ namespace tuw_graph
             current += increment;
         }
         
+        if(segments.size() == 0)
+        {
+            Line l(start, end);
+            segments.push_back(l);
+        }
+
         return segments;
     }
-    
-    std::vector< Segment > DxfToGraph::generateGraph(const std::vector< Eigen::Vector2d > &_lines, const float _segWidth)
+
+    std::vector< Line > DxfToGraph::splitCircle(const DL_CircleData &_circle, const float _segLength) const
     {
-        std::vector<Segment> todo;
-        return todo;
+        DL_ArcData _arc(_circle.cx, _circle.cy, _circle.cz, _circle.radius, 0, 360);
+        return splitArc(_arc, _segLength);
     }
 
 
-    
-    
-
-    void DxfToGraph::serializeGraph(const std::string &_graphPath)
+    std::vector< Line > DxfToGraph::splitArc(const DL_ArcData &_arc, const float _segLength) const
     {
+        std::vector<Line> segments;
 
+        //Take care DL_ uses Degrees
+        float angle1 = _arc.angle1 / 180 * M_PI;
+        float angle2 = _arc.angle2 / 180 * M_PI;;
+
+        if(_arc.angle1 >= _arc.angle2)
+            angle2 += 2 * M_PI;
+
+        float arcLength = (angle2 - angle1) * _arc.radius;
+        uint32_t splits = arcLength / _segLength;
+
+        float angleIncrement_radians = (arcLength / (float)splits) / _arc.radius;
+        float current_angle_radians = angle1;
+        Eigen::Vector2d current_point(_arc.cx + _arc.radius * cos(current_angle_radians), _arc.cy + _arc.radius * sin(current_angle_radians));
+
+        for(uint32_t i = 0; i < splits; i++)
+        {
+            current_angle_radians += angleIncrement_radians;
+            Eigen::Vector2d nextPoint(_arc.cx + _arc.radius * cos(current_angle_radians), _arc.cy + _arc.radius * sin(current_angle_radians));
+            Line l(current_point, nextPoint);
+            segments.push_back(l);
+
+            current_point = nextPoint;
+        }
+
+        return segments;
+    }
+
+    bool DxfToGraph::getGraphData(const DL_ImageData &_image, float &_scale, Eigen::Vector2d &_offset) const
+    {
+        //Rotation doesnt matter because the lines are drawn in the right direction...
+        //Scales should be equal (u, v)
+        //Offset ip
+
+        _offset[0] = _image.ipx;
+        _offset[1] = _image.ipy;
+
+        float scale_u = sqrt((_image.ux * _image.ux) + (_image.uy * _image.uy));
+        float scale_v = sqrt((_image.vx * _image.vx) + (_image.vy * _image.vy));
+
+        if(scale_u != scale_v)
+            return false;
+
+        _scale = scale_u;
+
+        return true;
+    }
+
+
+    std::vector< Segment > DxfToGraph::generateGraph(const std::vector< Line > &_lines, const float _segWidth, const float &_scale, const Eigen::Vector2d &_offset) const
+    {
+        std::vector<Segment> segments;
+        Segment::ResetId();
+        
+        //Create segments
+        for(uint32_t i = 0; i < _lines.size(); i++)
+        {
+            std::vector<Eigen::Vector2d> points({ (_lines[i].start-_offset)/scale_, (_lines[i].end-_offset)/scale_ });
+            Segment s(points , _segWidth);
+            
+            segments.push_back(s);
+        }
+        
+        
+        //Assign Neighbors
+        for(uint32_t i = 0; i < _lines.size(); i++)
+        {
+            for(uint32_t j = 0; j < _lines.size(); j++)
+            {
+                if(((segments[i].getStart() - segments[j].getStart()).norm() == 0) || 
+                    ((segments[i].getStart() - segments[j].getEnd()).norm() == 0))
+                {
+                    segments[i].AddPredecessor(j);                        
+                }
+                if(((segments[i].getEnd() - segments[j].getStart()).norm() == 0) || 
+                    ((segments[i].getEnd() - segments[j].getEnd()).norm() == 0))
+                {
+                    segments[i].AddSuccessor(j);    
+                }
+            }
+        }
+        
+        return segments;
+    }
+
+
+
+
+
+    void DxfToGraph::serializeGraph(const std::string &_graphPath) const
+    {
+        Serializer s;
+        s.save(_graphPath, graphData_, offset_, scale_);
     }
 
 }

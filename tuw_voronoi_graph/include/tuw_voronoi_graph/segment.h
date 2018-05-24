@@ -77,8 +77,8 @@ namespace tuw_graph
             std::vector<uint32_t> predecessor_;
             std::vector<uint32_t> successor_;
 
-            static int static_id_;
-            int id_;
+            static uint32_t static_id_;
+            uint32_t id_;
 
             bool optimizedStart_;
             bool optimizedEnd_;

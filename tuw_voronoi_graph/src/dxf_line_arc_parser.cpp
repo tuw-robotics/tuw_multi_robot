@@ -30,13 +30,13 @@
 #include <iostream>
 
 namespace tuw_graph
-{
+{    
     void DxfLineArcParser::addLine(const DL_LineData &_line)
     {
         //Arc: start / end
         lines_.push_back(_line);
     }
-    
+
     void DxfLineArcParser::addArc(const DL_ArcData &_arc)
     {
         //Arc: center / radius / angle in pos rotational direction
@@ -48,12 +48,27 @@ namespace tuw_graph
         //Arc: center / radius
         circles_.push_back(_circle);
     }
-    
+
     void DxfLineArcParser::reset()
     {
         lines_.clear();
         arcs_.clear();
         circles_.clear();
+    }
+
+    void DxfLineArcParser::addImage(const DL_ImageData &_image)
+    {
+        //std::cout << "image: h " << _image.height << " w " << _image.width << " ipx " << _image.ipx << " ipy " << _image.ipy << " ref " << _image.ref << " ux " << _image.ux << " uy " << _image.uy << " vx " << _image.vx << " vy " << _image.vy << std::endl;
+        //std::cout << "scale: " << sqrt((_image.ux * _image.ux) + (_image.uy * _image.uy)) << std::endl;
+        
+        
+        images_.push_back(_image);
+        
+    }
+
+    const std::vector<DL_ImageData> &DxfLineArcParser::getImage()
+    {
+        return images_;
     }
 
     const std::vector< DL_ArcData > &DxfLineArcParser::getArcs()

@@ -48,17 +48,19 @@ namespace tuw_graph
         n_(n),
         n_param_("~")
     {
-        dxfPath_ = "segments.dxf";
+        dxfPath_ = "/home/benjamin/temp/roblab.dxf";
         n_param_.param("dxf_path", dxfPath_, dxfPath_);
 
-        segmentLength_ = 1.0;   //meter
+        segmentLength_ = 0.6;   //meter
         n_param_.param("segment_length", segmentLength_, segmentLength_);
 
         segmentWidth_ = 1.0;   //meter
         n_param_.param("segment_width", segmentWidth_, segmentWidth_);
         
-        graphPath_ = "graph";
+        graphPath_ = "/home/benjamin/temp/roblab_graph";
         n_param_.param("dxf_path", graphPath_, graphPath_);
+        if(graphPath_.back() != '/')
+            graphPath_ += "/";
         
     }
 
