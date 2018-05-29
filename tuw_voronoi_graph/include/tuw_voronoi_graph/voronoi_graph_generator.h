@@ -37,8 +37,19 @@ namespace tuw_graph
 {
     class VoronoiGraphGenerator
     {
-        public:     VoronoiGraphGenerator();
-        public:     std::vector<Segment> calcSegments(cv::Mat &_map, cv::Mat &_distField, cv::Mat &_voronoiPath, float * potential, float _path_length, float _optimizeCrossingPixels, float _optimizeEndSegmentsPixel);
+        public:     
+            VoronoiGraphGenerator();
+            /** 
+             * @brief calculates the search graph 
+             * @param _map the map 
+             * @param _distField the distance_field generated from the map (e.g.: opencv distance_transform)
+             * @param _voronoiPath the generated voronoi path out of the distance field (e.g.: ridge following; zhang suen thinning...)
+             * @param potential the potential used for expanding (debuggin purpose)
+             * @param _path_length the minimum path length a segment has to have
+             * @param _optimizePixelsCrossing if crossings have less distance than _optimizePixelsCrossing to each other they are merged
+             * @param _optimizePixelsEndSegments if a end segment has less length than this var it is removed
+             */
+            std::vector<Segment> calcSegments(cv::Mat &_map, cv::Mat &_distField, cv::Mat &_voronoiPath, float * potential, float _path_length, float _optimizeCrossingPixels, float _optimizeEndSegmentsPixel);
 
     };
 }

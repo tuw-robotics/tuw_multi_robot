@@ -54,30 +54,10 @@ namespace tuw_graph
 
         for(uint32_t i = 0; i < segs.size(); i++)
         {
-//             ROS_INFO("Segment %i", segs[i]->GetId());
-//             ROS_INFO("\t (%f/%f) (%f/%f)", segs[i]->getStart()[0], segs[i]->getStart()[1], segs[i]->getEnd()[0], segs[i]->getEnd()[1]);
-//             ROS_INFO("\t l: %i l: %f", segs[i]->GetLength(), segs[i]->GetMinPathSpace());
-
             std::vector<uint32_t> predecessors = segs[i].GetPredecessors();
             std::vector<uint32_t> successors = segs[i].GetSuccessors();
-
-
-//             for(int j = 0; j < predecessors.size(); j++)
-//             {
-//                 ROS_INFO("\t Predecessor %i", predecessors[j]->GetId());
-//             }
-// 
-//             for(int j = 0; j < successors.size(); j++)
-//             {
-//                 ROS_INFO("\t Successor %i", successors[j]->GetId());
-//             }
-// 
-//             ROS_INFO(" ");
         }
 
-//         ROS_INFO(" ");
-//         ROS_INFO(" ");
-//         ROS_INFO(" ");
 
         return std::vector<Segment>(segs);
     }

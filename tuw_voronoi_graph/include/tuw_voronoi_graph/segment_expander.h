@@ -42,15 +42,33 @@ namespace tuw_graph
 
     class Segment_Expander
     {
-
         public:
             Segment_Expander();
-
+            
+            /** 
+             * @brief initializes the expander by setting the voronoi path map and distancefield 
+             * @param _map the map 
+             * @param _distField the distance_field generated from the map (e.g.: opencv distance_transform)
+             * @param _voronoiPath the generated voronoi path out of the distance field (e.g.: ridge following; zhang suen thinning...)
+             */
             void Initialize(cv::Mat &_map, cv::Mat &_distField, cv::Mat &_voronoiPath);
+            /**
+             * @brief looks for crossings and saves all segment endpoints of it
+             * @param _potential voronoi map potential
+             * @return a list of crossings which contains all endpoints of the crossing 
+             */
             std::vector<std::vector<Eigen::Vector2d>> calcEndpoints(float *_potential);
-            std::vector<std::pair<Eigen::Vector2d, Eigen::Vector2d>> getSegments(const std::vector<std::vector<Eigen::Vector2d>> &_endPoints, float *_potential);
-            Eigen::Vector2d getSegmentNeighbour(const Eigen::Vector2d &_p, const std::vector< std::vector< Eigen::Vector2d > > &_endpoints);                                          //TODO Deprecated
-            std::vector< Segment > getGraph(const std::vector<std::vector<Eigen::Vector2d>> &_endPoints, float *_potential, float _max_length, float _optimizePixelsCrossing, float _optimizePixelsEndSegments);
+            
+            /**
+             * @brief returns a list of segments, which represent the found search graph 
+             * @param _endPoints a list of all found endpoints (list of crossings which contain a set of endpoints)
+             * @param _potential potential used to expand the pats
+             * @param _min_length the minimum length a segment has to have (max = _min_length * 2 - epsilon)
+             * @param _optimizePixelsCrossing if crossings have less distance than _optimizePixelsCrossing to each other they are merged
+             * @param _optimizePixelsEndSegments if a end segment has less length than this var it is removed
+             * @return a list of segments representing the graph
+             */
+            std::vector< Segment > getGraph(const std::vector<std::vector<Eigen::Vector2d>> &_endPoints, float *_potential, const float _min_length, float _optimizePixelsCrossing, const float _optimizePixelsEndSegments);
 
         private:
             std::unique_ptr<float[]> distance_field_;
@@ -81,7 +99,7 @@ namespace tuw_graph
                         dist = d;
                         potential = p;
                     }
-                    Index offsetDist(int dist_x, int dist_y, int nx, int ny)
+                    Index offsetDist(int dist_x, int dist_y, int nx, int ny) const
                     {
                         int x_val = (i % nx) + dist_x;
                         int y_val = (i / nx) + dist_y;
@@ -91,11 +109,11 @@ namespace tuw_graph
 
                         return Index(x_val, y_val, nx, 0, 0, 0);
                     }
-                    int getX(int nx)
+                    int getX(int nx) const
                     {
                         return (i % nx);
                     }
-                    int getY(int nx)
+                    int getY(int nx) const
                     {
                         return (i / nx);
                     }
@@ -114,21 +132,41 @@ namespace tuw_graph
             };
             std::priority_queue<Index, std::vector<Index>, greater1> queue_;
         
-            // &splitPath(const std::vector<Eigen::Vector2d> &_split);
+            //Splits a given path into multiple segments with minimum length
+            const std::vector<tuw_graph::Segment> splitPath(const std::vector<Eigen::Vector2d> &_path, const float _minimum_length);
  
-            int nrOfNeighbours(int i);
+            //Returns the nr of neighbors (removing double neighbours...)
+            uint32_t nrOfNeighbours(uint32_t i) const;
+            
+            //searches all path endpoints at a crossing
             std::vector<Eigen::Vector2d> expandCrossing(const Index &i, float* _potential);
-            Eigen::Vector2d expandSegment(Index start, float* _potential, const std::vector<std::vector<Eigen::Vector2d>> &_endpoints);                                                        //TODO Deprecated
-            std::vector<Eigen::Vector2d> getPath(const Index &start, float* _potential, const std::vector<std::vector<Eigen::Vector2d>> &_endpoints, float &min_d);
+            
+            //expands from a given crossing endpoint until another crossing is found
+            Eigen::Vector2d expandSegment(Index start, float* _potential, const std::vector<std::vector<Eigen::Vector2d>> &_endpoints);  
+            
+            //Tries to find a path
+            std::vector<Eigen::Vector2d> getPath(const Index &start, float* _potential, const std::vector<std::vector<Eigen::Vector2d>> &_endpoints);
 
-            float getMinD(const std::vector<Eigen::Vector2d> &_path);
+            //Returns the minimum space a segment has
+            float getMinSegmentWidth(const std::vector<Eigen::Vector2d> &_path);
 
+            //Safely removes segments from the segment list taking care of neighbors
             void removeSegmentFromList(const uint32_t _id, std::vector<Segment> &_segments);
+            
+            //Adds an expansion candidate for the Dijkstra algorithm
             void addExpansionCandidate(const Index &current, const Index &next, float* potential);
+            
+            //Checks if the given point is a valid endpoint
             bool isEndpoint(Index &_current, const std::vector<std::vector<Eigen::Vector2d>> &_endpoints);
-            void removeEndpoint(Index _current, std::vector<std::vector<Eigen::Vector2d>> &_endpoints);
+            
+            //Removes a endponit 
+            void removeEndpoint(const Index &_current, std::vector<std::vector<Eigen::Vector2d>> &_endpoints);
             bool checkSegmentPoint(const Index &_point);
+            
+            //Optimizes the Graph by removing to short segments at the end of it and merging crossings in a specific radius
             void optimizeSegments(std::vector<Segment> &_segments, float _maxPixelsCrossing, float _maxPixelsEndSeg);
+            
+            //Merges crossings together
             void optimizeSegmentsAroundPoint(std::vector<Segment> &_segments, const Eigen::Vector2d &pt, float maxPixels, int startIndex);
     };
 

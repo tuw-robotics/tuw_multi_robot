@@ -45,8 +45,19 @@ namespace tuw_graph
     
     class DxfToGraph
     {
-        public:            
+        public:
+            /**
+             * @brief reads the graph from the dx file
+             * @param _dxfPath the path of the dxf file
+             * @param _segLength the minimum Segment _seglength
+             * @param _segWidth the segment width for all segments
+             * @return sucess
+             */
             bool parseGraph(const std::string &_dxfPath, const float _segLength, const float _segWidth);
+            /**
+             * @brief serializes the graph and saves it to memory
+             * @param _graphPath the graph path 
+             */
             void serializeGraph(const std::string &_graphPath) const;
         private:
             std::vector<Line> splitLine(const DL_LineData &_line, const float _segLength) const;

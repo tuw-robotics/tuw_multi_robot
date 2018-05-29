@@ -41,6 +41,7 @@ namespace voronoi_map
         }
         catch(...)
         {
+            // if opencv fails to smooth continue 
             ROS_INFO("Smoothing map failed");
         }
 

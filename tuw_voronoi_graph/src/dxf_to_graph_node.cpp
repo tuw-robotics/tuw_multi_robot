@@ -26,7 +26,7 @@
  *
  */
 
-#include <tuw_voronoi_graph/dxf_to_graph_node.h>
+#include <tuw_voronoi_graph/dxf_to_graph.h>
 #include <boost/program_options.hpp>
 
 namespace po = boost::program_options;

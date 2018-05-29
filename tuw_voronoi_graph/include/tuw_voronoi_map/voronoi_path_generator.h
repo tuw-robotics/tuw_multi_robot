@@ -14,8 +14,24 @@ namespace voronoi_map
     {
         public:
             VoronoiPathGenerator();
-            void prepareMap(const cv::Mat& _map, cv::Mat& _smoothedMap, int blurSize);
+            /**
+             * @brief prepares the map by smoothing it
+             * @param _map the map 
+             * @param _smoothedMap the smoothed map 
+             * @param _blurSize the intensity of the smoothing
+             */
+            void prepareMap(const cv::Mat& _map, cv::Mat& _smoothedMap, int _blurSize);
+            /** 
+             * @brief  computes the distance field of a map 
+             * @param _map the _map
+             * @param _distField the resulting distance fieldW
+             */
             void computeDistanceField(const cv::Mat& _map, cv::Mat& _distField) ;
+            /**
+             * @brief computes the voronoi _map
+             * @param _distField the dist Field
+             * @param _voronoiMap the resulting voronoi map  
+             */
             void computeVoronoiMap(const cv::Mat& _distField, cv::Mat& _voronoiMap);
     };
 

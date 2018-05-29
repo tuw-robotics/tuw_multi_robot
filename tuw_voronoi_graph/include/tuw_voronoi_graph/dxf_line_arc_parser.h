@@ -38,14 +38,30 @@ namespace tuw_graph
     class DxfLineArcParser : public DL_CreationAdapter 
     {
     public:
+        //overloaded functions for receiving the dxf entities
         virtual void addLine(const DL_LineData& _line);
         virtual void addArc(const DL_ArcData& _arc);
         virtual void addCircle(const DL_CircleData& _circle);
         virtual void addImage(const DL_ImageData& _image);
+        /**
+         * @brief resets the creation interface 
+         */
         void reset();
+        /**
+         * @return a list of all found lines
+         */
         const std::vector<DL_LineData> &getLines();
+        /**
+         * @return a list of all found arcs
+         */
         const std::vector<DL_ArcData> &getArcs();
+        /**
+         * @return a list of all found circles
+         */
         const std::vector<DL_CircleData> &getCircles();
+        /**
+         * @return a list of all found images
+         */
         const std::vector<DL_ImageData> &getImage();
     private:
         std::vector<DL_LineData> lines_;

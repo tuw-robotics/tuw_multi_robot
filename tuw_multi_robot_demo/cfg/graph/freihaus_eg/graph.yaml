@@ -1,6 +1,6 @@
 map_topic: "/map"
-map_smoothing: 0
+map_smoothing: 7
 segments_topic: "/segments"
-segment_length: 0.9
-crossingOptimization: 0.2
-endSegmentOptimization: 0.4
+segment_length: 0.6
+opt_crossings: 0.2
+opt_end_segments: 0.5

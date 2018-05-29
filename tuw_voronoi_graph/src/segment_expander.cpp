@@ -196,14 +196,54 @@ namespace tuw_graph
 
     }
 
+    const std::vector<tuw_graph::Segment> Segment_Expander::splitPath(const std::vector<Eigen::Vector2d> &_path, const float _minimum_length)
+    {
+        std::vector<tuw_graph::Segment> segments;
+        
+        if(_path.size() > 1 && _path.size() <= _minimum_length)
+        {
+            float min_seg_width = getMinSegmentWidth(_path);
+            Segment seg(_path, 2 * min_seg_width);
+            segments.push_back(seg);
+        }
+        else if(_path.size() > 1 && _path.size() > _minimum_length)
+        {
+            uint32_t nr_segments = _path.size() / _minimum_length;
+            float real_length = std::ceil((float)_path.size() / (float)nr_segments);
 
-    std::vector< Segment > Segment_Expander::getGraph(const std::vector<std::vector<Eigen::Vector2d>> &_endPoints, float* _potential,
-            float _max_length, float _optimizePixelsCrossing, float _optimizePixelsEndSegments)
+            for(uint32_t i = 0; i < nr_segments; i++)
+            {
+                //Segment
+                std::vector<Eigen::Vector2d> map_path_segment;
+                for(uint32_t j = std::max<int>(0, i * real_length); j <= (i + 1) * real_length && j < _path.size(); j++)
+                {
+                    map_path_segment.push_back( {_path[j][0], _path[j][1]});
+                }
+
+                float min_seg_width = getMinSegmentWidth(map_path_segment);
+                Segment newSegment(std::vector<Eigen::Vector2d>(map_path_segment), 2 * min_seg_width);
+                
+                //Push back and add neighbors
+                segments.push_back(newSegment);
+                if(i > 0)
+                {
+                    segments[segments.size() - 2].AddSuccessor(segments[segments.size() - 1].GetId());
+                    segments[segments.size() - 1].AddPredecessor(segments[segments.size() - 2].GetId());
+                }
+            }
+        }
+        
+        return segments;
+    }
+    
+    
+    
+    std::vector< Segment > Segment_Expander::getGraph(const std::vector<std::vector<Eigen::Vector2d>> &_endPoints, float *_potential, const float _min_length, float _optimizePixelsCrossing, const float _optimizePixelsEndSegments)
     {
         Segment::ResetId();
         
         //We need at least a 10th of max length for seg optimization to find unconnected edges from skeletonizing
-        _optimizePixelsCrossing = std::max<float>(_max_length/10, _optimizePixelsCrossing);
+        _optimizePixelsCrossing = std::max<float>(_min_length/10, _optimizePixelsCrossing);
 
         //To be able to change the segments in the crossing class it has to be somehow accessable over the heap -> shared_ptr
         std::shared_ptr<std::vector< Segment >> segments = std::make_shared<std::vector<Segment>>();
@@ -235,41 +275,10 @@ namespace tuw_graph
 
                 Index start(startPoint[0], startPoint[1], nx_, 0, 0, 0);
 
-                float min_path_space;
-                std::vector<Eigen::Vector2d> path = getPath(start, _potential, endPoints, min_path_space);
+                std::vector<Eigen::Vector2d> path = getPath(start, _potential, endPoints);
                 
-                if(path.size() > 1 && path.size() <= _max_length)
-                {
-                    std::vector<Eigen::Vector2d> p = std::vector<Eigen::Vector2d>(path);
-                    Segment seg(p, 2 * min_path_space);
-                    segments->push_back(seg);
-                }
-                else if(path.size() > 1 && path.size() > _max_length)
-                {
-                    float nr_paths = std::ceil((float)path.size() / _max_length);
-                    float real_length = std::ceil((float)path.size() / nr_paths);
-
-                    for(int i = 0; i < nr_paths; i++)
-                    {
-                        //Segment
-                        std::vector<Eigen::Vector2d> path_n;
-                        for(uint32_t j = std::max<int>(0, i * real_length - 1); j <= (i + 1)*real_length - 1 && j < path.size(); j++)
-                        {
-                            path_n.push_back( {path[j][0], path[j][1]});
-                        }
-
-                        float mind = getMinD(path_n);
-                        Segment nSeg(std::vector<Eigen::Vector2d>(path_n), 2 * mind);
-                        
-                        segments->push_back(nSeg);
-                        if(i > 0)
-                        {
-                            (*segments)[segments->size() - 2].AddSuccessor((*segments)[segments->size() - 1].GetId());
-                            (*segments)[segments->size() - 1].AddPredecessor((*segments)[segments->size() - 2].GetId());
-                        }
-                    }
-                }
-
+                std::vector< Segment > pathSegments = splitPath(path, _min_length);
+                segments->insert(segments->end(), pathSegments.begin(), pathSegments.end());
                 removeEndpoint(start, endPoints);
             }
             else
@@ -278,33 +287,36 @@ namespace tuw_graph
             }
         }
 
-        for(Segment &s : (*segments))//auto it = segments.begin(); it != segments.end(); ++it)
+        //Find the correct crossing for each segment
+        for(Segment &s : (*segments))
         {
-            for(Crossing &c : crossings_)//auto it_c = crossings_.begin(); it_c != crossings_.end(); ++it_c)
+            for(Crossing &c : crossings_)
             {
                 c.TryAddSegment(s);
             }
         }
 
-        optimizeSegments((*segments), _optimizePixelsCrossing, _optimizePixelsEndSegments);    //TODO buged
+        //Optimize Crossings by moving the center and removing unecessary "double crossings"
+        optimizeSegments((*segments), _optimizePixelsCrossing, _optimizePixelsEndSegments);
+        
         return (*segments);
     }
 
-    float Segment_Expander::getMinD(const std::vector< Eigen::Vector2d > &_path)
+    float Segment_Expander::getMinSegmentWidth(const std::vector< Eigen::Vector2d > &_path)
     {
         if(_path.size() == 0)
           return 0;
           
         Index p1(_path[0][0], _path[0][1], nx_, 0, 0, 0);
-        float min_d = distance_field_[p1.i];
+        float minimum_path_space = distance_field_[p1.i];
 
-        for(auto it = _path.begin(); it != _path.end(); ++it)
+        for(const Eigen::Vector2d &point : _path)//auto it = _path.begin(); it != _path.end(); ++it)
         {
-            Index p((*it)[0], (*it)[1], nx_, 0, 0, 0);
-            min_d = std::min<float>(distance_field_[p.i], min_d);
+            Index p(point[0], point[1], nx_, 0, 0, 0);
+            minimum_path_space = std::min<float>(distance_field_[p.i], minimum_path_space);
         }
 
-        return min_d;
+        return minimum_path_space;
     }
 
 
@@ -335,96 +347,8 @@ namespace tuw_graph
         return std::vector<std::vector< Eigen::Vector2d > >(endpoints);
     }
 
-    std::vector< std::pair< Eigen::Vector2d, Eigen::Vector2d > > Segment_Expander::getSegments(const std::vector< std::vector< Eigen::Vector2d > >  &_endPoints, float* _potential)
-    {
-        std::vector< std::pair< Eigen::Vector2d, Eigen::Vector2d > > segments;
-        std::vector< std::vector< Eigen::Vector2d > > endPoints = _endPoints;
-
-        while(endPoints.size() > 0)
-        {
-
-            std::vector<Eigen::Vector2d > startCrossing = endPoints.back();
-
-            if(startCrossing.size() > 0)
-            {
-                Eigen::Vector2d startPoint = startCrossing.back();
-
-                for(auto it = startCrossing.begin(); it != startCrossing.end(); ++it) //Occupie all Endpoints from the current crossing to avoid short segments
-                {
-                    Index idx((*it)[0], (*it)[1], nx_, 0, 0, 0);
-                    _potential[idx.i] = 0;
-                }
-
-                Index start(startPoint[0], startPoint[1], nx_, 0, 0, 0);
-                Eigen::Vector2d endPoint = expandSegment(start, _potential, endPoints);
-
-                std::pair< Eigen::Vector2d, Eigen::Vector2d > segment(startPoint, endPoint);
-                segments.push_back(segment);
-
-                removeEndpoint(start, endPoints);
-            }
-            else
-            {
-                endPoints.pop_back();
-            }
-
-        }
-
-        return std::vector< std::pair< Eigen::Vector2d, Eigen::Vector2d > >(segments);
-    }
 
 
-
-    Eigen::Vector2d Segment_Expander::getSegmentNeighbour(const Eigen::Vector2d &_point, const std::vector<std::vector<Eigen::Vector2d>> &_endpoints)
-    {
-        Index p(_point[0], _point[1], nx_, 0, 0, 0);
-
-        Index next = p.offsetDist(1, 0, nx_, ny_);
-
-        if(checkSegmentPoint(next) && !isEndpoint(next, _endpoints))
-            return {next.getX(nx_), next.getY(ny_)};
-
-        next = p.offsetDist(1, 1, nx_, ny_);
-
-        if(checkSegmentPoint(next) && !isEndpoint(next, _endpoints))
-            return {next.getX(nx_), next.getY(ny_)};
-
-        next = p.offsetDist(0, 1, nx_, ny_);
-
-        if(checkSegmentPoint(next) && !isEndpoint(next, _endpoints))
-            return {next.getX(nx_), next.getY(ny_)};
-
-        next = p.offsetDist(-1, 0, nx_, ny_);
-
-        if(checkSegmentPoint(next) && !isEndpoint(next, _endpoints))
-            return {next.getX(nx_), next.getY(ny_)};
-
-        next = p.offsetDist(-1, -1, nx_, ny_);
-
-        if(checkSegmentPoint(next) && !isEndpoint(next, _endpoints))
-            return {next.getX(nx_), next.getY(ny_)};
-
-        next = p.offsetDist(0, -1, nx_, ny_);
-
-        if(checkSegmentPoint(next) && !isEndpoint(next, _endpoints))
-            return {next.getX(nx_), next.getY(ny_)};
-
-        next = p.offsetDist(1, -1, nx_, ny_);
-
-        if(checkSegmentPoint(next) && !isEndpoint(next, _endpoints))
-            return {next.getX(nx_), next.getY(ny_)};
-
-        next = p.offsetDist(-1, 1, nx_, ny_);
-
-        if(checkSegmentPoint(next) && !isEndpoint(next, _endpoints))
-            return {next.getX(nx_), next.getY(ny_)};
-
-
-        ROS_INFO("ERROR");
-
-        return {0, 0}; //Should not happen
-
-    }
 
     bool Segment_Expander::checkSegmentPoint(const Segment_Expander::Index &_point)
     {
@@ -449,7 +373,7 @@ namespace tuw_graph
 
 
     std::vector< Eigen::Vector2d> Segment_Expander::getPath(const Segment_Expander::Index &_start, float* _potential,
-            const std::vector<std::vector<Eigen::Vector2d>> &_endpoints, float& min_d)
+            const std::vector<std::vector<Eigen::Vector2d>> &_endpoints)
     {
         std::vector< Eigen::Vector2d > points;
 
@@ -458,7 +382,7 @@ namespace tuw_graph
         _potential[_start.i] = _start.potential;
 
         Index current(_start.i, _potential[_start.i], 0, _potential[_start.i]);
-        min_d = distance_field_[_start.i];
+        //min_d = distance_field_[_start.i];
         //clear the queue
         clearpq(queue_);
         queue_.push(current);
@@ -472,7 +396,7 @@ namespace tuw_graph
             current = queue_.top();
             queue_.pop();
 
-            min_d = std::min<float>(min_d, distance_field_[current.i]);
+            //min_d = std::min<float>(min_d, distance_field_[current.i]);
             points.push_back( {current.getX(nx_), current.getY(nx_)});
 
             if(current.i != _start.i && isEndpoint(current, _endpoints))
@@ -651,12 +575,12 @@ namespace tuw_graph
     }
 
 
-    int Segment_Expander::nrOfNeighbours(int i)
+    uint32_t Segment_Expander::nrOfNeighbours(uint32_t i) const
     {
         //0 1 2
         //7   3
         //6 5 4
-        int neighbours[8] =
+        uint32_t neighbours[8] =
         {
             (voronoi_graph_[(Index(i, 0, 0, 0).offsetDist(-1, 1, nx_, ny_)).i] < 0),
             (voronoi_graph_[(Index(i, 0, 0, 0).offsetDist(0, 1, nx_, ny_)).i] < 0),
@@ -676,7 +600,7 @@ namespace tuw_graph
         //  0 x x
         //should result in 2
 
-        int num_neighbours = neighbours[0] + neighbours[1] + neighbours[2] + neighbours[3] + neighbours[4] + neighbours[5] + neighbours[6] + neighbours[7];
+        uint32_t num_neighbours = neighbours[0] + neighbours[1] + neighbours[2] + neighbours[3] + neighbours[4] + neighbours[5] + neighbours[6] + neighbours[7];
 
         if(neighbours[0] && neighbours[1] && !neighbours[2])
             num_neighbours--;
@@ -708,7 +632,7 @@ namespace tuw_graph
     }
 
 
-    void Segment_Expander::removeEndpoint(Segment_Expander::Index _current, std::vector< std::vector< Eigen::Vector2d > >  &_endpoints)
+    void Segment_Expander::removeEndpoint(const Segment_Expander::Index &_current, std::vector< std::vector< Eigen::Vector2d > >  &_endpoints)
     {
         for(uint32_t j = 0; j < _endpoints.size(); j++)
         {
