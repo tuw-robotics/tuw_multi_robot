@@ -1,7 +1,0 @@
-<launch>
-    <group>
-        <node pkg="tuw_voronoi_graph" type="tuw_voronoi_map_generator" name="tuw_voronoi_generator" output="screen">
-            
-        </node>
-    </group>
-</launch>

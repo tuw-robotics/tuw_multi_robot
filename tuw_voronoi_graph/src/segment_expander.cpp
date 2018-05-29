@@ -209,15 +209,16 @@ namespace tuw_graph
         std::shared_ptr<std::vector< Segment >> segments = std::make_shared<std::vector<Segment>>();
         std::vector< std::vector< Eigen::Vector2d > >  endPoints = _endPoints;
 
+        //Convert endpoints to crossings
         std::vector<Crossing> crossings_;
-
         for(uint32_t i = 0; i < endPoints.size(); i++)
         {
             Crossing c(std::vector< Eigen::Vector2d > (endPoints[i]));
             c.setSegmentReference(segments);
             crossings_.push_back(c);
         }
-
+        
+        //Find all paths connecting the crossings
         while(endPoints.size() > 0)
         {
             std::vector<Eigen::Vector2d> startCrossing = endPoints.back();
@@ -225,7 +226,8 @@ namespace tuw_graph
             {
                 Eigen::Vector2d startPoint = startCrossing.back();
 
-                for(const Eigen::Vector2d &cVec : startCrossing)//auto it = startCrossing.begin(); it != startCrossing.end(); ++it) //Occupie all Endpoints from the current crossing to avoid short segments
+                //Reset the potential of each crossing endpoint to prepare for the expansion
+                for(const Eigen::Vector2d &cVec : startCrossing)
                 {
                     Index idx(cVec[0], cVec[1], nx_, 0, 0, 0);
                     _potential[idx.i] = 0;
@@ -233,12 +235,13 @@ namespace tuw_graph
 
                 Index start(startPoint[0], startPoint[1], nx_, 0, 0, 0);
 
-                float min_d;
-                std::vector<Eigen::Vector2d> path = getPath(start, _potential, endPoints, min_d);
+                float min_path_space;
+                std::vector<Eigen::Vector2d> path = getPath(start, _potential, endPoints, min_path_space);
+                
                 if(path.size() > 1 && path.size() <= _max_length)
                 {
                     std::vector<Eigen::Vector2d> p = std::vector<Eigen::Vector2d>(path);
-                    Segment seg(p, 2 * min_d);
+                    Segment seg(p, 2 * min_path_space);
                     segments->push_back(seg);
                 }
                 else if(path.size() > 1 && path.size() > _max_length)

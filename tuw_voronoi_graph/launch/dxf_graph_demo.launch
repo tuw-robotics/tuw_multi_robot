@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+
+<launch>
+    <arg name="seg_length" default="0.5" />
+    <arg name="seg_width" default="0.5" />
+    <arg name="dxf_name" default="segments.dxf" />
+    <arg name="graph_name" default="graph" />
+    <arg name="room" default="cave" />
+
+    <node pkg="tuw_voronoi_graph" type="tuw_dxf_graph_node" name="dxf_graph_node" args="-o $(find tuw_voronoi_graph)/cfg/graph/$(arg room)/cache/$(arg graph_name) -i $(find tuw_voronoi_graph)/cfg/dxf/$(arg room)/$(arg dxf_name) -w $(arg seg_width) -l $(arg seg_length)" output="screen"/>
+</launch>

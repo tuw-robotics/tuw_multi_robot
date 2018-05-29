@@ -35,7 +35,7 @@
 #include <queue>
 
 
-namespace multi_robot_router
+namespace multi_robot_router 
 {
     class AvoidanceResolution : public CollisionResolution
     {

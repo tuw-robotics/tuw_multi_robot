@@ -113,7 +113,9 @@ namespace tuw_graph
                 }
             };
             std::priority_queue<Index, std::vector<Index>, greater1> queue_;
-
+        
+            // &splitPath(const std::vector<Eigen::Vector2d> &_split);
+ 
             int nrOfNeighbours(int i);
             std::vector<Eigen::Vector2d> expandCrossing(const Index &i, float* _potential);
             Eigen::Vector2d expandSegment(Index start, float* _potential, const std::vector<std::vector<Eigen::Vector2d>> &_endpoints);                                                        //TODO Deprecated

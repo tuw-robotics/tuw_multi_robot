@@ -2,15 +2,16 @@
 
 <launch>
 
-  <arg name="room"                  default="cave"            />
+  <arg name="room"                     default="cave"            />
   <arg name="launch_rviz"              default="true"            />
   <arg name="launch_stage"             default="true"            />
   <arg name="launch_map_server"        default="true"            />
   <arg name="launch_planner"           default="true"            />
   <arg name="launch_controller"        default="true"            />
   <arg name="launch_graph_generator"   default="true"            />
-  <arg name="cfg"                   default="default"         />
+  <arg name="cfg"                      default="default"         />
   <arg name="launch_path_synchronizer" default="false"           />
+  <arg name="load_map"                 default=""                />
 
   <!-- map server -->
   <group if="$(arg launch_map_server)">
@@ -51,6 +52,7 @@
   <group if="$(arg launch_graph_generator)">
 	  <include file="$(find tuw_multi_robot_demo)/launch/graph_generator.launch">
 	    <arg name="room" value="$(arg room)" />
+	    <arg name="custom_graph_path" value="$(find tuw_multi_robot_demo)/cfg/graph/$(arg room)/cache/$(arg load_map)" />
 	  </include>
   </group>
 

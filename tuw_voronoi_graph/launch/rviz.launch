@@ -1,5 +1,5 @@
+<?xml version="1.0"?>
 <launch>
-
- 
-  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find tuw_voronoi_graph)/cfg/rviz/rviz.rviz" output="screen"/> 
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find tuw_multi_robot_demo)/cfg/rviz/rviz.rviz" output="screen"/>
+  <!--<node pkg="rviz" type="rviz" name="rviz" output="screen"/> -->
 </launch>

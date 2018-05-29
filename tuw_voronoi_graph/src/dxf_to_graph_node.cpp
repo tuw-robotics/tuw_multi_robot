@@ -26,47 +26,50 @@
  *
  */
 
-#include <tuw_voronoi_graph/svg_to_graph_node.h>
+#include <tuw_voronoi_graph/dxf_to_graph_node.h>
+#include <boost/program_options.hpp>
+
+namespace po = boost::program_options;
 
 int main(int argc, char** argv)
 {
-
-    ros::init(argc, argv, "dxf_graph_node");   
-    ros::NodeHandle n;
+    po::options_description description("usage");
+    description.add_options()
+        ("help,h", "Display help message")
+        ("input,i", po::value<std::string>()->default_value("./segments.dxf"), "The path to the file")
+        ("output,o", po::value<std::string>()->default_value("./graphs/segments"), "The output directory")
+        ("width,w", po::value<float>()->default_value(0.6), "The width of a segments in meters")
+        ("length,l", po::value<float>()->default_value(1.0), "The length of a segment in meters");
     
-    tuw_graph::SvgToGraphNode dxf2graph (n);
-    dxf2graph.writeGraph();
+    po::variables_map vm;
+    po::store(po::command_line_parser(argc, argv).options(description).run(), vm);
+    po::notify(vm);
+        
+    if(vm.count("help")){
+        std::cout << description << std::endl;
+    }
+    else
+    {
+        std::string inpath = vm["input"].as<std::string>();
+        std::string outpath = vm["output"].as<std::string>();
+        if(outpath.back() != '/')
+            outpath += "/";
+        
+        float length = vm["length"].as<float>();
+        float width = vm["width"].as<float>();
+        
+     
+        std::cout << "\tGenerating Graph from \"" << inpath << "\" with line_width: " << width << " and minimum line_length: " << length << std::endl;
+        
+        tuw_graph::DxfToGraph dxf2graph;
+        dxf2graph.parseGraph(inpath, length, width);
+        dxf2graph.serializeGraph(outpath);
+        
+        std::cout << "\tSaving graph to \"" << outpath << "\"" << std::endl;
+    }
+    
+    
     
     return 0;
 }
 
-
-namespace tuw_graph
-{
-    SvgToGraphNode::SvgToGraphNode(ros::NodeHandle &n) :
-        SvgToGraph(),
-        n_(n),
-        n_param_("~")
-    {
-        dxfPath_ = "/home/benjamin/temp/roblab.svg"; 
-        n_param_.param("dxf_path", dxfPath_, dxfPath_);
-
-        segmentLength_ = 0.6;   //meter
-        n_param_.param("segment_length", segmentLength_, segmentLength_);
-
-        segmentWidth_ = 1.0;   //meter
-        n_param_.param("segment_width", segmentWidth_, segmentWidth_);
-        
-        graphPath_ = "/home/benjamin/temp/roblab_graph";
-        n_param_.param("dxf_path", graphPath_, graphPath_);
-        if(graphPath_.back() != '/')
-            graphPath_ += "/";
-        
-    }
-
-    void SvgToGraphNode::writeGraph()
-    {
-        parseGraph(dxfPath_, segmentLength_, segmentWidth_);
-        serializeGraph(graphPath_);
-    }
-}

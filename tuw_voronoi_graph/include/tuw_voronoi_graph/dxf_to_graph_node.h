@@ -26,37 +26,9 @@
  *
  */
 
-#ifndef CROSSING_H
-#define CROSSING_H
+#ifndef DXF_TO_GRAPH_NODE_H
+#define DXF_TO_GRAPH_NODE_H
 
-#include <ros/ros.h>
-#include <tuw_voronoi_graph/segment.h>
-
-
-namespace tuw_graph
-{
-    class Crossing
-    {
-        public:
-            
-            /**
-            * @brief constructor
-            * @param _segment_points the endpoint of each segment in the crossing, which is on the crossing side
-            */
-            Crossing(const std::vector<Eigen::Vector2d> &_segment_points);
-            /**
-             * 
-             */
-            bool TryAddSegment(Segment &_seg);
-            Eigen::Vector2d getCenter() const;
-            void setSegmentReference(const std::shared_ptr<std::vector<Segment>> &segs);
-        private:
-            std::vector<Eigen::Vector2d> surroundingPoints_;
-            std::vector<uint32_t> segments_start_;
-            std::vector<uint32_t> segments_end_;
-            Eigen::Vector2d center_;
-            std::shared_ptr<std::vector<Segment>> segmentReference_;
-    };
-}
+#include <tuw_voronoi_graph/dxf_to_graph.h>
 
 #endif // PLANNER_NODE_H

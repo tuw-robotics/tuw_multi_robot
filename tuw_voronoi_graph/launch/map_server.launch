@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+
+<launch>
+    <arg name="room" default="cave" /> 
+
+    <node pkg="map_server" type="map_server" name="map_server" args="$(find tuw_voronoi_graph)/cfg/maps/$(arg room)/map.yaml"/>
+</launch>

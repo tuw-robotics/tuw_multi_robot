@@ -3,7 +3,7 @@ project(tuw_voronoi_graph)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++14)
-#add_compile_options(-Wall)
+add_compile_options(-Wall)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -20,7 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-find_package(Boost COMPONENTS serialization filesystem REQUIRED)
+find_package(Boost COMPONENTS serialization filesystem program_options REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(OpenCV 3 REQUIRED)
 
@@ -112,7 +112,7 @@ find_package(OpenCV 3 REQUIRED)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES tuw_voronoi_graph
-  CATKIN_DEPENDS dynamic_reconfigure cv_bridge geometry_msgs nav_msgs roscpp tf tuw_multi_robot_msgs
+  CATKIN_DEPENDS dynamic_reconfigure cv_bridge geometry_msgs nav_msgs roscpp tf tuw_multi_robot_msgs 
 #  DEPENDS OpenCV
 )
 
@@ -122,12 +122,9 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-set(svgpp_INCLUDE_DIR /home/benjamin/Documents/prg/repositories/svgpp/include/)
 include_directories(
-  include
+ include
   ${catkin_INCLUDE_DIRS}
-  ${svgpp_INCLUDE_DIR}
-  /home/benjamin/Documents/prg/repositories/svgpp/third_party/
 )
 
 
@@ -151,18 +148,18 @@ add_library(voronoi_graph_lib
 )
 target_link_libraries(voronoi_path_lib graph_serialization_lib voronoi_graph_lib ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 
-add_library(svg_graph_lib
-    src/svg_to_graph.cpp
-    src/svg_parser.cpp
+add_library(dxf_graph_lib
+    src/dxf_to_graph.cpp
+    src/dxf_line_arc_parser.cpp
 )
-target_link_libraries(svg_graph_lib graph_serialization_lib voronoi_graph_lib ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+target_link_libraries(dxf_graph_lib graph_serialization_lib voronoi_graph_lib ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${Boost_PROGRAM_OPTIONS_LIBRARY} dxflib)
 
 
 add_executable(tuw_voronoi_graph_node src/voronoi_graph_node.cpp)
 target_link_libraries(tuw_voronoi_graph_node voronoi_path_lib)
 
-add_executable(tuw_svg_graph_node src/svg_to_graph_node.cpp)
-target_link_libraries(tuw_svg_graph_node svg_graph_lib)
+add_executable(tuw_dxf_graph_node src/dxf_to_graph_node.cpp)
+target_link_libraries(tuw_dxf_graph_node dxf_graph_lib)
 
 add_executable(tuw_segment_to_graph_node src/segment_to_graph_node.cpp)
 target_link_libraries(tuw_segment_to_graph_node

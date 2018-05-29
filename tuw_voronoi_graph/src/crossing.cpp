@@ -62,17 +62,17 @@ namespace tuw_graph
 
     bool Crossing::TryAddSegment(Segment &_seg)
     {
-        for(const Eigen::Vector2d &srPoint : surroundingPoints_)//auto it = surroundingPoints_.begin(); it != surroundingPoints_.end(); ++it)
+        for(const Eigen::Vector2d &srPoint : surroundingPoints_)
         {
             if(srPoint[0] == _seg.getStart()[0] && srPoint[1] == _seg.getStart()[1])
             {
-                for(uint32_t &s_idx : segments_start_)//auto it_segs = segments_start_.begin(); it_segs != segments_start_.end(); ++it_segs)
+                for(uint32_t &s_idx : segments_start_)
                 {
                     _seg.AddPredecessor(s_idx);
                     (*segmentReference_)[s_idx].AddPredecessor(_seg.GetId());
                 }
 
-                for(uint32_t &s_idx : segments_end_)//auto it_segs = segments_end_.begin(); it_segs != segments_end_.end(); ++it_segs)
+                for(uint32_t &s_idx : segments_end_)
                 {
                     _seg.AddPredecessor(s_idx);
                     (*segmentReference_)[s_idx].AddSuccessor(_seg.GetId());

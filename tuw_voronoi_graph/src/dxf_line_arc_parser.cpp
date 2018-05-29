@@ -26,34 +26,64 @@
  *
  */
 
-#ifndef SVG_TO_GRAPH_H
-#define SVG_TO_GRAPH_H
-
-#include <string>
-#include <tuw_serialization/serializer.h>
-#include <svgpp/svgpp.hpp>
+#include <tuw_voronoi_graph/dxf_line_arc_parser.h>
+#include <iostream>
 
 namespace tuw_graph
-{
-    struct Line
+{    
+    void DxfLineArcParser::addLine(const DL_LineData &_line)
     {
-        Eigen::Vector2d start;
-        Eigen::Vector2d end;
-        Line(Eigen::Vector2d _start, Eigen::Vector2d _end) : start(_start), end(_end) {}
-        Line() {}
-    };
-    
-    class SvgToGraph
+        //Arc: start / end
+        lines_.push_back(_line);
+    }
+
+    void DxfLineArcParser::addArc(const DL_ArcData &_arc)
     {
-        public:
-            bool parseGraph(const std::string &_dxfPath, const float _segLength, const float _segWidth);
-            void serializeGraph(const std::string &_graphPath) const;
-        private:
-            std::vector<Segment> generateGraph(const std::vector<Line> &_lines, const float _segWidth, const float &_scale, const Eigen::Vector2d &_offset) const;   
-            
-            std::vector<Segment> graphData_;
-            float scale_;
-            Eigen::Vector2d offset_;
-    };
+        //Arc: center / radius / angle in pos rotational direction
+        arcs_.push_back(_arc);
+    }
+
+    void DxfLineArcParser::addCircle(const DL_CircleData &_circle)
+    {
+        //Arc: center / radius
+        circles_.push_back(_circle);
+    }
+
+    void DxfLineArcParser::reset()
+    {
+        lines_.clear();
+        arcs_.clear();
+        circles_.clear();
+    }
+
+    void DxfLineArcParser::addImage(const DL_ImageData &_image)
+    {
+        //std::cout << "image: h " << _image.height << " w " << _image.width << " ipx " << _image.ipx << " ipy " << _image.ipy << " ref " << _image.ref << " ux " << _image.ux << " uy " << _image.uy << " vx " << _image.vx << " vy " << _image.vy << std::endl;
+        //std::cout << "scale: " << sqrt((_image.ux * _image.ux) + (_image.uy * _image.uy)) << std::endl;
+        
+        
+        images_.push_back(_image);
+        
+    }
+
+    const std::vector<DL_ImageData> &DxfLineArcParser::getImage()
+    {
+        return images_;
+    }
+
+    const std::vector< DL_ArcData > &DxfLineArcParser::getArcs()
+    {
+        return arcs_;
+    }
+
+    const std::vector< DL_CircleData > &DxfLineArcParser::getCircles()
+    {
+        return circles_;
+    }
+
+    const std::vector< DL_LineData > &DxfLineArcParser::getLines()
+    {
+        return lines_;
+    }
+
 }
-#endif // PLANNER_NODE_H

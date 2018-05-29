@@ -122,8 +122,11 @@ namespace tuw_graph
         }
         else
         {
-            std::cout << "loading custom graph from: " << customGraphPath_ << std::endl;
-            std::cout << loadCustomGraph(customGraphPath_) << std::endl;
+            ROS_INFO("loading custom graph from: %s", customGraphPath_.c_str());
+            if(loadCustomGraph(customGraphPath_))
+                ROS_INFO("graph loaded");
+            else
+                ROS_INFO("failed to load graph");
         }
     }
 

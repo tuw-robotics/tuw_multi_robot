@@ -26,37 +26,38 @@
  *
  */
 
-#ifndef CROSSING_H
-#define CROSSING_H
+#ifndef DXF_TO_GRAPH_H
+#define DXF_TO_GRAPH_H
 
-#include <ros/ros.h>
-#include <tuw_voronoi_graph/segment.h>
-
+#include <string>
+#include <tuw_serialization/serializer.h>
+#include <dxflib/dl_dxf.h>
 
 namespace tuw_graph
 {
-    class Crossing
+    struct Line
     {
-        public:
-            
-            /**
-            * @brief constructor
-            * @param _segment_points the endpoint of each segment in the crossing, which is on the crossing side
-            */
-            Crossing(const std::vector<Eigen::Vector2d> &_segment_points);
-            /**
-             * 
-             */
-            bool TryAddSegment(Segment &_seg);
-            Eigen::Vector2d getCenter() const;
-            void setSegmentReference(const std::shared_ptr<std::vector<Segment>> &segs);
+        Eigen::Vector2d start;
+        Eigen::Vector2d end;
+        Line(Eigen::Vector2d _start, Eigen::Vector2d _end) : start(_start), end(_end) {}
+        Line() {}
+    };
+    
+    class DxfToGraph
+    {
+        public:            
+            bool parseGraph(const std::string &_dxfPath, const float _segLength, const float _segWidth);
+            void serializeGraph(const std::string &_graphPath) const;
         private:
-            std::vector<Eigen::Vector2d> surroundingPoints_;
-            std::vector<uint32_t> segments_start_;
-            std::vector<uint32_t> segments_end_;
-            Eigen::Vector2d center_;
-            std::shared_ptr<std::vector<Segment>> segmentReference_;
+            std::vector<Line> splitLine(const DL_LineData &_line, const float _segLength) const;
+            std::vector<Line> splitCircle(const DL_CircleData &_circle, const float _segLength) const;
+            std::vector<Line> splitArc(const DL_ArcData&_arc, const float _segLength) const;
+            bool getGraphData(const DL_ImageData& _image, float &_scale, Eigen::Vector2d &_offset) const;
+            std::vector<Segment> generateGraph(const std::vector<Line> &_lines, const float _segWidth, const float &_scale, const Eigen::Vector2d &_offset) const;   
+            
+            std::vector<Segment> graphData_;
+            float scale_;
+            Eigen::Vector2d offset_;
     };
 }
-
 #endif // PLANNER_NODE_H

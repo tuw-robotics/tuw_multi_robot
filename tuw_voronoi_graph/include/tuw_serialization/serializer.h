@@ -219,8 +219,28 @@ namespace tuw_graph
     {
         public:
             Serializer();
+            /** 
+             * @brief saves the graph to a specific path in xml format
+             * @param _mapPath the save path of the graph
+             * @param _segs the segments generated Segments for the graph
+             * @param _origin the origin of the graph
+             * @param _resolution the resolution of the graph 
+             */
             void save(const std::string &_mapPath, const std::vector<Segment> &_segs, const Eigen::Vector2d &_origin, const float &_resolution);
+            /** 
+             * @brief loads a graph from memory which is saved in plain text
+             * @param _mapPath the save path of the graph
+             * @param _segs the segments generated Segments for the graph
+             * @param _origin the origin of the graph
+             * @param _resolution the resolution of the graph 
+             */
             bool load(const std::string &_mapPath, std::vector<Segment> &_segs, Eigen::Vector2d &_origin, float &_resolution);
+            /**
+             * @brief generate a hash from a _map
+             * @param _map the map data used for the hash 
+             * @param _origin the origin of the graph
+             * @param _resolution the resolution of the graph 
+             */
             size_t getHash(const std::vector<signed char> &_map, Eigen::Vector2d _origin, float _resolution);
     };
 
