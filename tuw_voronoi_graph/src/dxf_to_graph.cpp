@@ -181,7 +181,7 @@ namespace tuw_graph
     std::vector< Segment > DxfToGraph::generateGraph(const std::vector< Line > &_lines, const float _segWidth, const float &_scale, const Eigen::Vector2d &_offset) const
     {
         std::vector<Segment> segments;
-        Segment::ResetId();
+        Segment::resetId();
         
         //Create segments
         for(uint32_t i = 0; i < _lines.size(); i++)
@@ -203,12 +203,12 @@ namespace tuw_graph
                     if(((segments[i].getStart() - segments[j].getStart()).norm() < _scale) || 
                         ((segments[i].getStart() - segments[j].getEnd()).norm() < _scale))
                     {
-                        segments[i].AddPredecessor(j);                        
+                        segments[i].addPredecessor(j);                        
                     }
                     if(((segments[i].getEnd() - segments[j].getStart()).norm() < _scale) || 
                         ((segments[i].getEnd() - segments[j].getEnd()).norm() < _scale))
                     {
-                        segments[i].AddSuccessor(j);    
+                        segments[i].addSuccessor(j);    
                     }
                 }
             }

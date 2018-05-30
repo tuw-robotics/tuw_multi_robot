@@ -135,7 +135,7 @@ namespace tuw_graph
         std::vector<signed char> map = _map->data;
 
         segments_.clear();
-        Segment::ResetId();
+        Segment::resetId();
 
         ROS_INFO("Graph generator: Computing distance field ...");
         origin_[0] = _map->info.origin.position.x;
@@ -163,7 +163,7 @@ namespace tuw_graph
     bool VoronoiGeneratorNode::loadGraph(std::size_t _hash)
     {
         segments_.clear();
-        Segment::ResetId();
+        Segment::resetId();
         return load(graphPath_ + std::to_string(_hash) + "/", segments_, origin_, resolution_);
     }
 
@@ -172,7 +172,7 @@ namespace tuw_graph
         if(!allowPublish)
         {
             segments_.clear();
-            Segment::ResetId();
+            Segment::resetId();
             allowPublish = true;
             return load(_path, segments_, origin_, resolution_);
         }
@@ -200,11 +200,11 @@ namespace tuw_graph
             seg.header.seq = 0;
             seg.header.stamp = ros::Time::now();
 
-            seg.id = (*it).GetId();
-            seg.length = (*it).GetLength();
-            seg.width = (*it).GetMinPathSpace();
+            seg.id = (*it).getId();
+            seg.length = (*it).getLength();
+            seg.width = (*it).getMinPathSpace();
 
-            std::vector< Eigen::Vector2d >  path = (*it).GetPath();
+            std::vector< Eigen::Vector2d >  path = (*it).getPath();
 
             for(uint32_t i = 0; i < path.size(); i++)
             {
@@ -217,14 +217,14 @@ namespace tuw_graph
             }
 
             //ROS_INFO("distORIG: %i/%i", (*it)->GetPredecessors().size(), (*it)->GetSuccessors().size());
-            std::vector< uint32_t > predecessors = (*it).GetPredecessors();
+            std::vector< uint32_t > predecessors = (*it).getPredecessors();
 
             for(uint32_t i = 0; i < predecessors.size(); i++)
             {
                 seg.predecessors.push_back(predecessors[i]);
             }
 
-            std::vector< uint32_t  > successors = (*it).GetSuccessors();
+            std::vector< uint32_t  > successors = (*it).getSuccessors();
 
             for(uint32_t i = 0; i < successors.size(); i++)
             {

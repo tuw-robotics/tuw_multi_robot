@@ -60,7 +60,7 @@ namespace tuw_graph
 
     }
 
-    bool Crossing::TryAddSegment(Segment &_seg)
+    bool Crossing::tryAddSegment(Segment &_seg)
     {
         for(const Eigen::Vector2d &srPoint : surroundingPoints_)
         {
@@ -68,21 +68,20 @@ namespace tuw_graph
             {
                 for(uint32_t &s_idx : segments_start_)
                 {
-                    _seg.AddPredecessor(s_idx);
-                    (*segmentReference_)[s_idx].AddPredecessor(_seg.GetId());
+                    _seg.addPredecessor(s_idx);
+                    (*segmentReference_)[s_idx].addPredecessor(_seg.getId());
                 }
 
                 for(uint32_t &s_idx : segments_end_)
                 {
-                    _seg.AddPredecessor(s_idx);
-                    (*segmentReference_)[s_idx].AddSuccessor(_seg.GetId());
+                    _seg.addPredecessor(s_idx);
+                    (*segmentReference_)[s_idx].addSuccessor(_seg.getId());
                 }
 
-                //HACK APPEND CROSSING CENTER
-                std::vector<Eigen::Vector2d> p = _seg.GetPath();
+                std::vector<Eigen::Vector2d> p = _seg.getPath();
                 p.insert(p.begin(), center_);
-                _seg.SetPath(p);
-                segments_start_.push_back(_seg.GetId());
+                _seg.setPath(p);
+                segments_start_.push_back(_seg.getId());
                 return true;
             }
 
@@ -90,22 +89,21 @@ namespace tuw_graph
             {
                 for(uint32_t &s_idx : segments_start_)
                 {
-                    _seg.AddSuccessor(s_idx);
-                    (*segmentReference_)[s_idx].AddPredecessor(_seg.GetId());
+                    _seg.addSuccessor(s_idx);
+                    (*segmentReference_)[s_idx].addPredecessor(_seg.getId());
 
                 }
 
                 for(uint32_t &s_idx : segments_end_)
                 {
-                    _seg.AddSuccessor(s_idx);
-                    (*segmentReference_)[s_idx].AddSuccessor(_seg.GetId());
+                    _seg.addSuccessor(s_idx);
+                    (*segmentReference_)[s_idx].addSuccessor(_seg.getId());
                 }
 
-                //HACK APPEND CROSSING CENTER
-                std::vector<Eigen::Vector2d> p = _seg.GetPath();
+                std::vector<Eigen::Vector2d> p = _seg.getPath();
                 p.push_back(center_);
-                _seg.SetPath(p);
-                segments_end_.push_back(_seg.GetId());
+                _seg.setPath(p);
+                segments_end_.push_back(_seg.getId());
                 return true;
             }
         }

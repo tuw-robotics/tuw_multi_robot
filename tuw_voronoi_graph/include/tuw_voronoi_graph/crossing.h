@@ -45,10 +45,19 @@ namespace tuw_graph
             */
             Crossing(const std::vector<Eigen::Vector2d> &_segment_points);
             /**
-             * 
+             * @brief tries to add the segment to the crossing and adds the given segment to each segments neighbors in the crossing
+             * @param _seg the segment to add
+             * @return if the action succeeded
              */
-            bool TryAddSegment(Segment &_seg);
+            bool tryAddSegment(Segment &_seg);
+            /**
+             * @brief returns the center of the crossing (average of all pts)
+             * @returns the center of the crossing
+             */
             Eigen::Vector2d getCenter() const;
+            /**
+             * @brief saves the reference to the vector containing all segments to have access to them to alter other segments from try Add segments 
+             */
             void setSegmentReference(const std::shared_ptr<std::vector<Segment>> &segs);
         private:
             std::vector<Eigen::Vector2d> surroundingPoints_;

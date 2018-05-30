@@ -54,8 +54,8 @@ namespace tuw_graph
 
         for(uint32_t i = 0; i < segs.size(); i++)
         {
-            std::vector<uint32_t> predecessors = segs[i].GetPredecessors();
-            std::vector<uint32_t> successors = segs[i].GetSuccessors();
+            std::vector<uint32_t> predecessors = segs[i].getPredecessors();
+            std::vector<uint32_t> successors = segs[i].getSuccessors();
         }
 
 

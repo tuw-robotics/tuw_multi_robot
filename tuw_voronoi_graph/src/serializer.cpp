@@ -117,16 +117,16 @@ namespace tuw_graph
             {
                 int *predPtr = graph.segments_[i].predecessors.get();
 
-                if(!_segs[i].ContainsPredecessor(predPtr[j]))
-                    _segs[i].AddPredecessor(predPtr[j]);
+                if(!_segs[i].containsPredecessor(predPtr[j]))
+                    _segs[i].addPredecessor(predPtr[j]);
             }
 
             for(int j = 0; j < graph.segments_[i].successorLength; j++)
             {
                 int *succPtr = graph.segments_[i].successors.get();
                 
-                if(!_segs[i].ContainsSuccessor(succPtr[j]))
-                    _segs[i].AddSuccessor(succPtr[j]);
+                if(!_segs[i].containsSuccessor(succPtr[j]))
+                    _segs[i].addSuccessor(succPtr[j]);
             }
 
 

@@ -33,28 +33,6 @@ namespace tuw_graph
 {
     uint32_t Segment::static_id_ = 0;
 
-    void Segment::cleanNeighbors()
-    {
-        for(uint32_t i = 0; i < predecessor_.size(); i++)
-        {
-            if(predecessor_[i] < 0)
-            {
-                predecessor_.erase(predecessor_.begin() + i);
-                i--;
-            }
-        }
-        
-        for(uint32_t i = 0; i < successor_.size(); i++)
-        {
-            if(successor_[i] < 0)
-            {
-                successor_.erase(successor_.begin() + i);
-                i--;
-            }
-        }
-    }
-
-
     void Segment::cleanNeighbors(uint32_t _id)
     {
         for(uint32_t i = 0; i < predecessor_.size(); i++)
@@ -96,11 +74,11 @@ namespace tuw_graph
         }
     }
     
-    void Segment::AddPredecessor(const uint32_t _predecessor)
+    void Segment::addPredecessor(const uint32_t _predecessor)
     {
         predecessor_.push_back(_predecessor);
     }
-    void Segment::AddSuccessor(const uint32_t _successor)
+    void Segment::addSuccessor(const uint32_t _successor)
     {
         successor_.push_back(_successor);
     }
@@ -130,14 +108,14 @@ namespace tuw_graph
 
         id_ = _id;
     }
-    void Segment::setStart(Eigen::Vector2d _pt)
+    void Segment::setStart(const Eigen::Vector2d &_pt)
     {
         if(wayPoints_.size() == 0)
           wayPoints_.emplace_back(_pt);
         wayPoints_[0] = _pt;
         start_ = _pt;
     }
-    void Segment::setEnd(Eigen::Vector2d _pt)
+    void Segment::setEnd(const Eigen::Vector2d &_pt)
     {
         while(wayPoints_.size() <= 1)
         {
@@ -147,37 +125,37 @@ namespace tuw_graph
         end_ = _pt;
     }
 
-    uint32_t Segment::GetId() const
+    uint32_t Segment::getId() const
     {
         return id_;
     }
 
-    void Segment::SetId(uint32_t _id)
+    void Segment::setId(uint32_t _id)
     {
         id_ = _id;
     }
 
-    Eigen::Vector2d Segment::getEnd() const
+    const Eigen::Vector2d &Segment::getEnd() const
     {
         return end_;
     }
 
-    Eigen::Vector2d Segment::getStart() const
+    const Eigen::Vector2d &Segment::getStart() const
     {
         return start_;
     }
 
-    std::vector<uint32_t > Segment::GetPredecessors() const
+    const std::vector<uint32_t > &Segment::getPredecessors() const
     {
         return predecessor_;
     }
 
-    std::vector<uint32_t > Segment::GetSuccessors() const
+    const std::vector<uint32_t > &Segment::getSuccessors() const
     {
         return successor_;
     }
 
-    bool Segment::ContainsPredecessor(const uint32_t _predecessor)
+    bool Segment::containsPredecessor(const uint32_t _predecessor)
     {
         for(const auto & pred : predecessor_)
         {
@@ -189,7 +167,7 @@ namespace tuw_graph
     }
 
 
-    bool Segment::ContainsSuccessor(const uint32_t _successor)
+    bool Segment::containsSuccessor(const uint32_t _successor)
     {
         for(uint32_t i = 0; i < successor_.size(); i++)
         {
@@ -201,17 +179,17 @@ namespace tuw_graph
     }
 
 
-    void Segment::ResetId()
+    void Segment::resetId()
     {
         static_id_ = 0;
     }
 
-    std::vector< Eigen::Vector2d > Segment::GetPath() const
+    std::vector< Eigen::Vector2d > Segment::getPath() const
     {
         return wayPoints_;
     }
 
-    void Segment::SetPath(const std::vector< Eigen::Vector2d >  &_points)
+    void Segment::setPath(const std::vector< Eigen::Vector2d >  &_points)
     {
         if(_points.size() > 0)
         {
@@ -222,17 +200,17 @@ namespace tuw_graph
         }
     }
 
-    float Segment::GetMinPathSpace() const
+    float Segment::getMinPathSpace() const
     {
         return min_space_;
     }
 
-    void Segment::SetMinPathSpace(float _space)
+    void Segment::setMinPathSpace(const float _space)
     {
         min_space_ = _space;
     }
 
-    int Segment::GetLength() const
+    int Segment::getLength() const
     {
         return length_;
     }

@@ -82,9 +82,9 @@ namespace tuw_graph
                     int * pred = Predecessors.get();
                     int * succ = Successors.get();
                     int * point = Points.get();
-                    pred[i] = _segs[i].GetPredecessors().size();
-                    succ[i] = _segs[i].GetSuccessors().size();
-                    point[i] = _segs[i].GetPath().size();
+                    pred[i] = _segs[i].getPredecessors().size();
+                    succ[i] = _segs[i].getSuccessors().size();
+                    point[i] = _segs[i].getPath().size();
                 }
             }
             TreeInfo(int _length)
@@ -137,7 +137,7 @@ namespace tuw_graph
             }
 
             SegmentSerializer(const Segment &_s) :
-                SegmentSerializer(_s.GetId(), _s.GetPredecessors(), _s.GetSuccessors(), _s.GetMinPathSpace(), _s.GetPath())
+                SegmentSerializer(_s.getId(), _s.getPredecessors(), _s.getSuccessors(), _s.getMinPathSpace(), _s.getPath())
             {
             }
 

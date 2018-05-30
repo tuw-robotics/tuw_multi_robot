@@ -91,7 +91,7 @@ namespace tuw_graph
         {
             //Its important to have a sorted segment list by id... Therefore we need to update all segments when we remove one of them
             //As well we need to remove all existing neighbors before erasing...
-            if((_segments[i].getStart() - _segments[i].getEnd()).norm() < _maxPixelsEndSegment && (_segments[i].GetPredecessors().size() == 0 || _segments[i].GetSuccessors().size() == 0))
+            if((_segments[i].getStart() - _segments[i].getEnd()).norm() < _maxPixelsEndSegment && (_segments[i].getPredecessors().size() == 0 || _segments[i].getSuccessors().size() == 0))
             {
                 removeSegmentFromList(i, _segments);
                 i--;
@@ -102,11 +102,11 @@ namespace tuw_graph
     void Segment_Expander::removeSegmentFromList(const uint32_t _id, std::vector<Segment> &_segments)
     {
         //Remove neighbors 
-        for(uint32_t pd : _segments[_id].GetPredecessors())
+        for(uint32_t pd : _segments[_id].getPredecessors())
         {
             _segments[pd].cleanNeighbors(_id);
         }
-        for(uint32_t sc : _segments[_id].GetSuccessors())
+        for(uint32_t sc : _segments[_id].getSuccessors())
         {
             _segments[sc].cleanNeighbors(_id);
         }
@@ -156,18 +156,18 @@ namespace tuw_graph
             {
                 if(i != j)
                 {
-                    if(!(*connectedSegmnetsStart[i]).ContainsPredecessor((*connectedSegmnetsStart[j]).GetId()))
+                    if(!(*connectedSegmnetsStart[i]).containsPredecessor((*connectedSegmnetsStart[j]).getId()))
                     {
-                        (*connectedSegmnetsStart[i]).AddPredecessor((*connectedSegmnetsStart[j]).GetId());
+                        (*connectedSegmnetsStart[i]).addPredecessor((*connectedSegmnetsStart[j]).getId());
                     }
                 }
             }
 
             for(uint32_t j = 0; j < connectedSegmnetsEnd.size(); j++)
             {
-                if(!(*connectedSegmnetsStart[i]).ContainsPredecessor((*connectedSegmnetsEnd[j]).GetId()))
+                if(!(*connectedSegmnetsStart[i]).containsPredecessor((*connectedSegmnetsEnd[j]).getId()))
                 {
-                    (*connectedSegmnetsStart[i]).AddPredecessor((*connectedSegmnetsEnd[j]).GetId());
+                    (*connectedSegmnetsStart[i]).addPredecessor((*connectedSegmnetsEnd[j]).getId());
                 }
             }
         }
@@ -176,9 +176,9 @@ namespace tuw_graph
         {
             for(uint32_t j = 0; j < connectedSegmnetsStart.size(); j++)
             {
-                if(!(*connectedSegmnetsEnd[i]).ContainsSuccessor((*connectedSegmnetsStart[j]).GetId()))
+                if(!(*connectedSegmnetsEnd[i]).containsSuccessor((*connectedSegmnetsStart[j]).getId()))
                 {
-                    (*connectedSegmnetsEnd[i]).AddSuccessor((*connectedSegmnetsStart[j]).GetId());
+                    (*connectedSegmnetsEnd[i]).addSuccessor((*connectedSegmnetsStart[j]).getId());
                 }
             }
 
@@ -186,9 +186,9 @@ namespace tuw_graph
             {
                 if(i != j)
                 {
-                    if(!(*connectedSegmnetsEnd[i]).ContainsSuccessor((*connectedSegmnetsEnd[j]).GetId()))
+                    if(!(*connectedSegmnetsEnd[i]).containsSuccessor((*connectedSegmnetsEnd[j]).getId()))
                     {
-                        (*connectedSegmnetsEnd[i]).AddSuccessor((*connectedSegmnetsEnd[j]).GetId());
+                        (*connectedSegmnetsEnd[i]).addSuccessor((*connectedSegmnetsEnd[j]).getId());
                     }
                 }
             }
@@ -227,8 +227,8 @@ namespace tuw_graph
                 segments.push_back(newSegment);
                 if(i > 0)
                 {
-                    segments[segments.size() - 2].AddSuccessor(segments[segments.size() - 1].GetId());
-                    segments[segments.size() - 1].AddPredecessor(segments[segments.size() - 2].GetId());
+                    segments[segments.size() - 2].addSuccessor(segments[segments.size() - 1].getId());
+                    segments[segments.size() - 1].addPredecessor(segments[segments.size() - 2].getId());
                 }
             }
         }
@@ -240,7 +240,7 @@ namespace tuw_graph
     
     std::vector< Segment > Segment_Expander::getGraph(const std::vector<std::vector<Eigen::Vector2d>> &_endPoints, float *_potential, const float _min_length, float _optimizePixelsCrossing, const float _optimizePixelsEndSegments)
     {
-        Segment::ResetId();
+        Segment::resetId();
         
         //We need at least a 10th of max length for seg optimization to find unconnected edges from skeletonizing
         _optimizePixelsCrossing = std::max<float>(_min_length/10, _optimizePixelsCrossing);
@@ -292,7 +292,7 @@ namespace tuw_graph
         {
             for(Crossing &c : crossings_)
             {
-                c.TryAddSegment(s);
+                c.tryAddSegment(s);
             }
         }
 
