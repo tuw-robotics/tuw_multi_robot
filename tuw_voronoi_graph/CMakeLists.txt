@@ -24,6 +24,12 @@ find_package(Boost COMPONENTS serialization filesystem program_options REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(OpenCV 3 REQUIRED)
 
+find_library(DXF_LIB dxflib)
+if(NOT DXF_LIB)
+  message(WARNING "dxf library not found")
+  message(WARNING "run 'sudo apt install libdxflib-dev' to install the dxf library")
+endif()
+
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
