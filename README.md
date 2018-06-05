@@ -20,3 +20,6 @@ The _voronoi-map-generator-node_ publishes a saved grid\_map from a given direct
 
 The _graph-generator-node_ receives a grid\_map like the one published from voronoi-map-generator-node and converts it into a graph message for use in tuw\_multi\_robot\_route\_planner.
 
+
+# dependencies
+libdxflib-dev
