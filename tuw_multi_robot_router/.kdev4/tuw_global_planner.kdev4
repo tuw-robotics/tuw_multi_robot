@@ -1,0 +1,25 @@
+[Buildset]
+BuildItems=@Variant(\x00\x00\x00\t\x00\x00\x00\x00\x01\x00\x00\x00\x0b\x00\x00\x00\x00\x01\x00\x00\x00$\x00t\x00u\x00w\x00_\x00g\x00l\x00o\x00b\x00a\x00l\x00_\x00p\x00l\x00a\x00n\x00n\x00e\x00r)
+
+[CMake]
+Build Directory Count=1
+Current Build Directory Index-Host System=0
+ProjectRootRelative=./
+
+[CMake][CMake Build Directory 0]
+Build Directory Path=/home/benjamin/ros/ws_tuw_multi_robot/build/tuw_multi_robot/tuw_multi_robot_router
+Build Type=Debug
+CMake Binary=/usr/bin/cmake
+CMake Executable=/usr/bin/cmake
+Environment Profile=
+Extra Arguments=-DCATKIN_DEVEL_PREFIX=../../devel -DCMAKE_INSTALL_PREFIX=../../install
+Install Directory=/usr/local
+Runtime=Host System
+
+[Defines And Includes][Compiler]
+Name=GCC
+Path=gcc
+Type=GCC
+
+[Project]
+VersionControlSupport=kdevgit

@@ -37,11 +37,12 @@
 #include <rviz/visualization_manager.h>
 #include <rviz/mesh_loader.h>
 #include <rviz/geometry.h>
-#include <rviz/properties/vector_property.h>
-#include <rviz/properties/int_property.h>
 
 #include <tuw_multi_robot_rviz/MultiRobotGoalSelector.h>
-#include <tuw_multi_robot_msgs/PoseIdArray.h>
+#include <tuw_multi_robot_msgs/RobotGoals.h>
+#include <tuw_multi_robot_msgs/RobotGoalsArray.h>
+
+#include <string>
 
 namespace tuw_multi_robot_rviz
 {
@@ -53,8 +54,8 @@ namespace tuw_multi_robot_rviz
         shortcut_key_ = 'l';
         robotCount_ = 0;
         maxRobots_ = 3;
-		
-		pubGoals_ = nh_.advertise<tuw_multi_robot_msgs::PoseIdArray>( "goals", 0 );
+	
+		pubGoals_ = nh_.advertise<tuw_multi_robot_msgs::RobotGoalsArray>( "goals", 0 );
     }
 
     MultiRobotGoalSelector::~MultiRobotGoalSelector()
@@ -80,14 +81,53 @@ namespace tuw_multi_robot_rviz
         moving_flag_node_->attachObject(entity);
         moving_flag_node_->setVisible(false);
 
-        nr_robtos_ = new rviz::IntProperty("No. robtos", 3, "the nr of robots used for planning");
-        getPropertyContainer()->addChild(nr_robtos_);
+        group_robot_names_ = new rviz::Property("Robot Names");
+        group_robot_goals_ = new rviz::Property("Robot Goals");
+        nr_robots_ = new rviz::IntProperty("No. robtos", 3, "the nr of robots used for planning", nullptr, SLOT(onRobotNrChanged()),this);
+        nr_robots_->setMin(0);
+        timeout_ = new rviz::FloatProperty("Timeout Router", 10.0, "the timeout to find a valid solution to the routing table");
+        timeout_->setMin(0.0);
+
+        getPropertyContainer()->addChild(nr_robots_);
+        getPropertyContainer()->addChild(timeout_);
+        getPropertyContainer()->addChild(group_robot_names_);
+        getPropertyContainer()->addChild(group_robot_goals_);
+
+        currentRobotNr_ = 0;
+        onRobotNrChanged();
     }
 
+    void MultiRobotGoalSelector::onRobotNrChanged()
+    {
+        if(currentRobotNr_ < nr_robots_->getInt())
+        {
+            for(uint32_t i = 0; i < nr_robots_->getInt() - currentRobotNr_; i++)
+            {
+                if(robot_names_.size() <= currentRobotNr_ + i)
+                {
+                    robot_names_.push_back(new rviz::StringProperty("Robot " + QString::number(robot_names_.size()), "Robot " + QString::number(robot_names_.size())));
+                    group_robot_names_->addChild(robot_names_[currentRobotNr_ + i]);
+                }
+                else
+                {
+                    robot_names_[currentRobotNr_ + i]->setHidden(false);
+                }
+            }
+        }
+        else if(currentRobotNr_ > nr_robots_->getInt())
+        {
+            for(uint32_t i = 0; i < currentRobotNr_ - nr_robots_->getInt(); i++)
+            {
+                robot_names_[nr_robots_->getInt() + i]->setHidden(true);
+            }
+        }
+        
+        currentRobotNr_ = nr_robots_->getInt();
+    }
 
     void MultiRobotGoalSelector::activate()
     {
-        maxRobots_ = nr_robtos_->getInt();
+        maxRobots_ = nr_robots_->getInt();
 
         if(robotCount_ >= maxRobots_)
         {
@@ -96,7 +136,7 @@ namespace tuw_multi_robot_rviz
             for(auto & fn : flag_nodes_)
             {
                 fn->detachAllObjects();
-                getPropertyContainer()->removeChildren(1, -1);
+                group_robot_goals_->removeChildren(0, -1);
             }
 			flag_nodes_.clear();
 			vector_properties_.clear();
@@ -108,7 +148,7 @@ namespace tuw_multi_robot_rviz
 
             current_flag_property_ = new rviz::VectorProperty("Goal " + QString::number(flag_nodes_.size()));
             current_flag_property_->setReadOnly(true);
-            getPropertyContainer()->addChild(current_flag_property_);
+            group_robot_goals_->addChild(current_flag_property_);
         }
     }
 
@@ -148,23 +188,30 @@ namespace tuw_multi_robot_rviz
                 current_flag_property_ = NULL;
 				
 				
-                maxRobots_ = nr_robtos_->getInt();
+                maxRobots_ = nr_robots_->getInt();
                 robotCount_++;
 
                 if(robotCount_ >= maxRobots_)
                 {
-					tuw_multi_robot_msgs::PoseIdArray array;
+					tuw_multi_robot_msgs::RobotGoalsArray array;
 					for(int i = 0; i < maxRobots_; i++)
 					{
-					  Ogre::Vector3 position = vector_properties_[i]->getVector();
-					  tuw_multi_robot_msgs::PoseId pose;
-					  pose.position.x = position.x;
-					  pose.position.y = position.y;
-                      pose.orientation.x = 0;
-                      pose.orientation.y = 0;
-                      pose.orientation.z = 0;
-                      pose.orientation.w = 1;
-					  array.poses.push_back(pose);
+					    Ogre::Vector3 position = vector_properties_[i]->getVector();
+					    tuw_multi_robot_msgs::RobotGoals goals;
+                        
+                        geometry_msgs::Pose pose;
+					    pose.position.x = position.x;
+					    pose.position.y = position.y;
+                        pose.orientation.x = 0;
+                        pose.orientation.y = 0;
+                        pose.orientation.z = 0;
+                        pose.orientation.w = 1;
+
+					    goals.path_points.push_back(pose);
+                        goals.robot_name = robot_names_[i]->getStdString();
+                        goals.timeout_s = timeout_->getFloat();
+
+                        array.goals.push_back(goals);
 					}
 					
 					pubGoals_.publish(array);

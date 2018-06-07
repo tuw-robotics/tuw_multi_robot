@@ -268,35 +268,45 @@ namespace multi_robot_router
 
     void Planner_Node::singleGoalCallback(const geometry_msgs::PoseStamped &_goal)
     {
-        tuw_multi_robot_msgs::PoseIdArray pa;
+        //TODO not working
+        tuw_multi_robot_msgs::RobotGoalsArray pa;
         pa.header = _goal.header;
         
         
-        tuw_multi_robot_msgs::PoseId pi;
-        
-        pi.id = "0";
-        pi.orientation = _goal.pose.orientation;
-        pi.position = _goal.pose.position;
-        pa.poses.push_back(pi);
+        tuw_multi_robot_msgs::RobotGoals pi;
+        pi.robot_name = "0";
+
+        geometry_msgs::Pose goalPose;
+        goalPose.orientation = _goal.pose.orientation;
+        goalPose.position = _goal.pose.position;
+
+        pi.path_points.push_back(goalPose); 
+        pa.goals.push_back(pi);
         
         goalsCallback(pa);
     }
     
 
-    void Planner_Node::goalsCallback(const tuw_multi_robot_msgs::PoseIdArray &_goals)
+    void Planner_Node::goalsCallback(const tuw_multi_robot_msgs::RobotGoalsArray &_goals)
     {
+        //TODO Start Goal
         //Goals have to be orderd
         std::vector<Eigen::Vector3d> goals;
 
-        for(auto it = _goals.poses.begin(); it != _goals.poses.end(); it++)
+        for(auto it = _goals.goals.begin(); it != _goals.goals.end(); it++)
         {
             double roll, pitch, yaw;
             Eigen::Vector3d p;
-            tf::Quaternion q((*it).orientation.x, (*it).orientation.y, (*it).orientation.z, (*it).orientation.w);
+            if((*it).path_points.size() == 0)
+            {
+                ROS_INFO("No Goals in PathPoints... At least 1 goal has to be in the list!");
+                return;
+            }
+            tf::Quaternion q((*it).path_points.back().orientation.x, (*it).path_points.back().orientation.y, (*it).path_points.back().orientation.z, (*it).path_points.back().orientation.w);  //TODO
             tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
             
-            p[0] = (*it).position.x;
-            p[1] = (*it).position.y;     
+            p[0] = (*it).path_points.back().position.x;
+            p[1] = (*it).path_points.back().position.y;     
             p[2] = yaw;
             goals.push_back(p);
         }

@@ -1,0 +1,35 @@
+{
+    "configurations": [
+        {
+            "browse": {
+                "databaseFilename": "",
+                "limitSymbolsToIncludedHeaders": true,
+                "path": [
+                    "/home/ubuntu/ros/ws_tuw_multi_robot/devel/include",
+                    "/home/ubuntu/ros/ws_tuw_common/devel/include",
+                    "/opt/ros/kinetic/include",
+                    "/home/ubuntu/ros/ws_tuw_multi_robot/src/tuw_multi_robot/tuw_multi_robot_route_to_path/include",
+                    "/home/ubuntu/ros/ws_tuw_multi_robot/src/tuw_multi_robot/tuw_multi_robot_router/include",
+                    "/home/ubuntu/ros/ws_tuw_multi_robot/src/tuw_multi_robot/tuw_multi_robot_ctrl/include",
+                    "/home/ubuntu/ros/ws_tuw_multi_robot/src/tuw_multi_robot/tuw_multi_robot_rviz/include",
+                    "/home/ubuntu/ros/ws_tuw_multi_robot/src/tuw_multi_robot/tuw_voronoi_graph/include",
+                    "/usr/include"
+                ]
+            },
+            "includePath": [
+                "/home/ubuntu/ros/ws_tuw_multi_robot/devel/include",
+                "/home/ubuntu/ros/ws_tuw_common/devel/include",
+                "/opt/ros/kinetic/include",
+                "/home/ubuntu/ros/ws_tuw_multi_robot/src/tuw_multi_robot/tuw_multi_robot_route_to_path/include",
+                "/home/ubuntu/ros/ws_tuw_multi_robot/src/tuw_multi_robot/tuw_multi_robot_router/include",
+                "/home/ubuntu/ros/ws_tuw_multi_robot/src/tuw_multi_robot/tuw_multi_robot_ctrl/include",
+                "/home/ubuntu/ros/ws_tuw_multi_robot/src/tuw_multi_robot/tuw_multi_robot_rviz/include",
+                "/home/ubuntu/ros/ws_tuw_multi_robot/src/tuw_multi_robot/tuw_voronoi_graph/include",
+                "/usr/include"
+            ],
+            "name": "Linux",
+            "intelliSenseMode": "clang-x64"
+        }
+    ],
+    "version": 4
+}

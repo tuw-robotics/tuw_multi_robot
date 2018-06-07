@@ -31,6 +31,10 @@
 
 #include <rviz/tool.h>
 #include <ros/ros.h>
+#include <rviz/properties/vector_property.h>
+#include <rviz/properties/int_property.h>
+#include <rviz/properties/string_property.h>
+#include <rviz/properties/float_property.h>
 
 namespace Ogre
 {
@@ -42,6 +46,8 @@ namespace rviz
 {
 class VectorProperty;
 class IntProperty;
+class FloatProperty;
+class StringProperty;
 class VisualizationManager;
 class ViewportMouseEvent;
 }
@@ -66,7 +72,9 @@ public:
   virtual void deactivate();
 
   virtual int processMouseEvent( rviz::ViewportMouseEvent& event );
-  
+
+protected Q_SLOTS:
+  void onRobotNrChanged();  
 
 private:
   void makeFlag( const Ogre::Vector3& position );
@@ -78,10 +86,15 @@ private:
   Ogre::SceneNode* moving_flag_node_;
   std::string flag_resource_;
   rviz::VectorProperty* current_flag_property_;
-  rviz::IntProperty* nr_robtos_;
+  rviz::IntProperty* nr_robots_;
+  std::vector<rviz::StringProperty*> robot_names_;
+  rviz::Property *group_robot_names_;
+  rviz::Property *group_robot_goals_;
+  rviz::FloatProperty *timeout_;
   
-  int maxRobots_; 
-  int robotCount_;
+  uint32_t currentRobotNr_;
+  uint32_t maxRobots_; 
+  uint32_t robotCount_;
 };
 // END_TUTORIAL
 
