@@ -16,6 +16,11 @@ class ControllerNode : public velocity_controller::Controller
 {
   //special class-member functions.
 public:
+  /**
+   * @brief Construct a new Controller Node object
+   * 
+   * @param n the node handle to subscribe topics
+   */
   ControllerNode(ros::NodeHandle &n);
 
   ros::NodeHandle n_;       ///< Node handler to the root node
