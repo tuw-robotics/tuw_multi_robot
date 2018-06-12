@@ -90,7 +90,6 @@ private:
   std::vector<rviz::StringProperty*> robot_names_;
   rviz::Property *group_robot_names_;
   rviz::Property *group_robot_goals_;
-  rviz::FloatProperty *timeout_;
   
   uint32_t currentRobotNr_;
   uint32_t maxRobots_; 

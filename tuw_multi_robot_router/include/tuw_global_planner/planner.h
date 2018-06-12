@@ -43,10 +43,6 @@ namespace multi_robot_router
         public:
             Planner(const uint32_t _nr_robots);
             Planner();
-            /**
-            * @brief updates the robot start positin (normally called from odom r[_robot_id]
-            */
-            void updateRobotPose(const uint32_t _robot_id, const Eigen::Vector2d &_pose);
 
             /**
             * @brief resizes the planner to a different nr of _nr_robots
@@ -54,11 +50,13 @@ namespace multi_robot_router
             void resize(const uint32_t _nr_robots);
             /**
             * @brief generates the plan from (Vertex[odom robotPose] to Vertex[_goals]
+            * @param _starts the start positions of all robots 
+            * @param _goals the goal positions fo all robots 
             * @param _radius a vector of the robots radius'
             * @param _map the grid_map used to find the start and goal segments of the path
             * @param _graph the full graph of the map used for planning the path
             */
-            bool makePlan(const std::vector< Eigen::Vector3d > &_goals, const std::vector<float> &_radius, const cv::Mat &_map, const float &_resolution, const Eigen::Vector2d &_origin, const std::vector<Segment> &_graph);
+            bool makePlan(const std::vector< Eigen::Vector3d > &_starts, const std::vector< Eigen::Vector3d > &_goals, const std::vector<float> &_radius, const cv::Mat &_map, const float &_resolution, const Eigen::Vector2d &_origin, const std::vector<Segment> &_graph);
             /**
              * @brief sets the CollisionResolverType used 
              */
@@ -118,8 +116,7 @@ namespace multi_robot_router
             
             
             uint32_t robot_nr_;
-            std::vector<bool> pose_received_;
-            std::vector<Eigen::Vector2d> robot_poses_;
+            std::vector<Eigen::Vector3d> starts_;
             std::vector<Eigen::Vector3d> goals_;
             std::vector<Eigen::Vector2d> realGoals_;
             std::vector<Eigen::Vector2d> realStart_;
@@ -127,7 +124,6 @@ namespace multi_robot_router
             std::vector<Eigen::Vector2d> voronoiStart_;
             std::vector<uint32_t> startSegments_;
             std::vector<uint32_t> goalSegments_;
-            std::vector<uint32_t>  diameter_;
 
             PointExpander pointExpander_;
             MultiRobotRouter *multiRobotRouter_;
