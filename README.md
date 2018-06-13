@@ -4,7 +4,7 @@ This repository includes ros packages to plan routes for multiple robots on a se
 #Packages
 
 * tuw\_voronoi\_graph
-* tuw\_multi\_robot\_route\_planner
+* tuw\_multi\_robot\_router
 * tuw\_multi\_robot\_rviz
 * tuw\_multi\_robot\_control
 * tuw\_multi\_robot\_demo
@@ -20,6 +20,33 @@ The _voronoi-map-generator-node_ publishes a saved grid\_map from a given direct
 
 The _graph-generator-node_ receives a grid\_map like the one published from voronoi-map-generator-node and converts it into a graph message for use in tuw\_multi\_robot\_route\_planner.
 
+## tuw\_multi\_robot\_router
+The tuw_multi_robot_router is a Multi Robot Route Planner, which subscribes to all given robots odometry messages, to the map/graph published from the tuw_voronoi_graph package, and to the PoseIdArray msg from the tuw_multi_robot_msgs package.
+
+The MRRP uses a prioritized planning approach to find the robots routes. Additionally, there are a Priority and a Speed Rescheduler as well as a Collision resolver integrated to solve special scenarios non solvable by standard prioritized planning approaches. Since the results generated for these scenarios are dependent the given routes have to be executed synchronized. Therefore, the Router publishes a Route from tuw_multi_robot_msgs containing preconditions, when a robot is allowed to enter a segment. Additionally a unsynchronized nav_msgs::Path is published for every robot. The algorithm is documented in the master thesis [1]. 
+
+## tuw\_multi\_robot\_rviz
+Presents rviz plugins to set goal positions for the planner and a tool to visualize generated graphs. 
+
+## tuw\_multi\_robot\_control
+A simple multi robot controller using Routes as input, which are used to execute the path synchronized. (Used for testing)
+
+## tuw\_multi\_robot\_route\_to\_path
+This package contains a node, which receives the tuw_segment_path msg for a robot and publishes a nav_msgs::path up to the point a robot is allowed to move.
+
+In detail: A tuw_segment_path contains a set of segments, where each of them has preconditions to tell when a robot is allowed to enter a certain segment. The tuw_multi_robot_route_to_path_node subscribes to these messages and checks how many of these preconditions are met and publishes a path from start to the least segment, for which the preconditions are met. This node subscribes to all robots as one node for performance reasons while testing with a large number of robots. 
+
+## tuw\_multi\_robot\_demo
+Contains launch and config files to run a sample demo. 
+
+e.g.: roslaunch tuw_multi_robot_demo demo.launch room:=cave cfg:=robot_2
 
 # dependencies
 libdxflib-dev
+tuw\_multi\_robot\_msgs
+
+# references
+http://wiki.ros.org/tuw_multi_robot
+
+# citations
+[1] Binder, B. (2017). Spatio-Temporal Prioritized Planning (Master thesis), Retrieved from TU Wien Bibliothekssystem (Accession No. AC14520240)
