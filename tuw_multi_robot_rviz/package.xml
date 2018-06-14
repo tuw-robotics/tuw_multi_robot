@@ -2,7 +2,7 @@
 <package format="2">
   <name>tuw_multi_robot_rviz</name>
   <version>0.0.0</version>
-  <description>The tuw_multi_robot_rviz package</description>
+  <description>Presents rviz plugins to set goal positions for the planner and a tool to visualize generated graphs.</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->

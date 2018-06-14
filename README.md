@@ -8,15 +8,16 @@ This repository includes ros packages to plan routes for multiple robots on a se
 * tuw\_multi\_robot\_rviz
 * tuw\_multi\_robot\_control
 * tuw\_multi\_robot\_demo
+* tuw\_multi\_robot\_route\_to\_path
 
 ## tuw\_voronoi\_graph
-This package includes a voronoi-map-generator, a voronoi-map-saver, a voronoi-map-server and a graph-generator-node. 
+This package includes a voronoi-graph-generator a dxf-to-graph-node and a segment-to graph node for creating routing graphs for the multi robot router.
 
-The _voronoi-map-generator-node_ receives a pixel map ([occupancy\_grid](http://docs.ros.org/api/nav_msgs/html/msg/OccupancyGrid.html)) and converts it into a [grid\_map](http://wiki.ros.org/grid_map) including the original map, the distance transform of the map and the voronoi path of the map.
+The _voronoi-graph-generator-node_ receives a pixel map ([occupancy\_grid](http://docs.ros.org/api/nav_msgs/html/msg/OccupancyGrid.html)) and converts it into a voronoi graph describing the original map. This graph is automatically generated or loaded from a cache folder if saved. Additionally the node can load specific graphs saved in a folder.
 
-The _voronoi-map-saver-node_ saves a published grid\_map in the given directory.
+The _voronoi-dxf-to-graph_ takes a dxf file as input containing the scaled and transformed map and any number of lines arcs and circles. These lines arcs and circles are converted to a graph and saved to a specific location.
 
-The _voronoi-map-generator-node_ publishes a saved grid\_map from a given directory.
+The _voronoi-segment-to-graph-node_ takes a segment file with predefined segments as input and converts it to a graph, which is published afterwords.
 
 The _graph-generator-node_ receives a grid\_map like the one published from voronoi-map-generator-node and converts it into a graph message for use in tuw\_multi\_robot\_route\_planner.
 
@@ -28,7 +29,7 @@ The MRRP uses a prioritized planning approach to find the robots routes. Additio
 ## tuw\_multi\_robot\_rviz
 Presents rviz plugins to set goal positions for the planner and a tool to visualize generated graphs. 
 
-## tuw\_multi\_robot\_control
+## tuw\_multi\_robot\_ctrl
 A simple multi robot controller using Routes as input, which are used to execute the path synchronized. (Used for testing)
 
 ## tuw\_multi\_robot\_route\_to\_path

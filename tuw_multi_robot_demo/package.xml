@@ -2,7 +2,7 @@
 <package>
   <name>tuw_multi_robot_demo</name>
   <version>0.0.0</version>
-  <description>The tuw_multi_robot_demo package</description>
+  <description>Contains launch and config files to run a sample demo. </description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->

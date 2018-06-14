@@ -2,7 +2,7 @@
 <package format="2">
   <name>tuw_multi_robot_ctrl</name>
   <version>0.0.0</version>
-  <description>The tuw_multi_robot_ctrl package</description>
+  <description>A simple multi robot controller using Routes as input, which are used to execute the path synchronized.</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->

@@ -2,7 +2,7 @@
 <package format="2">
   <name>tuw_voronoi_graph</name>
   <version>0.0.0</version>
-  <description>The voronoi package</description>
+  <description>Contains different nodes to generate routing graphs for the robot router. voronoi_graph_generator generates a voronoi graph out of a map. dxf_to_graph generates a graph out of a dxf file and segments_to_graph creates a graph using a config file with line segments as input. </description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->

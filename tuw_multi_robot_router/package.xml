@@ -2,7 +2,7 @@
 <package>
   <name>tuw_multi_robot_router</name>
   <version>0.0.0</version>
-  <description>The tuw_global_planner package</description>
+  <description>This package contains a MultiRobotRouter using Prioritized Planning in Combination with a collision resolution algorithm to find a routing tabel for a large number of robots.</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
