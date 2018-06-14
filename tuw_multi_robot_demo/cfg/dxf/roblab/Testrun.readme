@@ -1,0 +1,4 @@
+roslaunch tuw_multi_robot_demo dxf_to_graph.launch room:=roblab seg_width:=1.15
+roslaunch tuw_multi_robot_demo demo.launch room:=roblab cfg:=robot_3 load_segments:=true map_name:=graph
+
+(Take care robots are not on valid start positions initialized)
