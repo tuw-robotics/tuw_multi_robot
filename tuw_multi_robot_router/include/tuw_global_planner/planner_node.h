@@ -38,7 +38,7 @@
 #include <tuw_multi_robot_msgs/Graph.h>
 #include <nav_msgs/Path.h>
 #include <nav_msgs/OccupancyGrid.h>
-#include <tuw_multi_robot_msgs/PlannerStatus.h>
+#include <tuw_multi_robot_msgs/RouterStatus.h>
 #include <dynamic_reconfigure/server.h>
 #include <tuw_multi_robot_router/routerConfig.h>
 
@@ -144,6 +144,7 @@ private:
   void cleanupFixedGoals();
   float getYaw(const geometry_msgs::Quaternion &_rot);
   void tryCreatePlan();
+  float calcRadius(const int shape, const std::vector<float> &shape_variables) const;
 };
 } // namespace multi_robot_router
 #endif // PLANNER_NODE_H

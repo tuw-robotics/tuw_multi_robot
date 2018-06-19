@@ -27,7 +27,6 @@
 #ifndef TUW_MULTI_ROBOT_ROUTE_TO_PATH_H
 #define TUW_MULTI_ROBOT_ROUTE_TO_PATH_H
 
-
 // ROS
 #include <ros/ros.h>
 #include <nav_msgs/Path.h>
@@ -38,42 +37,42 @@
 
 #include <memory>
 
-namespace  tuw_multi_robot_route_to_path
+namespace tuw_multi_robot_route_to_path
 {
-    class MultiRobotRouteToPathNode
-    {
-            //special class-member functions.
-        public   : MultiRobotRouteToPathNode(ros::NodeHandle& n);
+class MultiRobotRouteToPathNode
+{
+    //special class-member functions.
+  public:
+    MultiRobotRouteToPathNode(ros::NodeHandle &n);
 
-            //ROS:
-        public   : ros::NodeHandle                          n_;      ///< Node handler to the root node
-        public   : ros::NodeHandle                          n_param_;///< Node handler to the current node
-        public   : std::unique_ptr<ros::Rate>               rate_;
+    //ROS:
+    ros::NodeHandle n_;       ///< Node handler to the root node
+    ros::NodeHandle n_param_; ///< Node handler to the current node
+    std::unique_ptr<ros::Rate> rate_;
 
-        private  : void publishPath(std::vector<Eigen::Vector3d> _p, int _topic);
+  private:
+    void publishPath(std::vector<Eigen::Vector3d> _p, int _topic);
 
-        private  : std::vector<ros::Publisher>              pubPath_;
-        private  : std::vector<ros::Subscriber>             subSegPath_;
-        private  : std::vector<ros::Subscriber>             subOdometry_;
+    std::vector<ros::Publisher> pubPath_;
+    std::vector<ros::Subscriber> subSegPath_;
+    std::vector<ros::Subscriber> subOdometry_;
 
+    // ROS Topic names
+    std::string topic_path_;
+    std::string topic_seg_path_;
+    std::string topic_odom_;
+    std::vector<std::string> robot_names_;
 
-            // ROS Topic names
-        private  : std::string                              topic_path_;
-        private  : std::string                              topic_seg_path_;
-        private  : std::string                              topic_odom_;
-        private  : std::vector<std::string>                 robot_names_;
+    void subOdomCb(const ros::MessageEvent<nav_msgs::Odometry const> &_event, int _topic);
+    void subSegPathCb(const ros::MessageEvent<tuw_multi_robot_msgs::Route const> &_event, int _topic);
+    int findRobotId(std::string _name);
 
+    std::vector<RobotRouteToPath> converter_;
+    std::vector<RobotStateObserver> observer_;
+    int no_robots_;
+    std::vector<int> robot_steps_;
+};
 
-        private  : void subOdomCb(const ros::MessageEvent<nav_msgs::Odometry const>& _event, int _topic);
-        private  : void subSegPathCb(const ros::MessageEvent<tuw_multi_robot_msgs::Route const>& _event, int _topic);
-
-        private : std::vector<RobotRouteToPath>             converter_;
-        private : std::vector<RobotStateObserver>           observer_;
-        private : int                                       no_robots_;
-        private : std::vector<int>                          robot_steps_;
-    };
-
-}
+} // namespace tuw_multi_robot_route_to_path
 
 #endif
-

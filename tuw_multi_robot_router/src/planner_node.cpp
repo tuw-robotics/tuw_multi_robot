@@ -94,7 +94,7 @@ Planner_Node::Planner_Node(ros::NodeHandle &_n) : Planner(),
     subVoronoiGraph_ = _n.subscribe(voronoi_topic_, 1, &Planner_Node::graphCallback, this);
 
     //static publishers
-    pubPlannerStatus_ = _n.advertise<tuw_multi_robot_msgs::PlannerStatus>(planner_status_topic_, 1);
+    pubPlannerStatus_ = _n.advertise<tuw_multi_robot_msgs::RouterStatus>(planner_status_topic_, 1);
 
     //dynamic reconfigure
     call_type = boost::bind(&Planner_Node::parametersCallback, this, _1, _2);
@@ -225,11 +225,22 @@ void Planner_Node::odomCallback(const ros::MessageEvent<nav_msgs::Odometry const
     tryCreatePlan();
 }
 
+float Planner_Node::calcRadius(const int shape, const std::vector<float> &shape_variables) const
+{
+    tuw_multi_robot_msgs::RobotInfo ri;
+    if (shape == ri.SHAPE_CIRCLE)
+    {
+        return shape_variables[0];
+    }
+
+    return -1;
+}
+
 void Planner_Node::robotInfoCallback(const ros::MessageEvent<tuw_multi_robot_msgs::RobotInfo const> &_event, int _robot_nr)
 {
     const tuw_multi_robot_msgs::RobotInfo_<std::allocator<void>>::ConstPtr &robot_info = _event.getMessage();
     TopicStatus s(TopicStatus::status::active, topic_timeout_s_);
-    std::pair<TopicStatus, float> radius_pair(s, robot_info->robot_radius);
+    std::pair<TopicStatus, float> radius_pair(s, calcRadius(robot_info->shape, robot_info->shape_variables));
 
     if (robot_radius_.find(subscribed_robot_names_[_robot_nr]) == robot_radius_.end())
     {
@@ -269,7 +280,10 @@ void Planner_Node::graphCallback(const tuw_multi_robot_msgs::Graph &msg)
             predecessors.emplace_back(pred);
         }
 
-        graph.emplace_back(segment.id, points, successors, predecessors, segment.width);
+        if (segment.valid)
+            graph.emplace_back(segment.id, points, successors, predecessors, segment.width);
+        else
+            graph.emplace_back(segment.id, points, successors, predecessors, 0);
     }
 
     std::sort(graph.begin(), graph.end(), sortSegments);
@@ -461,7 +475,7 @@ void Planner_Node::PublishEmpty()
         pubSegPaths_[i].publish(ros_path);
     }
 
-    tuw_multi_robot_msgs::PlannerStatus ps;
+    tuw_multi_robot_msgs::RouterStatus ps;
     ps.id = id_;
     ps.success = 0;
     ps.duration = getDuration_ms();
@@ -557,8 +571,8 @@ void Planner_Node::Publish()
             for (int j = 0; j < cp.preconditions.size(); j++)
             {
                 tuw_multi_robot_msgs::RoutePrecondition pc;
-                pc.robot_id = cp.preconditions[j].robotId;
-                pc.step_condition = cp.preconditions[j].stepCondition;
+                pc.robot_id = subscribed_robot_names_[cp.preconditions[j].robotId];
+                pc.current_route_segment = cp.preconditions[j].stepCondition;
                 seg.preconditions.push_back(pc);
             }
 
@@ -568,7 +582,7 @@ void Planner_Node::Publish()
         pubSegPaths_[i].publish(ros_path);
     }
 
-    tuw_multi_robot_msgs::PlannerStatus ps;
+    tuw_multi_robot_msgs::RouterStatus ps;
     ps.id = id_;
     ps.success = 1;
     ps.overall_path_length = (int32_t)getOverallPathLength();

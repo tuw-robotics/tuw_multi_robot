@@ -184,8 +184,8 @@ void velocity_controller::MultiSegmentControllerNode::subPathCb(const ros::Messa
         for (const tuw_multi_robot_msgs::RoutePrecondition &pc : seg.preconditions)
         {
             PathPrecondition p;
-            p.robot = pc.robot_id;
-            p.stepCondition = pc.step_condition;
+            p.robot = findRobotId(pc.robot_id);
+            p.stepCondition = pc.current_route_segment;
             pt.precondition.push_back(p);
         }
 
@@ -194,6 +194,17 @@ void velocity_controller::MultiSegmentControllerNode::subPathCb(const ros::Messa
 
     controller[_topic].setPath(std::make_shared<std::vector<PathPoint>>(localPath));
     ROS_INFO("Multi Robot Controller: Got Plan");
+}
+
+int velocity_controller::MultiSegmentControllerNode::findRobotId(std::string _name)
+{
+    for (uint32_t i = 0; i < robot_names_.size(); i++)
+    {
+        if (robot_names_[i].compare(_name) == 0)
+            return i;
+    }
+
+    return -1;
 }
 
 void velocity_controller::MultiSegmentControllerNode::subCtrlCb(const ros::MessageEvent<const std_msgs::String> &_event, int _topic)
@@ -227,9 +238,13 @@ void MultiSegmentControllerNode::publishRobotInfo()
     {
         tuw_multi_robot_msgs::RobotInfo ri;
         ri.robot_name = robot_names_[i];
-        ri.robot_radius = robot_radius_[i];
-        ri.sync.robot_id = i;
-        ri.sync.step_condition = controller[i].getCount();
+        ri.shape = ri.SHAPE_CIRCLE;
+        ri.shape_variables.push_back(robot_radius_[i]);
+        ri.sync.robot_id = robot_names_[i];
+        ri.sync.current_route_segment = controller[i].getCount();
+        ri.mode = ri.MODE_NA;
+        ri.status = ri.STATUS_STOPED; //TODO
+        ri.good_id = ri.GOOD_NA;
 
         pubRobotInfo_[i].publish(ri);
     }
