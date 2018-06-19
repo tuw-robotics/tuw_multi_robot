@@ -85,13 +85,14 @@ Planner_Node::Planner_Node(ros::NodeHandle &_n) : Planner(),
     segpath_topic_ = "seg_path";
     n_param_.param("seg_path", segpath_topic_, segpath_topic_);
 
-    robot_info_topic_ = "robot_info";
+    robot_info_topic_ = "/robot_info";
     n_param_.param("robot_info", robot_info_topic_, robot_info_topic_);
 
     // static subscriptions
     subGoalSet_ = _n.subscribe(goal_topic_, 1, &Planner_Node::goalsCallback, this);
     subMap_ = _n.subscribe(map_topic_, 1, &Planner_Node::mapCallback, this);
     subVoronoiGraph_ = _n.subscribe(voronoi_topic_, 1, &Planner_Node::graphCallback, this);
+    subRobotInfo_ = _n.subscribe(robot_info_topic_, 1000, &Planner_Node::robotInfoCallback, this);
 
     //static publishers
     pubPlannerStatus_ = _n.advertise<tuw_multi_robot_msgs::RouterStatus>(planner_status_topic_, 1);
@@ -107,31 +108,11 @@ void Planner_Node::updateTimeout(const float _secs)
     for (auto it = robot_starts_.begin(); it != robot_starts_.end(); it++)
     {
         (*it).second.first.updateStatus(_secs);
-        if ((*it).second.first.getStatus() == TopicStatus::status::inactive)
-        {
-            ROS_INFO("Start of %s timed out", (*it).first.c_str());
-            robot_starts_.erase(it);
-        }
-    }
-
-    for (auto it = robot_goals_.begin(); it != robot_goals_.end(); it++)
-    {
-        (*it).second.first.updateStatus(_secs);
-        if ((*it).second.first.getStatus() == TopicStatus::status::inactive)
-        {
-            ROS_INFO("Goal of %s timed out", (*it).first.c_str());
-            robot_goals_.erase(it);
-        }
     }
 
     for (auto it = robot_radius_.begin(); it != robot_radius_.end(); it++)
     {
         (*it).second.first.updateStatus(_secs);
-        if ((*it).second.first.getStatus() == TopicStatus::status::inactive)
-        {
-            ROS_INFO("RobotInfo of %s timed out", (*it).first.c_str());
-            robot_radius_.erase(it);
-        }
     }
 }
 void Planner_Node::parametersCallback(tuw_multi_robot_router::routerConfig &config, uint32_t level)
@@ -201,7 +182,6 @@ void Planner_Node::mapCallback(const nav_msgs::OccupancyGrid &_map)
 
         ROS_INFO("Multi Robot Router: New Map %i %i %lu", _map.info.width, _map.info.height, current_map_hash_);
     }
-    tryCreatePlan();
 }
 
 void Planner_Node::odomCallback(const ros::MessageEvent<nav_msgs::Odometry const> &_event, int _robot_nr)
@@ -222,7 +202,6 @@ void Planner_Node::odomCallback(const ros::MessageEvent<nav_msgs::Odometry const
     {
         robot_starts_[subscribed_robot_names_[_robot_nr]] = start_pair;
     }
-    tryCreatePlan();
 }
 
 float Planner_Node::calcRadius(const int shape, const std::vector<float> &shape_variables) const
@@ -236,21 +215,28 @@ float Planner_Node::calcRadius(const int shape, const std::vector<float> &shape_
     return -1;
 }
 
-void Planner_Node::robotInfoCallback(const ros::MessageEvent<tuw_multi_robot_msgs::RobotInfo const> &_event, int _robot_nr)
+void Planner_Node::robotInfoCallback(const tuw_multi_robot_msgs::RobotInfo &_robotInfo)
 {
-    const tuw_multi_robot_msgs::RobotInfo_<std::allocator<void>>::ConstPtr &robot_info = _event.getMessage();
     TopicStatus s(TopicStatus::status::active, topic_timeout_s_);
-    std::pair<TopicStatus, float> radius_pair(s, calcRadius(robot_info->shape, robot_info->shape_variables));
+    std::pair<TopicStatus, float> radius_pair(s, calcRadius(_robotInfo.shape, _robotInfo.shape_variables));
 
-    if (robot_radius_.find(subscribed_robot_names_[_robot_nr]) == robot_radius_.end())
+    if (std::find(subscribed_robot_names_.begin(), subscribed_robot_names_.end(), _robotInfo.robot_name) == subscribed_robot_names_.end())
     {
-        robot_radius_.emplace(subscribed_robot_names_[_robot_nr], radius_pair);
+        subscribed_robot_names_.push_back(_robotInfo.robot_name);
+        robot_radius_.emplace(_robotInfo.robot_name, radius_pair);
+        //Not existant subscribe robots
+        ROS_INFO("Multi Robot Router: subscribing to %s", (_robotInfo.robot_name + "/" + odom_topic_).c_str());
+        subOdom_.emplace_back(n_.subscribe<nav_msgs::Odometry>(_robotInfo.robot_name + "/" + odom_topic_, 1, boost::bind(&Planner_Node::odomCallback, this, _1, subscribed_robot_names_.size() - 1)));
+
+        ROS_INFO("Multi Robot Router: advertising on %s", (_robotInfo.robot_name + "/" + path_topic_).c_str());
+        pubPaths_.emplace_back(n_.advertise<nav_msgs::Path>(_robotInfo.robot_name + "/" + path_topic_, 1, true));
+        ROS_INFO("Multi Robot Router: advertising on %s", (_robotInfo.robot_name + "/" + segpath_topic_).c_str());
+        pubSegPaths_.emplace_back(n_.advertise<tuw_multi_robot_msgs::Route>(_robotInfo.robot_name + "/" + segpath_topic_, 1, true));
     }
     else
     {
-        robot_radius_[subscribed_robot_names_[_robot_nr]] = radius_pair;
+        robot_radius_[_robotInfo.robot_name] = radius_pair;
     }
-    tryCreatePlan();
 }
 
 void Planner_Node::graphCallback(const tuw_multi_robot_msgs::Graph &msg)
@@ -297,135 +283,72 @@ void Planner_Node::graphCallback(const tuw_multi_robot_msgs::Graph &msg)
         ROS_INFO("Multi Robot Router: Graph %lu", hash);
     }
     got_graph_ = true;
-    tryCreatePlan();
-}
-
-void Planner_Node::cleanupFixedGoals()
-{
-    //Todo update timeouts and clear old messages
-    for (auto it = robot_starts_.begin(); it != robot_starts_.end(); it++)
-    {
-        if ((*it).second.first.getStatus() == TopicStatus::status::fixed)
-        {
-            robot_starts_.erase(it);
-        }
-    }
-
-    for (auto it = robot_goals_.begin(); it != robot_goals_.end(); it++)
-    {
-        if ((*it).second.first.getStatus() == TopicStatus::status::fixed)
-        {
-            robot_goals_.erase(it);
-        }
-    }
-
-    for (auto it = robot_radius_.begin(); it != robot_radius_.end(); it++)
-    {
-        if ((*it).second.first.getStatus() == TopicStatus::status::fixed)
-        {
-            robot_radius_.erase(it);
-        }
-    }
 }
 
 void Planner_Node::goalsCallback(const tuw_multi_robot_msgs::RobotGoalsArray &_goals)
 {
-    // Unsubscribe
-    subOdom_.clear();
-    subRobotInfo_.clear();
-    pubPaths_.clear();
-    pubSegPaths_.clear();
-
-    subscribed_robot_names_.clear();
-    cleanupFixedGoals();
-
+    bool retval = true;
+    missing_robots_.clear();
     //Get robots
+    std::vector<Eigen::Vector3d> starts;
+    std::vector<Eigen::Vector3d> goals;
+    std::vector<float> radius;
     for (int i = 0; i < _goals.goals.size(); i++)
     {
-        subscribed_robot_names_.push_back(_goals.goals[i].robot_name);
-
-        //Subscribe
-        if (_goals.goals[i].path_points.size() == 0)
+        std::string name = _goals.goals[i].robot_name;
+        if (std::find(subscribed_robot_names_.begin(), subscribed_robot_names_.end(), name) != subscribed_robot_names_.end())
         {
-            ROS_INFO("No goal for robot %i found", i);
-            return;
-        }
-        if (_goals.goals[i].path_points.size() == 1)
-        {
-            ROS_INFO("Multi Robot Router: subscribing to %s", (_goals.goals[i].robot_name + "/" + odom_topic_).c_str());
-            subOdom_.emplace_back(n_.subscribe<nav_msgs::Odometry>(_goals.goals[i].robot_name + "/" + odom_topic_, 1, boost::bind(&Planner_Node::odomCallback, this, _1, i)));
-        }
-        ROS_INFO("Multi Robot Router: subscribing to %s", (_goals.goals[i].robot_name + "/" + robot_info_topic_).c_str());
-        subRobotInfo_.emplace_back(n_.subscribe<tuw_multi_robot_msgs::RobotInfo>(_goals.goals[i].robot_name + "/" + robot_info_topic_, 1, boost::bind(&Planner_Node::robotInfoCallback, this, _1, i)));
+            //Robot exists
+            std::pair<TopicStatus, float> radius_pair = robot_radius_[name];
+            if (radius_pair.first.getStatus() == Planner_Node::TopicStatus::status::inactive)
+            {
+                ROS_INFO("Aborting because of inactive robots");
+                retval = false;
+                missing_robots_.push_back(name);
+                continue;
+            }
+            radius.push_back(robot_radius_[name].second);
 
-        ROS_INFO("Multi Robot Router: advertising on %s", (_goals.goals[i].robot_name + "/" + path_topic_).c_str());
-        pubPaths_.emplace_back(n_.advertise<nav_msgs::Path>(_goals.goals[i].robot_name + "/" + path_topic_, 1, true));
-        ROS_INFO("Multi Robot Router: advertising on %s", (_goals.goals[i].robot_name + "/" + segpath_topic_).c_str());
-        pubSegPaths_.emplace_back(n_.advertise<tuw_multi_robot_msgs::Route>(_goals.goals[i].robot_name + "/" + segpath_topic_, 1, true));
+            if (_goals.goals[i].path_points.size() == 0)
+            {
+                ROS_INFO("To less goal points for robot %s", name.c_str());
+                return;
+            }
+            else if (_goals.goals[i].path_points.size() == 1)
+            {
+                std::pair<TopicStatus, Eigen::Vector3d> start_pair = robot_starts_[name];
+                if (start_pair.first.getStatus() == Planner_Node::TopicStatus::status::inactive)
+                {
+                    ROS_INFO("Aborting because of inactive robots");
+                    retval = false;
+                    missing_robots_.push_back(name);
+                    continue;
+                }
 
-        //Start Goal Points
-        Eigen::Vector3d goal(_goals.goals[i].path_points.back().position.x, _goals.goals[i].path_points.back().position.y, getYaw(_goals.goals[i].path_points.back().orientation)); //TODO Rotation
-        TopicStatus topicStatus(TopicStatus::status::fixed);
-        std::pair<TopicStatus, Eigen::Vector3d> goal_pair(topicStatus, goal);
-
-        if (robot_goals_.find(_goals.goals[i].robot_name) == robot_goals_.end())
-            robot_goals_.emplace(_goals.goals[i].robot_name, goal_pair);
-        else
-            robot_goals_[_goals.goals[i].robot_name] = goal_pair;
-
-        if (_goals.goals[i].path_points.size() > 1)
-        {
-            Eigen::Vector3d start(_goals.goals[i].path_points.front().position.x, _goals.goals[i].path_points.front().position.y, getYaw(_goals.goals[i].path_points.front().orientation)); //TODO Rotation
-            TopicStatus topicStatus(TopicStatus::status::fixed);
-            std::pair<TopicStatus, Eigen::Vector3d> start_pair(topicStatus, start);
-
-            if (robot_starts_.find(_goals.goals[i].robot_name) == robot_starts_.end())
-                robot_starts_.emplace(_goals.goals[i].robot_name, start_pair);
+                starts.push_back(robot_starts_[name].second);
+            }
             else
-                robot_starts_[_goals.goals[i].robot_name] = start_pair;
+            {
+                Eigen::Vector3d start(_goals.goals[i].path_points.front().position.x, _goals.goals[i].path_points.front().position.y, getYaw(_goals.goals[i].path_points.front().orientation));
+                starts.push_back(start);
+            }
+            Eigen::Vector3d goal(_goals.goals[i].path_points.back().position.x, _goals.goals[i].path_points.back().position.y, getYaw(_goals.goals[i].path_points.back().orientation));
+            goals.push_back(goal);
+        }
+        else
+        {
+            ROS_INFO("Aborting because of inactive robots");
+            retval = false;
+            missing_robots_.push_back(name);
+            continue;
         }
     }
 
-    tryCreatePlan();
-    freshPlan_ = true;
-}
-
-float Planner_Node::getYaw(const geometry_msgs::Quaternion &_rot)
-{
-    double roll, pitch, yaw;
-
-    tf::Quaternion q(_rot.x, _rot.y, _rot.z, _rot.w);
-    tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
-    return yaw;
-}
-
-void Planner_Node::tryCreatePlan()
-{
-    if (!freshPlan_)
-        return;
-
-    if (got_map_ && got_graph_)
+    if (retval && got_map_ && got_graph_)
     {
         auto t1 = std::chrono::high_resolution_clock::now();
-        std::vector<Eigen::Vector3d> starts, goals;
-        std::vector<float> radius;
-        for (int i = 0; i < subscribed_robot_names_.size(); i++)
-        {
-            if (robot_starts_.find(subscribed_robot_names_[i]) != robot_starts_.end() &&
-                robot_goals_.find(subscribed_robot_names_[i]) != robot_goals_.end() &&
-                robot_radius_.find(subscribed_robot_names_[i]) != robot_radius_.end())
-            {
-                starts.push_back(robot_starts_[subscribed_robot_names_[i]].second);
-                goals.push_back(robot_goals_[subscribed_robot_names_[i]].second);
-                radius.push_back(robot_radius_[subscribed_robot_names_[i]].second);
-            }
-            else
-            {
-                return;
-            }
-        }
-
-        if (makePlan(starts, goals, radius, distMap_, mapResolution_, mapOrigin_, graph_))
+        retval &= makePlan(starts, goals, radius, distMap_, mapResolution_, mapOrigin_, graph_);
+        if (retval)
         {
             int nx = distMap_.cols;
             int ny = distMap_.rows;
@@ -451,6 +374,24 @@ void Planner_Node::tryCreatePlan()
 
         id_++;
     }
+    else if (!got_map_ || !got_graph_)
+    {
+        PublishEmpty();
+        ROS_INFO("No Map or Graph received");
+    }
+    else
+    {
+        PublishEmpty();
+    }
+}
+
+float Planner_Node::getYaw(const geometry_msgs::Quaternion &_rot)
+{
+    double roll, pitch, yaw;
+
+    tf::Quaternion q(_rot.x, _rot.y, _rot.z, _rot.w);
+    tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
+    return yaw;
 }
 
 void Planner_Node::PublishEmpty()
@@ -479,6 +420,10 @@ void Planner_Node::PublishEmpty()
     ps.id = id_;
     ps.success = 0;
     ps.duration = getDuration_ms();
+    for (const std::string &name : missing_robots_)
+    {
+        ps.missing_robots.push_back(name);
+    }
 
     pubPlannerStatus_.publish(ps);
 }

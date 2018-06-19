@@ -34,7 +34,7 @@ public:
   // ROS Publishers
 private:
   std::vector<ros::Publisher> pubCmdVel_;
-  std::vector<ros::Publisher> pubRobotInfo_;
+  ros::Publisher pubRobotInfo_;
   std::vector<ros::Subscriber> subOdom_;
   std::vector<ros::Subscriber> subPath_;
   std::vector<ros::Subscriber> subCtrl_;

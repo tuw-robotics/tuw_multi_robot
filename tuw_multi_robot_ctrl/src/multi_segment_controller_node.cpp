@@ -60,7 +60,6 @@ MultiSegmentControllerNode::MultiSegmentControllerNode(ros::NodeHandle &n) : n_(
     subCtrl_.resize(robot_names_.size());
     subOdom_.resize(robot_names_.size());
     subPath_.resize(robot_names_.size());
-    pubRobotInfo_.resize(robot_names_.size());
 
     n_param_.param("robot_radius", robot_radius_, robot_radius_);
 
@@ -78,7 +77,7 @@ MultiSegmentControllerNode::MultiSegmentControllerNode(ros::NodeHandle &n) : n_(
     topic_path_ = "seg_path";
     n.getParam("path_topic", topic_path_);
 
-    topic_robot_info_ = "robot_info";
+    topic_robot_info_ = "/robot_info";
     n.getParam("robot_info_topic", topic_robot_info_);
 
     max_vel_v_ = 0.8;
@@ -114,7 +113,7 @@ MultiSegmentControllerNode::MultiSegmentControllerNode(ros::NodeHandle &n) : n_(
     for (int i = 0; i < robot_names_.size(); i++)
     {
         pubCmdVel_[i] = n.advertise<geometry_msgs::Twist>(robot_names_[i] + "/" + topic_cmdVel_, 1);
-        pubRobotInfo_[i] = n.advertise<tuw_multi_robot_msgs::RobotInfo>(robot_names_[i] + "/" + topic_robot_info_, 1);
+        pubRobotInfo_ = n.advertise<tuw_multi_robot_msgs::RobotInfo>(topic_robot_info_, robot_names_.size() * 2);
         subOdom_[i] = n.subscribe<nav_msgs::Odometry>(robot_names_[i] + "/" + topic_odom_, 1, boost::bind(&MultiSegmentControllerNode::subOdomCb, this, _1, i));
         subPath_[i] = n.subscribe<tuw_multi_robot_msgs::Route>(robot_names_[i] + "/" + topic_path_, 1, boost::bind(&MultiSegmentControllerNode::subPathCb, this, _1, i));
         subCtrl_[i] = n.subscribe<std_msgs::String>(robot_names_[i] + "/" + topic_ctrl_, 1, boost::bind(&MultiSegmentControllerNode::subCtrlCb, this, _1, i));
@@ -246,7 +245,7 @@ void MultiSegmentControllerNode::publishRobotInfo()
         ri.status = ri.STATUS_STOPED; //TODO
         ri.good_id = ri.GOOD_NA;
 
-        pubRobotInfo_[i].publish(ri);
+        pubRobotInfo_.publish(ri);
     }
 }
 

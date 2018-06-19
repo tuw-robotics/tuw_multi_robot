@@ -102,12 +102,15 @@ private:
   ros::Publisher pubPlannerStatus_;
 
   std::vector<ros::Subscriber> subOdom_;
-  std::vector<ros::Subscriber> subRobotInfo_;
   ros::Subscriber subGoalSet_;
   ros::Subscriber subMap_;
   ros::Subscriber subVoronoiGraph_;
+  ros::Subscriber subRobotInfo_;
 
   std::vector<std::string> subscribed_robot_names_;
+  std::vector<std::string> missing_robots_;
+  std::map<std::string, std::pair<TopicStatus, Eigen::Vector3d>> robot_starts_;
+  std::map<std::string, std::pair<TopicStatus, float>> robot_radius_;
   cv::Mat distMap_;
   Eigen::Vector2d mapOrigin_;
   float mapResolution_;
@@ -125,25 +128,20 @@ private:
   size_t current_map_hash_;
   size_t current_graph_hash_;
   int id_;
-  std::map<std::string, std::pair<TopicStatus, Eigen::Vector3d>> robot_starts_;
-  std::map<std::string, std::pair<TopicStatus, Eigen::Vector3d>> robot_goals_;
-  std::map<std::string, std::pair<TopicStatus, float>> robot_radius_;
   float topic_timeout_s_ = 10;
   bool freshPlan_ = false;
 
   void parametersCallback(tuw_multi_robot_router::routerConfig &config, uint32_t level);
   void odomCallback(const ros::MessageEvent<nav_msgs::Odometry const> &_event, int _topic);
-  void robotInfoCallback(const ros::MessageEvent<tuw_multi_robot_msgs::RobotInfo const> &_event, int _topic);
   void graphCallback(const tuw_multi_robot_msgs::Graph &msg);
   void goalsCallback(const tuw_multi_robot_msgs::RobotGoalsArray &_goals);
   void mapCallback(const nav_msgs::OccupancyGrid &_map);
+  void robotInfoCallback(const tuw_multi_robot_msgs::RobotInfo &_robotInfo);
   size_t getHash(const std::vector<signed char> &_map, const Eigen::Vector2d &_origin, const float &_resolution);
   size_t getHash(const std::vector<Segment> &_graph);
   static bool sortSegments(const Segment &i, const Segment &j) { return i.getSegmentId() < j.getSegmentId(); }
   void unsubscribeTopic(std::string _robot_name);
-  void cleanupFixedGoals();
   float getYaw(const geometry_msgs::Quaternion &_rot);
-  void tryCreatePlan();
   float calcRadius(const int shape, const std::vector<float> &shape_variables) const;
 };
 } // namespace multi_robot_router
