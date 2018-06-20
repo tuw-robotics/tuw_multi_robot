@@ -182,8 +182,8 @@ void VoronoiGeneratorNode::publishSegments()
 
     graph.resolution = resolution_;
 
-    graph.origin.position.x = -origin_[0];
-    graph.origin.position.y = -origin_[1];
+    graph.origin.position.x = origin_[0]; //TODO test
+    graph.origin.position.y = origin_[1]; //TODO test
 
     for (auto it = segments_.begin(); it != segments_.end(); ++it)
     {

@@ -38,7 +38,8 @@
 namespace tuw_multi_robot_rviz
 {
 
-VoronoiGraphVisual::VoronoiGraphVisual ( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node ) {
+VoronoiGraphVisual::VoronoiGraphVisual(Ogre::SceneManager *scene_manager, Ogre::SceneNode *parent_node)
+{
     scene_manager_ = scene_manager;
 
     // Ogre::SceneNode s form a tree, with each node storing the
@@ -51,88 +52,100 @@ VoronoiGraphVisual::VoronoiGraphVisual ( Ogre::SceneManager* scene_manager, Ogre
     frame_node_ = parent_node->createChildSceneNode();
 
     // initialize global variables
-    colorPath_ = Ogre::ColourValue ( 255, 0, 0 );
-	scalePoint_ = 0.1;
-	scalePath_ = 1;
+    colorPath_ = Ogre::ColourValue(255, 0, 0);
+    scalePoint_ = 0.1;
+    scalePath_ = 1;
 }
 
-VoronoiGraphVisual::~VoronoiGraphVisual() {
+VoronoiGraphVisual::~VoronoiGraphVisual()
+{
     // Destroy the frame node since we don't need it anymore.
-    scene_manager_->destroySceneNode ( frame_node_ );
+    scene_manager_->destroySceneNode(frame_node_);
 }
 
-void VoronoiGraphVisual::setMessage ( const tuw_multi_robot_msgs::Graph::ConstPtr& msg ) 
+void VoronoiGraphVisual::setMessage(const tuw_multi_robot_msgs::Graph::ConstPtr &msg)
 {
     static double timeOld_;
-    if( timeOld_ == msg->header.stamp.toSec() )
-	{ 
-	  return; 
-	}
-    timeOld_ = msg->header.stamp.toSec();
-    
-    pathLine.resize ( msg->vertices.size() );
-	crossingShape.resize( pathLine.size() * 2);
-    for( size_t i = 0; i < pathLine.size(); ++i) 
-	{ 
-		tuw_multi_robot_msgs::Vertex seg = msg->vertices[i];
-		geometry_msgs::Point p1 = seg.path.front();
-		geometry_msgs::Point p2 = seg.path.back();
-		
-		// 	Ogre::Quaternion rotation  = Ogre::Quaternion ( Ogre::Radian( (*spline_)(i / (double)pointsNrPath_ )(2) + atan2(v_y, v_x) ), Ogre::Vector3::UNIT_Z );
-		
-		
-		Ogre::Quaternion rotation;
-		rotation.x = 1;
-		rotation.y = 0;
-		rotation.z = 0;
-		rotation.w = 0;
-		Ogre::Quaternion rotation2 = Ogre::Quaternion ( Ogre::Radian( -Ogre::Math::PI/2.), Ogre::Vector3::UNIT_Y );
-		
-		pathLine[i].reset ( new rviz::Line ( scene_manager_, frame_node_ ) );
-		pathLine[i]->setColor ( colorPath_ );
-		pathLine[i]->setPoints( Ogre::Vector3 ( (p1.x)*msg->resolution-msg->origin.position.x, (p1.y)*msg->resolution-msg->origin.position.y, p1.z*msg->resolution-msg->origin.position.z ), Ogre::Vector3 ( (p2.x)*msg->resolution-msg->origin.position.x, (p2.y)*msg->resolution-msg->origin.position.y, p2.z*msg->resolution-msg->origin.position.z )  );
-		pathLine[i]->setScale ( Ogre::Vector3 ( scalePath_, scalePath_, scalePath_ ) );
-			
-		crossingShape[2*i].reset ( new rviz::Shape ( rviz::Shape::Sphere, scene_manager_, frame_node_ ) );
-        crossingShape[2*i]->setColor ( colorPath_ );
-        crossingShape[2*i]->setPosition ( Ogre::Vector3 ( (p1.x)*msg->resolution-msg->origin.position.x, (p1.y)*msg->resolution-msg->origin.position.y, p1.z*msg->resolution-msg->origin.position.z ) );
-        crossingShape[2*i]->setOrientation ( rotation *rotation2 );
-		crossingShape[2*i]->setScale ( Ogre::Vector3 ( scalePoint_, scalePoint_, scalePoint_ ) );
-		
-		crossingShape[2*i+1].reset ( new rviz::Shape ( rviz::Shape::Sphere, scene_manager_, frame_node_ ) );
-        crossingShape[2*i+1]->setColor ( colorPath_ );
-        crossingShape[2*i+1]->setPosition ( Ogre::Vector3 ( (p2.x)*msg->resolution-msg->origin.position.x, (p2.y)*msg->resolution-msg->origin.position.y, p2.z*msg->resolution-msg->origin.position.z ) );
-        crossingShape[2*i+1]->setOrientation ( rotation *rotation2 );
-		crossingShape[2*i+1]->setScale ( Ogre::Vector3 ( scalePoint_, scalePoint_, scalePoint_ ) );
-		
+    if (timeOld_ == msg->header.stamp.toSec())
+    {
+        return;
     }
-    
+    timeOld_ = msg->header.stamp.toSec();
+
+    pathLine.resize(msg->vertices.size());
+    crossingShape.resize(pathLine.size() * 2);
+    for (size_t i = 0; i < pathLine.size(); ++i)
+    {
+        tuw_multi_robot_msgs::Vertex seg = msg->vertices[i];
+        geometry_msgs::Point p1 = seg.path.front();
+        geometry_msgs::Point p2 = seg.path.back();
+
+        // 	Ogre::Quaternion rotation  = Ogre::Quaternion ( Ogre::Radian( (*spline_)(i / (double)pointsNrPath_ )(2) + atan2(v_y, v_x) ), Ogre::Vector3::UNIT_Z );
+
+        Ogre::Quaternion rotation;
+        rotation.x = 1;
+        rotation.y = 0;
+        rotation.z = 0;
+        rotation.w = 0;
+        Ogre::Quaternion rotation2 = Ogre::Quaternion(Ogre::Radian(-Ogre::Math::PI / 2.), Ogre::Vector3::UNIT_Y);
+
+        pathLine[i].reset(new rviz::Line(scene_manager_, frame_node_));
+        pathLine[i]->setColor(colorPath_);
+        pathLine[i]->setPoints(Ogre::Vector3((p1.x) * msg->resolution + msg->origin.position.x, (p1.y) * msg->resolution + msg->origin.position.y, p1.z * msg->resolution + msg->origin.position.z), Ogre::Vector3((p2.x) * msg->resolution + msg->origin.position.x, (p2.y) * msg->resolution + msg->origin.position.y, p2.z * msg->resolution + msg->origin.position.z));
+        pathLine[i]->setScale(Ogre::Vector3(scalePath_, scalePath_, scalePath_));
+
+        crossingShape[2 * i].reset(new rviz::Shape(rviz::Shape::Sphere, scene_manager_, frame_node_));
+        crossingShape[2 * i]->setColor(colorPath_);
+        crossingShape[2 * i]->setPosition(Ogre::Vector3((p1.x) * msg->resolution + msg->origin.position.x, (p1.y) * msg->resolution + msg->origin.position.y, p1.z * msg->resolution + msg->origin.position.z));
+        crossingShape[2 * i]->setOrientation(rotation * rotation2);
+        crossingShape[2 * i]->setScale(Ogre::Vector3(scalePoint_, scalePoint_, scalePoint_));
+
+        crossingShape[2 * i + 1].reset(new rviz::Shape(rviz::Shape::Sphere, scene_manager_, frame_node_));
+        crossingShape[2 * i + 1]->setColor(colorPath_);
+        crossingShape[2 * i + 1]->setPosition(Ogre::Vector3((p2.x) * msg->resolution + msg->origin.position.x, (p2.y) * msg->resolution + msg->origin.position.y, p2.z * msg->resolution + msg->origin.position.z));
+        crossingShape[2 * i + 1]->setOrientation(rotation * rotation2);
+        crossingShape[2 * i + 1]->setScale(Ogre::Vector3(scalePoint_, scalePoint_, scalePoint_));
+    }
 }
 
 // Position is passed through to the SceneNode.
-void VoronoiGraphVisual::setFramePosition ( const Ogre::Vector3& position ) {
-    frame_node_->setPosition ( position );
+void VoronoiGraphVisual::setFramePosition(const Ogre::Vector3 &position)
+{
+    frame_node_->setPosition(position);
 }
 
 // Orientation is passed through to the SceneNode.
-void VoronoiGraphVisual::setFrameOrientation ( const Ogre::Quaternion& orientation ) {
-    frame_node_->setOrientation ( orientation );
+void VoronoiGraphVisual::setFrameOrientation(const Ogre::Quaternion &orientation)
+{
+    frame_node_->setOrientation(orientation);
 }
 
 // Color is passed through to the Shape object.
-void VoronoiGraphVisual::setPathColor ( Ogre::ColourValue color ) {
+void VoronoiGraphVisual::setPathColor(Ogre::ColourValue color)
+{
     colorPath_ = color;
-    for ( auto& pathXYi   : pathLine    ) { pathXYi   ->setColor ( colorPath_ ); }
+    for (auto &pathXYi : pathLine)
+    {
+        pathXYi->setColor(colorPath_);
+    }
 }
 
-void VoronoiGraphVisual::setPointScale ( float scale ) {
+void VoronoiGraphVisual::setPointScale(float scale)
+{
     scalePoint_ = scale;
-    for ( auto& pathThetai: crossingShape ) { pathThetai->setScale ( Ogre::Vector3 ( scalePoint_, scalePoint_, scalePoint_ ) ); }
+    for (auto &pathThetai : crossingShape)
+    {
+        pathThetai->setScale(Ogre::Vector3(scalePoint_, scalePoint_, scalePoint_));
+    }
 }
 
-void VoronoiGraphVisual::setPathScale ( float scale ) {
+void VoronoiGraphVisual::setPathScale(float scale)
+{
     scalePath_ = scale;
-    for ( auto& pathThetai: pathLine ) { pathThetai->setScale ( Ogre::Vector3 ( scalePath_, scalePath_, scalePath_ ) ); }
+    for (auto &pathThetai : pathLine)
+    {
+        pathThetai->setScale(Ogre::Vector3(scalePath_, scalePath_, scalePath_));
+    }
 }
 
-} 
+} // namespace tuw_multi_robot_rviz
