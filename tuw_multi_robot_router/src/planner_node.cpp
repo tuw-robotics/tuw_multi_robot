@@ -285,70 +285,83 @@ void Planner_Node::graphCallback(const tuw_multi_robot_msgs::Graph &msg)
     got_graph_ = true;
 }
 
-void Planner_Node::goalsCallback(const tuw_multi_robot_msgs::RobotGoalsArray &_goals)
+bool Planner_Node::preparePlanning(std::vector<float> &_radius, std::vector<Eigen::Vector3d> &_starts, std::vector<Eigen::Vector3d> &_goals, const tuw_multi_robot_msgs::RobotGoalsArray &_rosGoals)
 {
     bool retval = true;
     missing_robots_.clear();
+    std::vector<std::string> robot_names;
+    for (int i = 0; i < _rosGoals.goals.size(); i++)
+    {
+        std::string name = _rosGoals.goals[i].robot_name;
+        //Check duplicated goals
+        if (std::find(robot_names.begin(), robot_names.end(), name) != robot_names.end())
+        {
+            ROS_INFO("Multi Robot Router: Too many goals for one robot");
+            publishEmpty();
+            return false;
+        }
+        robot_names.push_back(name);
+
+        //Check if a robot is existant in general
+        if (robot_radius_[name].first.getStatus() == TopicStatus::status::active)
+        {
+            //Check if robot topics are active and save their values
+            std::pair<TopicStatus, float> radius_pair = robot_radius_[name];
+            _radius.push_back(robot_radius_[name].second);
+
+            if (_rosGoals.goals[i].path_points.size() == 0)
+            {
+                ROS_INFO("Multi Robot Router: To less goal points for robot %s", name.c_str());
+                return false;
+            }
+            Eigen::Vector3d goal(_rosGoals.goals[i].path_points.back().position.x, _rosGoals.goals[i].path_points.back().position.y, getYaw(_rosGoals.goals[i].path_points.back().orientation));
+            _goals.push_back(goal);
+        }
+        else
+        {
+            ROS_INFO("Multi Robot Router: Inactive Robot (%s)", name.c_str());
+            retval = false;
+            missing_robots_.push_back(name);
+        }
+
+        if (_rosGoals.goals[i].path_points.size() == 1)
+        {
+            //use current robot pose
+            if (robot_starts_[name].first.getStatus() == TopicStatus::status::active)
+            {
+                _starts.push_back(robot_starts_[name].second);
+            }
+            else
+            {
+                ROS_INFO("Multi Robot Router: Inactive Robot (%s)", name.c_str());
+                retval = false;
+                missing_robots_.push_back(name);
+            }
+        }
+        else
+        {
+            Eigen::Vector3d start(_rosGoals.goals[i].path_points.front().position.x, _rosGoals.goals[i].path_points.front().position.y, getYaw(_rosGoals.goals[i].path_points.front().orientation));
+            _starts.push_back(start);
+        }
+    }
+
+    return retval;
+}
+
+void Planner_Node::goalsCallback(const tuw_multi_robot_msgs::RobotGoalsArray &_goals)
+{
     //Get robots
     std::vector<Eigen::Vector3d> starts;
     std::vector<Eigen::Vector3d> goals;
     std::vector<float> radius;
-    for (int i = 0; i < _goals.goals.size(); i++)
-    {
-        std::string name = _goals.goals[i].robot_name;
-        if (std::find(subscribed_robot_names_.begin(), subscribed_robot_names_.end(), name) != subscribed_robot_names_.end())
-        {
-            //Robot exists
-            std::pair<TopicStatus, float> radius_pair = robot_radius_[name];
-            if (radius_pair.first.getStatus() == Planner_Node::TopicStatus::status::inactive)
-            {
-                ROS_INFO("Aborting because of inactive robots");
-                retval = false;
-                missing_robots_.push_back(name);
-                continue;
-            }
-            radius.push_back(robot_radius_[name].second);
 
-            if (_goals.goals[i].path_points.size() == 0)
-            {
-                ROS_INFO("To less goal points for robot %s", name.c_str());
-                return;
-            }
-            else if (_goals.goals[i].path_points.size() == 1)
-            {
-                std::pair<TopicStatus, Eigen::Vector3d> start_pair = robot_starts_[name];
-                if (start_pair.first.getStatus() == Planner_Node::TopicStatus::status::inactive)
-                {
-                    ROS_INFO("Aborting because of inactive robots");
-                    retval = false;
-                    missing_robots_.push_back(name);
-                    continue;
-                }
+    bool preparationSuccessful = preparePlanning(radius, starts, goals, _goals);
 
-                starts.push_back(robot_starts_[name].second);
-            }
-            else
-            {
-                Eigen::Vector3d start(_goals.goals[i].path_points.front().position.x, _goals.goals[i].path_points.front().position.y, getYaw(_goals.goals[i].path_points.front().orientation));
-                starts.push_back(start);
-            }
-            Eigen::Vector3d goal(_goals.goals[i].path_points.back().position.x, _goals.goals[i].path_points.back().position.y, getYaw(_goals.goals[i].path_points.back().orientation));
-            goals.push_back(goal);
-        }
-        else
-        {
-            ROS_INFO("Aborting because of inactive robots");
-            retval = false;
-            missing_robots_.push_back(name);
-            continue;
-        }
-    }
-
-    if (retval && got_map_ && got_graph_)
+    if (preparationSuccessful && got_map_ && got_graph_)
     {
         auto t1 = std::chrono::high_resolution_clock::now();
-        retval &= makePlan(starts, goals, radius, distMap_, mapResolution_, mapOrigin_, graph_);
-        if (retval)
+        preparationSuccessful &= makePlan(starts, goals, radius, distMap_, mapResolution_, mapOrigin_, graph_);
+        if (preparationSuccessful)
         {
             int nx = distMap_.cols;
             int ny = distMap_.rows;
@@ -357,7 +370,7 @@ void Planner_Node::goalsCallback(const tuw_multi_robot_msgs::RobotGoalsArray &_g
             int cx = mapOrigin_[0];
             int cy = mapOrigin_[1];
 
-            Publish();
+            publish();
             ROS_INFO("Multi Robot Router: Publishing Plan");
             freshPlan_ = false;
         }
@@ -365,7 +378,7 @@ void Planner_Node::goalsCallback(const tuw_multi_robot_msgs::RobotGoalsArray &_g
         {
             ROS_INFO("Multi Robot Router: No Plan found");
 
-            PublishEmpty();
+            publishEmpty();
         }
 
         auto t2 = std::chrono::high_resolution_clock::now();
@@ -376,12 +389,12 @@ void Planner_Node::goalsCallback(const tuw_multi_robot_msgs::RobotGoalsArray &_g
     }
     else if (!got_map_ || !got_graph_)
     {
-        PublishEmpty();
-        ROS_INFO("No Map or Graph received");
+        publishEmpty();
+        ROS_INFO("Multi Robot Router: No Map or Graph received");
     }
     else
     {
-        PublishEmpty();
+        publishEmpty();
     }
 }
 
@@ -394,7 +407,7 @@ float Planner_Node::getYaw(const geometry_msgs::Quaternion &_rot)
     return yaw;
 }
 
-void Planner_Node::PublishEmpty()
+void Planner_Node::publishEmpty()
 {
     for (int i = 0; i < subscribed_robot_names_.size(); i++)
     {
@@ -428,7 +441,7 @@ void Planner_Node::PublishEmpty()
     pubPlannerStatus_.publish(ps);
 }
 
-void Planner_Node::Publish()
+void Planner_Node::publish()
 {
     for (int i = 0; i < subscribed_robot_names_.size(); i++)
     {

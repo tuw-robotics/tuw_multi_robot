@@ -88,8 +88,8 @@ void VoronoiSegmentVisual::setMessage(const tuw_multi_robot_msgs::Graph::ConstPt
 		float z1 = p1.z * msg->resolution + msg->origin.position.z;
 		float z2 = p2.z * msg->resolution + msg->origin.position.z;
 
-		Line l1 = offsetLine(l, msg->resolution * (0.5 + seg.width));
-		Line l2 = offsetLine(l, msg->resolution * (-0.5 - seg.width));
+		Line l1 = offsetLine(l, msg->resolution * (0.5 + seg.width / 2));
+		Line l2 = offsetLine(l, msg->resolution * (-0.5 - seg.width / 2));
 
 		pathLine[i * 4].reset(new rviz::Line(scene_manager_, frame_node_));
 		pathLine[i * 4]->setColor(colorPath_);

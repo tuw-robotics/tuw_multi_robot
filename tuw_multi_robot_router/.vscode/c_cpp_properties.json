@@ -25,7 +25,8 @@
                 "/home/ubuntu/ros/ws_tuw_multi_robot/src/tuw_multi_robot/tuw_multi_robot_ctrl/include",
                 "/home/ubuntu/ros/ws_tuw_multi_robot/src/tuw_multi_robot/tuw_multi_robot_rviz/include",
                 "/home/ubuntu/ros/ws_tuw_multi_robot/src/tuw_multi_robot/tuw_voronoi_graph/include",
-                "/usr/include"
+                "/usr/include",
+                "/opt/ros/kinetic/include/opencv-3.3.1-dev"
             ],
             "name": "Linux",
             "intelliSenseMode": "clang-x64"

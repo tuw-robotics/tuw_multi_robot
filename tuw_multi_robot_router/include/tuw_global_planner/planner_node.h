@@ -61,11 +61,11 @@ public:
   /**
    * @brief publishes an empty RoutingTable 
    */
-  void PublishEmpty();
+  void publishEmpty();
   /**
    * @brief publishes a RoutingTable 
    */
-  void Publish();
+  void publish();
   /**
    * @brief used to update the nodes timeout to latch topics
    * @param secs the seconds passed since the last update
@@ -108,6 +108,7 @@ private:
   ros::Subscriber subRobotInfo_;
 
   std::vector<std::string> subscribed_robot_names_;
+  std::map<std::string, bool> robot_active_status_;
   std::vector<std::string> missing_robots_;
   std::map<std::string, std::pair<TopicStatus, Eigen::Vector3d>> robot_starts_;
   std::map<std::string, std::pair<TopicStatus, float>> robot_radius_;
@@ -143,6 +144,7 @@ private:
   void unsubscribeTopic(std::string _robot_name);
   float getYaw(const geometry_msgs::Quaternion &_rot);
   float calcRadius(const int shape, const std::vector<float> &shape_variables) const;
+  bool preparePlanning(std::vector<float> &_radius, std::vector<Eigen::Vector3d> &_starts, std::vector<Eigen::Vector3d> &_goals, const tuw_multi_robot_msgs::RobotGoalsArray &_ros_goals);
 };
 } // namespace multi_robot_router
 #endif // PLANNER_NODE_H
