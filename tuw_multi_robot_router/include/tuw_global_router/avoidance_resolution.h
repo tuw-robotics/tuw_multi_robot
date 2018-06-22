@@ -29,86 +29,85 @@
 #ifndef AVOIDANCE_RESOLUTION_H
 #define AVOIDANCE_RESOLUTION_H
 
-#include <tuw_global_planner/srr_utils.h>
-#include <tuw_global_planner/route_coordinator.h>
-#include <tuw_global_planner/collision_resolution.h>
+#include <tuw_global_router/srr_utils.h>
+#include <tuw_global_router/route_coordinator.h>
+#include <tuw_global_router/collision_resolution.h>
 #include <queue>
 
-
-namespace multi_robot_router 
+namespace multi_robot_router
 {
-    class AvoidanceResolution : public CollisionResolution
-    {
-        public:
-           /**
+class AvoidanceResolution : public CollisionResolution
+{
+  public:
+    /**
            * @brief constructor
            * @param _timeoverlap the timeoverlap used for assigning new vertices (e.g. Vertex _current form 0 to 10 + timeoverlap Vertex _nex from 10 - timeoverlap to 20 + timeoverlap)
            */
-            AvoidanceResolution(uint32_t _timeoverlap);
-            AvoidanceResolution();
+    AvoidanceResolution(uint32_t _timeoverlap);
+    AvoidanceResolution();
 
-            /**
+    /**
             * @brief resets the session (setting the new route querry and potential calculator)
             * @param _route_querry the route coordinator to coordinate paths
             * @param _pCalc the potential calculator for assigning potential to expanded Vertices
             * @param _robot_radius the radius of the current robot
             */
-            void resetSession(const RouteCoordinatorWrapper *_route_querry, const PotentialCalculator *_pCalc, const uint32_t _robot_radius);
-            /**
+    void resetSession(const RouteCoordinatorWrapper *_route_querry, const PotentialCalculator *_pCalc, const uint32_t _robot_radius);
+    /**
              * @brief resolves a found collision between two robots. 
              * @param _current the last expanded vertex 
              * @param _next the vertex to expand to 
              * @param _collision the index of the colliding robot
              * @returns a vector of references to Vertices where the Potential Expander can continue expanding
              */
-            std::vector<std::reference_wrapper<Vertex>> resolve(Vertex &_current, Vertex &_next, int32_t _collision);
-            /**
+    std::vector<std::reference_wrapper<Vertex>> resolve(Vertex &_current, Vertex &_next, int32_t _collision);
+    /**
              * @brief returns amount of robot collisions found in each resolve try after resetSession
              * @returns a std::vector where the index is the robot index and the value the number of collisions with this robot 
              */
-            const std::vector<uint32_t> &getRobotCollisions() const;
-            /**
+    const std::vector<uint32_t> &getRobotCollisions() const;
+    /**
              * @brief increases the collision count of one robot
              * @param _coll the robot elected for increasing its collisions
              */
-            void saveCollision(const uint32_t _coll);
-        private:
-            struct queueElement
-            {
-                Vertex *current;
-                Vertex *next;
-                int32_t collision;
-                float potential;
-            };
+    void saveCollision(const uint32_t _coll);
 
-            //Tracks back until a free vertex or the start vertex is found to avoid a robot
-            void trackBack(Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential);
-            //Tries to avoid a robot on a free segment of a crossing, which is not part of the route
-            void avoid(Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential);
-            //Expands to the next segment and back to the current one
-            void moveSegment(Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential);
-            //Expands to the next segment and back to the current one
-            bool expandSegment(const Vertex &cSeg, Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential);   
-            //Avoids a robot by inserting a wait Vertex before start
-            void avoidStart(Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential);
-            //Avoids a robot by inserting a wait Vertex after goal
-            void avoidGoal(Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential);
-            //Saves robot collisions automatically extending the collision vertex
-            void addCollision(const uint32_t robot);
-
-
-            const RouteCoordinatorWrapper *route_querry_;
-            const PotentialCalculator *pCalc_;
-            uint32_t timeoverlap_;
-            uint32_t robotDiameter_;
-            //unique_ptr to keep references of Vertex (Heap), because the list is updated while runtime
-            std::vector<std::vector<std::unique_ptr<Vertex>>> generatedSubgraphs_;
-            std::vector<std::reference_wrapper<Vertex>> foundSolutions_;
-            std::vector<uint32_t> encounteredCollisions_;
-            uint32_t resolutionAttemp_ = 0;
-            bool avoidStartSuccessorDone_ = false;
-            bool avoidStartPredecessorDone_ = false;
-            std::queue<queueElement> queue_;
+  private:
+    struct queueElement
+    {
+        Vertex *current;
+        Vertex *next;
+        int32_t collision;
+        float potential;
     };
-}
+
+    //Tracks back until a free vertex or the start vertex is found to avoid a robot
+    void trackBack(Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential);
+    //Tries to avoid a robot on a free segment of a crossing, which is not part of the route
+    void avoid(Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential);
+    //Expands to the next segment and back to the current one
+    void moveSegment(Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential);
+    //Expands to the next segment and back to the current one
+    bool expandSegment(const Vertex &cSeg, Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential);
+    //Avoids a robot by inserting a wait Vertex before start
+    void avoidStart(Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential);
+    //Avoids a robot by inserting a wait Vertex after goal
+    void avoidGoal(Vertex &_current, Vertex &_next, const int32_t _collision, const float _freePotential);
+    //Saves robot collisions automatically extending the collision vertex
+    void addCollision(const uint32_t robot);
+
+    const RouteCoordinatorWrapper *route_querry_;
+    const PotentialCalculator *pCalc_;
+    uint32_t timeoverlap_;
+    uint32_t robotDiameter_;
+    //unique_ptr to keep references of Vertex (Heap), because the list is updated while runtime
+    std::vector<std::vector<std::unique_ptr<Vertex>>> generatedSubgraphs_;
+    std::vector<std::reference_wrapper<Vertex>> foundSolutions_;
+    std::vector<uint32_t> encounteredCollisions_;
+    uint32_t resolutionAttemp_ = 0;
+    bool avoidStartSuccessorDone_ = false;
+    bool avoidStartPredecessorDone_ = false;
+    std::queue<queueElement> queue_;
+};
+} // namespace multi_robot_router
 #endif // HEURISTIC_H

@@ -26,7 +26,7 @@
  *
  */
 
-#include <tuw_global_planner/planner.h>
+#include <tuw_global_router/router.h>
 #include <chrono>
 #include <unordered_set>
 
@@ -37,26 +37,26 @@
 namespace multi_robot_router
 {
 
-Planner::Planner() : Planner(0)
+Router::Router() : Router(0)
 {
 }
 
-Planner::Planner(const uint32_t _nr_robots) : starts_(_nr_robots),
-                                              goals_(_nr_robots),
-                                              mrr_(_nr_robots),
-                                              mrrTs_(_nr_robots, 8)
+Router::Router(const uint32_t _nr_robots) : starts_(_nr_robots),
+                                            goals_(_nr_robots),
+                                            mrr_(_nr_robots),
+                                            mrrTs_(_nr_robots, 8)
 {
     robot_nr_ = _nr_robots;
     std::vector<uint32_t> robotRadius(robot_nr_, 0);
     setPlannerType(routerType::multiThreadSrr, 8);
 }
 
-void Planner::setCollisionResolutionType(const SegmentExpander::CollisionResolverType _cr)
+void Router::setCollisionResolutionType(const SegmentExpander::CollisionResolverType _cr)
 {
     multiRobotRouter_->setCollisionResolver(_cr);
 }
 
-void Planner::setPlannerType(Planner::routerType _type, uint32_t _nr_threads)
+void Router::setPlannerType(Router::routerType _type, uint32_t _nr_threads)
 {
     if (_type == routerType::multiThreadSrr)
         multiRobotRouter_ = &mrrTs_;
@@ -64,7 +64,7 @@ void Planner::setPlannerType(Planner::routerType _type, uint32_t _nr_threads)
         multiRobotRouter_ = &mrr_;
 }
 
-void Planner::resize(const uint32_t _nr_robots)
+void Router::resize(const uint32_t _nr_robots)
 {
     robot_nr_ = _nr_robots;
     starts_.resize(_nr_robots);
@@ -80,7 +80,7 @@ void Planner::resize(const uint32_t _nr_robots)
     realStart_.resize(_nr_robots);
 }
 
-bool Planner::preprocessEndpoints(const std::vector<float> &_radius, const float &resolution, const Eigen::Vector2d &origin, const std::vector<Segment> &_graph)
+bool Router::preprocessEndpoints(const std::vector<float> &_radius, const float &resolution, const Eigen::Vector2d &origin, const std::vector<Segment> &_graph)
 {
     for (uint32_t i = 0; i < goals_.size(); i++)
     {
@@ -104,7 +104,7 @@ bool Planner::preprocessEndpoints(const std::vector<float> &_radius, const float
     return true;
 }
 
-bool Planner::processEndpointsExpander(const cv::Mat &_map, const std::vector<Segment> &_graph, const Eigen::Vector2d &_realStart, const Eigen::Vector2d &_realGoal, Eigen::Vector2d &_voronoiStart, Eigen::Vector2d &_voronoiGoal, uint32_t &_segmentStart, uint32_t &_segmentGoal, const uint32_t _diameter, const uint32_t _index) const
+bool Router::processEndpointsExpander(const cv::Mat &_map, const std::vector<Segment> &_graph, const Eigen::Vector2d &_realStart, const Eigen::Vector2d &_realGoal, Eigen::Vector2d &_voronoiStart, Eigen::Vector2d &_voronoiGoal, uint32_t &_segmentStart, uint32_t &_segmentGoal, const uint32_t _diameter, const uint32_t _index) const
 {
 
     int32_t segIdStart = -1;
@@ -186,7 +186,7 @@ bool Planner::processEndpointsExpander(const cv::Mat &_map, const std::vector<Se
     return true;
 }
 
-bool Planner::calculateStartPoints(const std::vector<float> &_radius, const cv::Mat &_map, const float &resolution, const Eigen::Vector2d &origin, const std::vector<Segment> &_graph)
+bool Router::calculateStartPoints(const std::vector<float> &_radius, const cv::Mat &_map, const float &resolution, const Eigen::Vector2d &origin, const std::vector<Segment> &_graph)
 {
     if (!preprocessEndpoints(_radius, resolution, origin, _graph))
         return false;
@@ -231,7 +231,7 @@ bool Planner::calculateStartPoints(const std::vector<float> &_radius, const cv::
     return true;
 }
 
-int32_t Planner::getSegment(const std::vector<Segment> &_graph, const Eigen::Vector2d &_odom) const
+int32_t Router::getSegment(const std::vector<Segment> &_graph, const Eigen::Vector2d &_odom) const
 {
     float minDist = FLT_MAX;
     int32_t segment = -1;
@@ -251,7 +251,7 @@ int32_t Planner::getSegment(const std::vector<Segment> &_graph, const Eigen::Vec
     return segment;
 }
 
-float Planner::distanceToSegment(const Segment &_s, const Eigen::Vector2d &_p) const
+float Router::distanceToSegment(const Segment &_s, const Eigen::Vector2d &_p) const
 {
     Eigen::Vector2d n = _s.getEnd() - _s.getStart();
     Eigen::Vector2d pa = _s.getStart() - _p;
@@ -274,7 +274,7 @@ float Planner::distanceToSegment(const Segment &_s, const Eigen::Vector2d &_p) c
     return std::sqrt(e.dot(e));
 }
 
-bool Planner::resolveSegment(const std::vector<Segment> &_graph, const uint32_t &_segId, const Eigen::Vector2d &_originPoint, const float &_diameter, uint32_t &_foundSeg) const
+bool Router::resolveSegment(const std::vector<Segment> &_graph, const uint32_t &_segId, const Eigen::Vector2d &_originPoint, const float &_diameter, uint32_t &_foundSeg) const
 {
     const Segment seg = _graph[_segId];
 
@@ -322,7 +322,7 @@ bool Planner::resolveSegment(const std::vector<Segment> &_graph, const uint32_t 
     return false;
 }
 
-bool Planner::makePlan(const std::vector<Eigen::Vector3d> &_starts, const std::vector<Eigen::Vector3d> &_goals, const std::vector<float> &_radius, const cv::Mat &_map, const float &_resolution, const Eigen::Vector2d &_origin, const std::vector<Segment> &_graph)
+bool Router::makePlan(const std::vector<Eigen::Vector3d> &_starts, const std::vector<Eigen::Vector3d> &_goals, const std::vector<float> &_radius, const cv::Mat &_map, const float &_resolution, const Eigen::Vector2d &_origin, const std::vector<Segment> &_graph)
 {
     auto t1 = std::chrono::high_resolution_clock::now();
     std::clock_t startcputime = std::clock();
@@ -407,7 +407,7 @@ bool Planner::makePlan(const std::vector<Eigen::Vector3d> &_starts, const std::v
     return true;
 }
 
-void Planner::optimizePaths(const std::vector<Segment> &_graph)
+void Router::optimizePaths(const std::vector<Segment> &_graph)
 {
     if (routingTable_.size() > 1)
         return;
@@ -419,7 +419,7 @@ void Planner::optimizePaths(const std::vector<Segment> &_graph)
     }
 }
 
-void Planner::postprocessRoutingTable()
+void Router::postprocessRoutingTable()
 {
     if (goalMode_ == goalMode::use_voronoi_goal)
     {
@@ -452,32 +452,32 @@ void Planner::postprocessRoutingTable()
     }
 }
 
-const std::vector<Checkpoint> &Planner::getRoute(const uint32_t _robot) const
+const std::vector<Checkpoint> &Router::getRoute(const uint32_t _robot) const
 {
     return routingTable_[_robot];
 }
 
-uint32_t Planner::getDuration_ms() const
+uint32_t Router::getDuration_ms() const
 {
     return duration_;
 }
 
-float Planner::getLongestPathLength() const
+float Router::getLongestPathLength() const
 {
     return longestPatLength_;
 }
 
-float Planner::getOverallPathLength() const
+float Router::getOverallPathLength() const
 {
     return overallPathLength_;
 }
 
-uint32_t Planner::getPriorityScheduleAttemps() const
+uint32_t Router::getPriorityScheduleAttemps() const
 {
     return multiRobotRouter_->getPriorityScheduleAttempts();
 }
 
-uint32_t Planner::getSpeedScheduleAttemps() const
+uint32_t Router::getSpeedScheduleAttemps() const
 {
     return multiRobotRouter_->getSpeedScheduleAttempts();
 }

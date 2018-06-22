@@ -26,49 +26,43 @@
  *
  */
 
-
-#include <tuw_global_planner/empty_resolution.h>
+#include <tuw_global_router/empty_resolution.h>
 #include <iostream>
 
 namespace multi_robot_router
 {
-    EmptyResolution::EmptyResolution()
-    {
-        encounteredCollisions_.clear();
-    }
-
-    void EmptyResolution::resetSession(const RouteCoordinatorWrapper *_route_querry, const PotentialCalculator *_pCalc, const uint32_t _robotDiameter)
-    {
-        encounteredCollisions_.clear();
-    }
-
-
-    void EmptyResolution::addCollision(const uint32_t robot)
-    {
-        if(encounteredCollisions_.size() <= robot)
-            encounteredCollisions_.resize(robot + 1, 0);
-
-        encounteredCollisions_[robot]++;
-    }
-
-    void EmptyResolution::saveCollision(const uint32_t _coll)
-    {
-        addCollision(_coll);
-    }
-
-
-    const std::vector< uint32_t > &EmptyResolution::getRobotCollisions() const
-    {
-        return encounteredCollisions_;
-    }
-
-
-    std::vector<std::reference_wrapper<Vertex>> EmptyResolution::resolve(Vertex &_current, Vertex &_next, int32_t _collision)
-    {
-        addCollision(_collision);
-
-        return foundSolutions_;
-    }
+EmptyResolution::EmptyResolution()
+{
+    encounteredCollisions_.clear();
 }
 
+void EmptyResolution::resetSession(const RouteCoordinatorWrapper *_route_querry, const PotentialCalculator *_pCalc, const uint32_t _robotDiameter)
+{
+    encounteredCollisions_.clear();
+}
 
+void EmptyResolution::addCollision(const uint32_t robot)
+{
+    if (encounteredCollisions_.size() <= robot)
+        encounteredCollisions_.resize(robot + 1, 0);
+
+    encounteredCollisions_[robot]++;
+}
+
+void EmptyResolution::saveCollision(const uint32_t _coll)
+{
+    addCollision(_coll);
+}
+
+const std::vector<uint32_t> &EmptyResolution::getRobotCollisions() const
+{
+    return encounteredCollisions_;
+}
+
+std::vector<std::reference_wrapper<Vertex>> EmptyResolution::resolve(Vertex &_current, Vertex &_next, int32_t _collision)
+{
+    addCollision(_collision);
+
+    return foundSolutions_;
+}
+} // namespace multi_robot_router

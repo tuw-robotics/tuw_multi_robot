@@ -26,96 +26,93 @@
  *
  */
 
-#include <tuw_global_planner/route_generator.h>
+#include <tuw_global_router/route_generator.h>
 
 namespace multi_robot_router
 {
-    std::vector< std::vector< Checkpoint > > RouteGenerator::generatePath(const std::vector< std::vector< RouteVertex > > &_paths, const RouteCoordinator &routeQuerry_) const
+std::vector<std::vector<Checkpoint>> RouteGenerator::generatePath(const std::vector<std::vector<RouteVertex>> &_paths, const RouteCoordinator &routeQuerry_) const
+{
+    std::vector<std::vector<Checkpoint>> generatedPaths;
+
+    for (uint32_t i = 0; i < _paths.size(); i++)
     {
-        std::vector<std::vector<Checkpoint>> generatedPaths;
+        std::vector<Checkpoint> generatedPath;
 
-        for(uint32_t i = 0; i < _paths.size(); i++)
+        for (uint32_t j = 0; j < _paths[i].size(); j++)
         {
-            std::vector<Checkpoint> generatedPath;
-
-            for(uint32_t j = 0; j < _paths[i].size(); j++)
+            if (_paths[i][j].direction == RouteVertex::path_direction::none)
             {
-                if(_paths[i][j].direction == RouteVertex::path_direction::none)
-                {
-                    generatedPath.clear();
-                    return generatedPaths;
-                }
-
-
-                Checkpoint seg;
-                seg = createElement(_paths[i][j]);
-
-                addPreconditions(seg, _paths[i][j], i, _paths, routeQuerry_);
-                generatedPath.push_back(seg);
+                generatedPath.clear();
+                return generatedPaths;
             }
 
-            generatedPaths.push_back(generatedPath);
+            Checkpoint seg;
+            seg = createElement(_paths[i][j]);
+
+            addPreconditions(seg, _paths[i][j], i, _paths, routeQuerry_);
+            generatedPath.push_back(seg);
         }
 
-        return generatedPaths;
+        generatedPaths.push_back(generatedPath);
     }
 
+    return generatedPaths;
+}
 
+Checkpoint RouteGenerator::createElement(const RouteVertex &_element) const
+{
+    Checkpoint ps;
 
-    Checkpoint RouteGenerator::createElement(const RouteVertex &_element) const
+    if (_element.direction == RouteVertex::path_direction::start_to_end)
     {
-        Checkpoint ps;
+        ps.segId = _element.getSegment().getSegmentId();
+        ps.end[0] = _element.getSegment().getStart()[0];
+        ps.end[1] = _element.getSegment().getStart()[1];
+        ps.start[0] = _element.getSegment().getEnd()[0];
+        ps.start[1] = _element.getSegment().getEnd()[1];
 
-        if(_element.direction == RouteVertex::path_direction::start_to_end)
-        {
-            ps.segId = _element.getSegment().getSegmentId();
-            ps.end[0] = _element.getSegment().getStart()[0];
-            ps.end[1] = _element.getSegment().getStart()[1];
-            ps.start[0] = _element.getSegment().getEnd()[0];
-            ps.start[1] = _element.getSegment().getEnd()[1];
-            
-            float angle = atan2(ps.start[1] - ps.end[1], ps.start[0] - ps.end[0]);
-            ps.start[2] = angle;
-            ps.end[2] = angle;
-        }
-        else
-        {
-            ps.segId = _element.getSegment().getSegmentId();
-            ps.end[0] = _element.getSegment().getEnd()[0];
-            ps.end[1] = _element.getSegment().getEnd()[1];
-            ps.start[0] = _element.getSegment().getStart()[0];
-            ps.start[1] = _element.getSegment().getStart()[1];
-            
-            float angle = atan2(ps.end[1] - ps.start[1], ps.end[0] - ps.start[0]);
-            ps.start[2] = angle;
-            ps.end[2] = angle;
-        }
+        float angle = atan2(ps.start[1] - ps.end[1], ps.start[0] - ps.end[0]);
+        ps.start[2] = angle;
+        ps.end[2] = angle;
+    }
+    else
+    {
+        ps.segId = _element.getSegment().getSegmentId();
+        ps.end[0] = _element.getSegment().getEnd()[0];
+        ps.end[1] = _element.getSegment().getEnd()[1];
+        ps.start[0] = _element.getSegment().getStart()[0];
+        ps.start[1] = _element.getSegment().getStart()[1];
 
-        return ps;
+        float angle = atan2(ps.end[1] - ps.start[1], ps.end[0] - ps.start[0]);
+        ps.start[2] = angle;
+        ps.end[2] = angle;
     }
 
-    void RouteGenerator::addPreconditions(Checkpoint &_segment, const RouteVertex &_segToFind, const uint32_t _pathNr, const std::vector<std::vector<RouteVertex>> &_paths, const RouteCoordinator &routeQuerry_) const
+    return ps;
+}
+
+void RouteGenerator::addPreconditions(Checkpoint &_segment, const RouteVertex &_segToFind, const uint32_t _pathNr, const std::vector<std::vector<RouteVertex>> &_paths, const RouteCoordinator &routeQuerry_) const
+{
+    std::vector<std::pair<uint32_t, float>> list = routeQuerry_.getListOfRobotsHigherPrioritizedRobots(_pathNr, _segToFind.getSegment().getSegmentId(), _segToFind.potential);
+    _segment.preconditions.clear();
+
+    for (const std::pair<uint32_t, float> &rob : list)
     {
-        std::vector<std::pair<uint32_t, float>> list = routeQuerry_.getListOfRobotsHigherPrioritizedRobots(_pathNr, _segToFind.getSegment().getSegmentId(), _segToFind.potential);
-        _segment.preconditions.clear();
+        bool found = false;
 
-        for(const std::pair<uint32_t, float> &rob : list)
+        for (uint32_t i = 0; i < _paths[rob.first].size(); i++)
         {
-            bool found = false;
-
-            for(uint32_t i = 0; i < _paths[rob.first].size(); i++)
+            if (_paths[rob.first][i].potential >= rob.second)
             {
-                if(_paths[rob.first][i].potential >= rob.second)
-                {
-                    Checkpoint::Precondition p;
-                    p.robotId = rob.first;
-                    p.stepCondition = i;
-                    _segment.updatePreconditions(p);
-                    
-                    found = true;
-                    break;
-                }
+                Checkpoint::Precondition p;
+                p.robotId = rob.first;
+                p.stepCondition = i;
+                _segment.updatePreconditions(p);
+
+                found = true;
+                break;
             }
         }
     }
 }
+} // namespace multi_robot_router

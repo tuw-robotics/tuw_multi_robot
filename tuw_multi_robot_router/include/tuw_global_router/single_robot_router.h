@@ -29,36 +29,35 @@
 #ifndef SRR_H
 #define SRR_H
 
-#include <tuw_global_planner/srr_utils.h>
-#include <tuw_global_planner/route_coordinator.h>
-#include <tuw_global_planner/segment_expander.h>
-#include <tuw_global_planner/traceback.h>
+#include <tuw_global_router/srr_utils.h>
+#include <tuw_global_router/route_coordinator.h>
+#include <tuw_global_router/segment_expander.h>
+#include <tuw_global_router/traceback.h>
 #include <iostream>
 
 namespace multi_robot_router
 {
-    typedef struct Robot
-    {
-        int id;
-        float diameter;
-        float speedMultiplier;
-        Robot(int _id, float _d, float _s) : id(_id), diameter(_d), speedMultiplier(_s) {}
-        Robot(int _id, float _d) : Robot(_id, _d, 1) {}
-    } Robot;
+typedef struct Robot
+{
+    int id;
+    float diameter;
+    float speedMultiplier;
+    Robot(int _id, float _d, float _s) : id(_id), diameter(_d), speedMultiplier(_s) {}
+    Robot(int _id, float _d) : Robot(_id, _d, 1) {}
+} Robot;
 
-
-    class SingleRobotRouter
-    {
-        public:
-            /** 
+class SingleRobotRouter
+{
+  public:
+    /** 
              * @brief constructor 
              */
-            SingleRobotRouter();
-            /** 
+    SingleRobotRouter();
+    /** 
              * @brief copy constructor 
              */
-            SingleRobotRouter(const SingleRobotRouter &srr);
-            /**
+    SingleRobotRouter(const SingleRobotRouter &srr);
+    /**
              * @brief calculates a route candidate coordinated with other robots by the given route Coordinated
              * @param _start the start vertex
              * @param _goal the goal vertex
@@ -69,40 +68,41 @@ namespace multi_robot_router
              * @param _maxIterations the maximum allowed iterations of the loop
              * @returns returns true if a route candidate is found
              */
-            bool getRouteCandidate(const uint32_t _start, const uint32_t _goal, const RouteCoordinatorWrapper &path_coordinator, const uint32_t _robotDiameter, const float &_robotSpeed, std::vector<RouteVertex> &path, const uint32_t _maxIterations);
-            
-            /**
+    bool getRouteCandidate(const uint32_t _start, const uint32_t _goal, const RouteCoordinatorWrapper &path_coordinator, const uint32_t _robotDiameter, const float &_robotSpeed, std::vector<RouteVertex> &path, const uint32_t _maxIterations);
+
+    /**
              * @brief returns the found robot collisions while planning
              * @returns the found robot collisions 
              */
-            const std::vector<uint32_t> &getRobotCollisions() const;
-            /**
+    const std::vector<uint32_t> &getRobotCollisions() const;
+    /**
              * @brief generates the search graph out of the given graph (and optimizes it)
              * @param _graph the main graph
              * @param minSegmentWidth_ used to optimize the graph (e.g. if no robot has less than d in size all segments with less space than d can be removed) 
              */
-            void initSearchGraph(const std::vector<Segment> &_graph, const uint32_t minSegmentWidth_ = 0);
-            /**
+    void initSearchGraph(const std::vector<Segment> &_graph, const uint32_t minSegmentWidth_ = 0);
+    /**
              * @brief sets the collisionResolver used 
              */
-            void setCollisionResolver(const SegmentExpander::CollisionResolverType cRes);
-            /**
+    void setCollisionResolver(const SegmentExpander::CollisionResolverType cRes);
+    /**
              * @brief returns the result of the last planning attempt 
              */
-            bool getLastResult();
-            /**
+    bool getLastResult();
+    /**
              * @brief returns the CollisionResolverType 
              */
-            SegmentExpander::CollisionResolverType getCollisionResolverType() const;
-        private:
-            void resetAttempt();
-            SegmentExpander segment_expander_;
-            Traceback traceback_;
-            uint32_t robotDiameter_;
-            //unique_ptr to keep references of Vertex (Heap), because the list is updated while runtime
-            std::vector<std::unique_ptr<Vertex>> searchGraph_;
-            bool lastAttempt_ = false;
-            std::vector<RouteVertex> path_;
-    };
-}
+    SegmentExpander::CollisionResolverType getCollisionResolverType() const;
+
+  private:
+    void resetAttempt();
+    SegmentExpander segment_expander_;
+    Traceback traceback_;
+    uint32_t robotDiameter_;
+    //unique_ptr to keep references of Vertex (Heap), because the list is updated while runtime
+    std::vector<std::unique_ptr<Vertex>> searchGraph_;
+    bool lastAttempt_ = false;
+    std::vector<RouteVertex> path_;
+};
+} // namespace multi_robot_router
 #endif

@@ -29,42 +29,42 @@
 #ifndef POTENTIAL_CALCULATOR_H
 #define POTENTIAL_CALCULATOR_H
 
-#include <tuw_global_planner/srr_utils.h>
+#include <tuw_global_router/srr_utils.h>
 
 namespace multi_robot_router
 {
-    class PotentialCalculator
-    {
-        public:
-            /**
+class PotentialCalculator
+{
+  public:
+    /**
              * @brief constructor
              */
-            PotentialCalculator();
-            /**
+    PotentialCalculator();
+    /**
             * @brief constructor
             * @param _multiplier the multiplier used to multiply the potential with (used for reducing robots speeds)
             */
-            PotentialCalculator(const float &_multiplier);
-            /**
+    PotentialCalculator(const float &_multiplier);
+    /**
             * @brief sets the Potential multiplier
             * @param _multiplier the multiplier used to multiply the potential with (used for reducing robots speeds)
             */
-            void SetMultiplier(const float &_multiplier);
-            /**
+    void SetMultiplier(const float &_multiplier);
+    /**
              * @brief calculates the potential for a vertex
              * @param _vertex the vertext used for the calculation
              * @returns the calculated Potential 
              */
-            float CalculatePotential(const Vertex &_vertex) const;
-            /**
+    float CalculatePotential(const Vertex &_vertex) const;
+    /**
              * @brief calculates the potential for a segment
              * @param _segment the segment used for the calculation
              * @returns the calculated Potential 
              */
-            float CalculatePotential(const Segment &_segment) const;
+    float CalculatePotential(const Segment &_segment) const;
 
-        private:
-            float multiplier_;
-    };
-}
+  private:
+    float multiplier_;
+};
+} // namespace multi_robot_router
 #endif

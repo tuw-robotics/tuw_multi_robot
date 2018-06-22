@@ -26,98 +26,97 @@
  *
  */
 
-#include <tuw_global_planner/single_robot_router.h>
-#include <tuw_global_planner/heuristic.h>
-#include <tuw_global_planner/potential_calculator.h>
+#include <tuw_global_router/single_robot_router.h>
+#include <tuw_global_router/heuristic.h>
+#include <tuw_global_router/potential_calculator.h>
 
 namespace multi_robot_router
 {
-    SingleRobotRouter::SingleRobotRouter() : segment_expander_(SegmentExpander::CollisionResolverType::avoidance)
-    { }
-    
-    SingleRobotRouter::SingleRobotRouter(const SingleRobotRouter &srr) : segment_expander_(srr.getCollisionResolverType())
-    { }
+SingleRobotRouter::SingleRobotRouter() : segment_expander_(SegmentExpander::CollisionResolverType::avoidance)
+{
+}
 
-    void SingleRobotRouter::setCollisionResolver(const SegmentExpander::CollisionResolverType cRes)
+SingleRobotRouter::SingleRobotRouter(const SingleRobotRouter &srr) : segment_expander_(srr.getCollisionResolverType())
+{
+}
+
+void SingleRobotRouter::setCollisionResolver(const SegmentExpander::CollisionResolverType cRes)
+{
+    segment_expander_.setCollisionResolver(cRes);
+}
+
+SegmentExpander::CollisionResolverType SingleRobotRouter::getCollisionResolverType() const
+{
+    return segment_expander_.getCollisionResolver();
+}
+
+bool SingleRobotRouter::getRouteCandidate(const uint32_t _start, const uint32_t _goal, const RouteCoordinatorWrapper &path_coordinator, const uint32_t _robotDiameter, const float &_robotSpeed, std::vector<RouteVertex> &_path, const uint32_t _maxIterations)
+{
+    robotDiameter_ = _robotDiameter;
+    resetAttempt();
+    segment_expander_.setSpeed(_robotSpeed);
+
+    if (!segment_expander_.calculatePotentials(&path_coordinator, *(searchGraph_[_start].get()), *(searchGraph_[_goal].get()), _maxIterations, robotDiameter_))
     {
-        segment_expander_.setCollisionResolver(cRes);
+        lastAttempt_ = false;
+        return false;
     }
 
-    SegmentExpander::CollisionResolverType SingleRobotRouter::getCollisionResolverType() const
+    std::vector<RouteVertex> reversedPath;
+
+    if (!traceback_.getPath(*(searchGraph_[_start].get()), *(searchGraph_[_goal].get()), reversedPath))
     {
-        return segment_expander_.getCollisionResolver();
-    }
-    
-    
-    bool SingleRobotRouter::getRouteCandidate(const uint32_t _start, const uint32_t _goal, const RouteCoordinatorWrapper &path_coordinator, const uint32_t _robotDiameter, const float &_robotSpeed, std::vector<RouteVertex> &_path, const uint32_t _maxIterations)
-    {
-        robotDiameter_ = _robotDiameter;
-        resetAttempt();
-        segment_expander_.setSpeed(_robotSpeed);
-
-        if(!segment_expander_.calculatePotentials(&path_coordinator, *(searchGraph_[_start].get()), *(searchGraph_[_goal].get()), _maxIterations, robotDiameter_))
-        {
-            lastAttempt_ = false;
-            return false;
-        }
-        
-        std::vector<RouteVertex> reversedPath;
-
-        if(!traceback_.getPath(*(searchGraph_[_start].get()), *(searchGraph_[_goal].get()), reversedPath))
-        {
-            lastAttempt_ = false;
-            return false;
-        }
-
-        _path.clear();
-
-        for(std::vector<RouteVertex>::const_iterator rit = reversedPath.cend(); rit != reversedPath.cbegin();)
-        {
-            rit--;
-            _path.emplace_back(*rit);
-        }
-
-        lastAttempt_ = true;
-        return true;
+        lastAttempt_ = false;
+        return false;
     }
 
-    void SingleRobotRouter::resetAttempt()
-    {
-        segment_expander_.reset();
+    _path.clear();
 
-        for(std::unique_ptr<Vertex> &v : searchGraph_)
-        {
-            v->potential = -1;
-            v->collision = -1;
-            v->weight = 0;
-            v->predecessor_ = NULL;
-        }
-    }
-    
-    bool SingleRobotRouter::getLastResult()
+    for (std::vector<RouteVertex>::const_iterator rit = reversedPath.cend(); rit != reversedPath.cbegin();)
     {
-        return lastAttempt_;
+        rit--;
+        _path.emplace_back(*rit);
     }
 
+    lastAttempt_ = true;
+    return true;
+}
 
-    void SingleRobotRouter::initSearchGraph(const std::vector< Segment > &_graph, const uint32_t minSegmentWidth_)
+void SingleRobotRouter::resetAttempt()
+{
+    segment_expander_.reset();
+
+    for (std::unique_ptr<Vertex> &v : searchGraph_)
     {
-        searchGraph_.clear();
-
-        for(const Segment & seg : _graph)
-        {
-            searchGraph_.push_back(std::make_unique<Vertex>(seg));
-        }
-
-        for(std::unique_ptr<Vertex> &v : searchGraph_)
-        {
-            v->initNeighbours(searchGraph_, minSegmentWidth_);
-        }
-    }
-
-    const std::vector<uint32_t> &SingleRobotRouter::getRobotCollisions() const
-    {
-        return segment_expander_.getRobotCollisions();
+        v->potential = -1;
+        v->collision = -1;
+        v->weight = 0;
+        v->predecessor_ = NULL;
     }
 }
 
+bool SingleRobotRouter::getLastResult()
+{
+    return lastAttempt_;
+}
+
+void SingleRobotRouter::initSearchGraph(const std::vector<Segment> &_graph, const uint32_t minSegmentWidth_)
+{
+    searchGraph_.clear();
+
+    for (const Segment &seg : _graph)
+    {
+        searchGraph_.push_back(std::make_unique<Vertex>(seg));
+    }
+
+    for (std::unique_ptr<Vertex> &v : searchGraph_)
+    {
+        v->initNeighbours(searchGraph_, minSegmentWidth_);
+    }
+}
+
+const std::vector<uint32_t> &SingleRobotRouter::getRobotCollisions() const
+{
+    return segment_expander_.getRobotCollisions();
+}
+} // namespace multi_robot_router

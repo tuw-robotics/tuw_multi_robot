@@ -26,45 +26,44 @@
  *
  */
 
-#include <tuw_global_planner/route_coordinator.h>
+#include <tuw_global_router/route_coordinator.h>
 
 namespace multi_robot_router
 {
-    RouteCoordinatorWrapper::RouteCoordinatorWrapper(const uint32_t _robot, const multi_robot_router::RouteCoordinator &_routeCoordinator)
-    {
-        robot_ = _robot;
-        routeCoordinator_ = &_routeCoordinator;
-    }
-
-    bool RouteCoordinatorWrapper::checkSegment(const Vertex &_next, const uint32_t _startTime, const int32_t _endTime, const uint32_t _diameterPixel, int32_t &_collisionRobot, bool _ignoreGoal) const
-    {
-        return routeCoordinator_->checkSegment(_next, _startTime, _endTime, _diameterPixel, _collisionRobot, robot_, _ignoreGoal);
-    }
-
-    int32_t RouteCoordinatorWrapper::findPotentialUntilRobotOnSegment(const uint32_t _robot, const uint32_t _segId) const
-    {
-        return routeCoordinator_->findPotentialUntilRobotOnSegment(_robot, _segId);
-    }
-
-    const uint32_t RouteCoordinatorWrapper::getEnd() const
-    {
-        return routeCoordinator_->getEnd(robot_);
-    }
-
-    std::vector< std::pair< uint32_t, float > > RouteCoordinatorWrapper::getListOfRobotsHigherPrioritizedRobots(const uint32_t _robot, const uint32_t _segId, const int32_t _potential) const
-    {
-        return routeCoordinator_->getListOfRobotsHigherPrioritizedRobots(_robot, _segId, _potential);
-    }
-
-    const uint32_t RouteCoordinatorWrapper::getStart() const
-    {
-        return routeCoordinator_->getStart(robot_);
-    }
-
-    bool RouteCoordinatorWrapper::isGoal(const Vertex &_seg) const
-    {
-        return routeCoordinator_->isGoal(_seg, robot_);
-    }
-
-
+RouteCoordinatorWrapper::RouteCoordinatorWrapper(const uint32_t _robot, const multi_robot_router::RouteCoordinator &_routeCoordinator)
+{
+    robot_ = _robot;
+    routeCoordinator_ = &_routeCoordinator;
 }
+
+bool RouteCoordinatorWrapper::checkSegment(const Vertex &_next, const uint32_t _startTime, const int32_t _endTime, const uint32_t _diameterPixel, int32_t &_collisionRobot, bool _ignoreGoal) const
+{
+    return routeCoordinator_->checkSegment(_next, _startTime, _endTime, _diameterPixel, _collisionRobot, robot_, _ignoreGoal);
+}
+
+int32_t RouteCoordinatorWrapper::findPotentialUntilRobotOnSegment(const uint32_t _robot, const uint32_t _segId) const
+{
+    return routeCoordinator_->findPotentialUntilRobotOnSegment(_robot, _segId);
+}
+
+const uint32_t RouteCoordinatorWrapper::getEnd() const
+{
+    return routeCoordinator_->getEnd(robot_);
+}
+
+std::vector<std::pair<uint32_t, float>> RouteCoordinatorWrapper::getListOfRobotsHigherPrioritizedRobots(const uint32_t _robot, const uint32_t _segId, const int32_t _potential) const
+{
+    return routeCoordinator_->getListOfRobotsHigherPrioritizedRobots(_robot, _segId, _potential);
+}
+
+const uint32_t RouteCoordinatorWrapper::getStart() const
+{
+    return routeCoordinator_->getStart(robot_);
+}
+
+bool RouteCoordinatorWrapper::isGoal(const Vertex &_seg) const
+{
+    return routeCoordinator_->isGoal(_seg, robot_);
+}
+
+} // namespace multi_robot_router

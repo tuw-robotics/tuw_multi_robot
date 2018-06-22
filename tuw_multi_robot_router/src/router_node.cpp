@@ -27,8 +27,8 @@
  */
 #define POT_HIGH 1.0e10
 
-#include <tuw_global_planner/planner_node.h>
-#include <tuw_global_planner/srr_utils.h>
+#include <tuw_global_router/router_node.h>
+#include <tuw_global_router/srr_utils.h>
 #include <tuw_multi_robot_msgs/Route.h>
 #include <chrono>
 #include <boost/functional/hash.hpp>
@@ -44,7 +44,7 @@ int main(int argc, char **argv)
 
     ros::Rate r(5);
 
-    multi_robot_router::Planner_Node node(n);
+    multi_robot_router::Router_Node node(n);
 
     while (ros::ok())
     {
@@ -58,9 +58,9 @@ int main(int argc, char **argv)
 
 namespace multi_robot_router
 {
-Planner_Node::Planner_Node(ros::NodeHandle &_n) : Planner(),
-                                                  n_(_n),
-                                                  n_param_("~")
+Router_Node::Router_Node(ros::NodeHandle &_n) : Router(),
+                                                n_(_n),
+                                                n_param_("~")
 {
     id_ = 0;
 
@@ -88,21 +88,44 @@ Planner_Node::Planner_Node(ros::NodeHandle &_n) : Planner(),
     robot_info_topic_ = "/robot_info";
     n_param_.param("robot_info", robot_info_topic_, robot_info_topic_);
 
+    singleRobotName_ = "";
+    n_param_.param("robot_name", singleRobotName_, singleRobotName_);
+
+    singleRobotGoalTopic_ = "/goal";
+    n_param_.param("robot_goal", singleRobotGoalTopic_, singleRobotGoalTopic_);
+
     // static subscriptions
-    subGoalSet_ = _n.subscribe(goal_topic_, 1, &Planner_Node::goalsCallback, this);
-    subMap_ = _n.subscribe(map_topic_, 1, &Planner_Node::mapCallback, this);
-    subVoronoiGraph_ = _n.subscribe(voronoi_topic_, 1, &Planner_Node::graphCallback, this);
-    subRobotInfo_ = _n.subscribe(robot_info_topic_, 1000, &Planner_Node::robotInfoCallback, this);
+    subGoalSet_ = _n.subscribe(goal_topic_, 1, &Router_Node::goalsCallback, this);
+    subMap_ = _n.subscribe(map_topic_, 1, &Router_Node::mapCallback, this);
+    subVoronoiGraph_ = _n.subscribe(voronoi_topic_, 1, &Router_Node::graphCallback, this);
+    subRobotInfo_ = _n.subscribe(robot_info_topic_, 1000, &Router_Node::robotInfoCallback, this);
+
+    if (!singleRobotName_.size() == 0)
+    {
+        subSingleRobotGoal_ = _n.subscribe(singleRobotGoalTopic_, 1, &Router_Node::goalCallback, this);
+    }
 
     //static publishers
     pubPlannerStatus_ = _n.advertise<tuw_multi_robot_msgs::RouterStatus>(planner_status_topic_, 1);
 
     //dynamic reconfigure
-    call_type = boost::bind(&Planner_Node::parametersCallback, this, _1, _2);
+    call_type = boost::bind(&Router_Node::parametersCallback, this, _1, _2);
     param_server.setCallback(call_type);
 }
 
-void Planner_Node::updateTimeout(const float _secs)
+void Router_Node::goalCallback(const geometry_msgs::PoseStamped &_goal)
+{
+    tuw_multi_robot_msgs::RobotGoals goal;
+    goal.robot_name = singleRobotName_;
+    goal.path_points.push_back(_goal.pose);
+
+    tuw_multi_robot_msgs::RobotGoalsArray goals;
+    goals.goals.push_back(goal);
+
+    goalsCallback(goals);
+}
+
+void Router_Node::updateTimeout(const float _secs)
 {
     //Todo update timeouts and clear old messages
     for (auto it = robot_starts_.begin(); it != robot_starts_.end(); it++)
@@ -115,7 +138,7 @@ void Planner_Node::updateTimeout(const float _secs)
         (*it).second.first.updateStatus(_secs);
     }
 }
-void Planner_Node::parametersCallback(tuw_multi_robot_router::routerConfig &config, uint32_t level)
+void Router_Node::parametersCallback(tuw_multi_robot_router::routerConfig &config, uint32_t level)
 {
     //Important set router before settings
     uint32_t threads = config.nr_threads;
@@ -151,7 +174,7 @@ void Planner_Node::parametersCallback(tuw_multi_robot_router::routerConfig &conf
     segmentOptimizations_ = config.path_endpoint_optimization;
 }
 
-void Planner_Node::mapCallback(const nav_msgs::OccupancyGrid &_map)
+void Router_Node::mapCallback(const nav_msgs::OccupancyGrid &_map)
 {
     std::vector<signed char> map = _map.data;
 
@@ -184,7 +207,7 @@ void Planner_Node::mapCallback(const nav_msgs::OccupancyGrid &_map)
     }
 }
 
-void Planner_Node::odomCallback(const ros::MessageEvent<nav_msgs::Odometry const> &_event, int _robot_nr)
+void Router_Node::odomCallback(const ros::MessageEvent<nav_msgs::Odometry const> &_event, int _robot_nr)
 {
     if (robot_starts_[subscribed_robot_names_[_robot_nr]].first.getStatus() == TopicStatus::status::fixed) //Don't update fixed poses
         return;
@@ -204,7 +227,7 @@ void Planner_Node::odomCallback(const ros::MessageEvent<nav_msgs::Odometry const
     }
 }
 
-float Planner_Node::calcRadius(const int shape, const std::vector<float> &shape_variables) const
+float Router_Node::calcRadius(const int shape, const std::vector<float> &shape_variables) const
 {
     tuw_multi_robot_msgs::RobotInfo ri;
     if (shape == ri.SHAPE_CIRCLE)
@@ -215,7 +238,7 @@ float Planner_Node::calcRadius(const int shape, const std::vector<float> &shape_
     return -1;
 }
 
-void Planner_Node::robotInfoCallback(const tuw_multi_robot_msgs::RobotInfo &_robotInfo)
+void Router_Node::robotInfoCallback(const tuw_multi_robot_msgs::RobotInfo &_robotInfo)
 {
     TopicStatus s(TopicStatus::status::active, topic_timeout_s_);
     std::pair<TopicStatus, float> radius_pair(s, calcRadius(_robotInfo.shape, _robotInfo.shape_variables));
@@ -226,7 +249,7 @@ void Planner_Node::robotInfoCallback(const tuw_multi_robot_msgs::RobotInfo &_rob
         robot_radius_.emplace(_robotInfo.robot_name, radius_pair);
         //Not existant subscribe robots
         ROS_INFO("Multi Robot Router: subscribing to %s", (_robotInfo.robot_name + "/" + odom_topic_).c_str());
-        subOdom_.emplace_back(n_.subscribe<nav_msgs::Odometry>(_robotInfo.robot_name + "/" + odom_topic_, 1, boost::bind(&Planner_Node::odomCallback, this, _1, subscribed_robot_names_.size() - 1)));
+        subOdom_.emplace_back(n_.subscribe<nav_msgs::Odometry>(_robotInfo.robot_name + "/" + odom_topic_, 1, boost::bind(&Router_Node::odomCallback, this, _1, subscribed_robot_names_.size() - 1)));
 
         ROS_INFO("Multi Robot Router: advertising on %s", (_robotInfo.robot_name + "/" + path_topic_).c_str());
         pubPaths_.emplace_back(n_.advertise<nav_msgs::Path>(_robotInfo.robot_name + "/" + path_topic_, 1, true));
@@ -239,7 +262,7 @@ void Planner_Node::robotInfoCallback(const tuw_multi_robot_msgs::RobotInfo &_rob
     }
 }
 
-void Planner_Node::graphCallback(const tuw_multi_robot_msgs::Graph &msg)
+void Router_Node::graphCallback(const tuw_multi_robot_msgs::Graph &msg)
 {
     std::vector<Segment> graph;
 
@@ -285,7 +308,7 @@ void Planner_Node::graphCallback(const tuw_multi_robot_msgs::Graph &msg)
     got_graph_ = true;
 }
 
-bool Planner_Node::preparePlanning(std::vector<float> &_radius, std::vector<Eigen::Vector3d> &_starts, std::vector<Eigen::Vector3d> &_goals, const tuw_multi_robot_msgs::RobotGoalsArray &_rosGoals)
+bool Router_Node::preparePlanning(std::vector<float> &_radius, std::vector<Eigen::Vector3d> &_starts, std::vector<Eigen::Vector3d> &_goals, const tuw_multi_robot_msgs::RobotGoalsArray &_rosGoals)
 {
     bool retval = true;
     missing_robots_.clear();
@@ -348,7 +371,7 @@ bool Planner_Node::preparePlanning(std::vector<float> &_radius, std::vector<Eige
     return retval;
 }
 
-void Planner_Node::goalsCallback(const tuw_multi_robot_msgs::RobotGoalsArray &_goals)
+void Router_Node::goalsCallback(const tuw_multi_robot_msgs::RobotGoalsArray &_goals)
 {
     //Get robots
     std::vector<Eigen::Vector3d> starts;
@@ -398,7 +421,7 @@ void Planner_Node::goalsCallback(const tuw_multi_robot_msgs::RobotGoalsArray &_g
     }
 }
 
-float Planner_Node::getYaw(const geometry_msgs::Quaternion &_rot)
+float Router_Node::getYaw(const geometry_msgs::Quaternion &_rot)
 {
     double roll, pitch, yaw;
 
@@ -407,7 +430,7 @@ float Planner_Node::getYaw(const geometry_msgs::Quaternion &_rot)
     return yaw;
 }
 
-void Planner_Node::publishEmpty()
+void Router_Node::publishEmpty()
 {
     for (int i = 0; i < subscribed_robot_names_.size(); i++)
     {
@@ -441,7 +464,7 @@ void Planner_Node::publishEmpty()
     pubPlannerStatus_.publish(ps);
 }
 
-void Planner_Node::publish()
+void Router_Node::publish()
 {
     for (int i = 0; i < subscribed_robot_names_.size(); i++)
     {
@@ -552,7 +575,7 @@ void Planner_Node::publish()
     pubPlannerStatus_.publish(ps);
 }
 
-size_t Planner_Node::getHash(const std::vector<signed char> &_map, const Eigen::Vector2d &_origin, const float &_resolution)
+size_t Router_Node::getHash(const std::vector<signed char> &_map, const Eigen::Vector2d &_origin, const float &_resolution)
 {
     std::size_t seed = 0;
 
@@ -568,7 +591,7 @@ size_t Planner_Node::getHash(const std::vector<signed char> &_map, const Eigen::
     return seed;
 }
 
-std::size_t Planner_Node::getHash(const std::vector<Segment> &_graph)
+std::size_t Router_Node::getHash(const std::vector<Segment> &_graph)
 {
     std::size_t seed = 0;
 
@@ -598,21 +621,21 @@ std::size_t Planner_Node::getHash(const std::vector<Segment> &_graph)
     return seed;
 }
 
-Planner_Node::TopicStatus::TopicStatus(const status _status, const float _activeTime)
+Router_Node::TopicStatus::TopicStatus(const status _status, const float _activeTime)
 {
     setStatus(_status, _activeTime);
 }
 
-Planner_Node::TopicStatus::TopicStatus() : TopicStatus(status::inactive)
+Router_Node::TopicStatus::TopicStatus() : TopicStatus(status::inactive)
 {
 }
 
-Planner_Node::TopicStatus::status Planner_Node::TopicStatus::getStatus() const
+Router_Node::TopicStatus::status Router_Node::TopicStatus::getStatus() const
 {
     return status_;
 }
 
-void Planner_Node::TopicStatus::updateStatus(const float _updateTime)
+void Router_Node::TopicStatus::updateStatus(const float _updateTime)
 {
     if (activeTime_ > 0)
         activeTime_ -= _updateTime;
@@ -624,7 +647,7 @@ void Planner_Node::TopicStatus::updateStatus(const float _updateTime)
         status_ = status::inactive;
 }
 
-void Planner_Node::TopicStatus::setStatus(const status _status, const float _activeTime)
+void Router_Node::TopicStatus::setStatus(const status _status, const float _activeTime)
 {
     if (_status != status::active)
         activeTime_ = 0;
