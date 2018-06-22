@@ -26,23 +26,23 @@
  *
  */
 
-#ifndef PLANNER_H
-#define PLANNER_H
+#ifndef ROUTER_H
+#define ROUTER_H
 
 #include <vector>
 #include <memory>
 #include <opencv/cv.h>
-#include <tuw_global_planner/point_expander.h>
-#include <tuw_global_planner/multi_robot_router.h>
-#include <tuw_global_planner/multi_robot_router_threaded_srr.h>
+#include <tuw_global_router/point_expander.h>
+#include <tuw_global_router/multi_robot_router.h>
+#include <tuw_global_router/multi_robot_router_threaded_srr.h>
 
 namespace multi_robot_router
 {
-class Planner
+class Router
 {
   public:
-    Planner(const uint32_t _nr_robots);
-    Planner();
+    Router(const uint32_t _nr_robots);
+    Router();
 
     /**
             * @brief resizes the planner to a different nr of _nr_robots

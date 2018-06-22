@@ -26,8 +26,8 @@
  *
  */
 
-#ifndef PLANNER_NODE_H
-#define PLANNER_NODE_H
+#ifndef ROUTER_NODE_H
+#define ROUTER_NODE_H
 
 //ROS
 #include <ros/ros.h>
@@ -42,22 +42,22 @@
 #include <dynamic_reconfigure/server.h>
 #include <tuw_multi_robot_router/routerConfig.h>
 
-#include <tuw_global_planner/planner.h>
-#include <tuw_global_planner/mrr_utils.h>
+#include <tuw_global_router/router.h>
+#include <tuw_global_router/mrr_utils.h>
 #include <opencv/cv.hpp>
 
 //TODO disable got_map if not used
 
 namespace multi_robot_router
 {
-class Planner_Node : Planner
+class Router_Node : Router
 {
 public:
   /**
-   * @brief Construct a new Planner_Node object
+   * @brief Construct a new Router_Node object
    * @param n the nodehandle to register publishers and subscribers
    */
-  Planner_Node(ros::NodeHandle &n);
+  Router_Node(ros::NodeHandle &n);
   /**
    * @brief publishes an empty RoutingTable 
    */
@@ -104,6 +104,7 @@ private:
   std::vector<ros::Subscriber> subOdom_;
   ros::Subscriber subGoalSet_;
   ros::Subscriber subMap_;
+  ros::Subscriber subSingleRobotGoal_;
   ros::Subscriber subVoronoiGraph_;
   ros::Subscriber subRobotInfo_;
 
@@ -123,6 +124,7 @@ private:
   std::string robot_info_topic_;
   std::string voronoi_topic_;
   std::string planner_status_topic_;
+  std::string singleRobotGoalTopic_;
   bool got_map_ = false;
   bool got_graph_ = false;
   std::vector<Segment> graph_;
@@ -131,6 +133,7 @@ private:
   int id_;
   float topic_timeout_s_ = 10;
   bool freshPlan_ = false;
+  std::string singleRobotName_ = "";
 
   void parametersCallback(tuw_multi_robot_router::routerConfig &config, uint32_t level);
   void odomCallback(const ros::MessageEvent<nav_msgs::Odometry const> &_event, int _topic);
@@ -138,6 +141,7 @@ private:
   void goalsCallback(const tuw_multi_robot_msgs::RobotGoalsArray &_goals);
   void mapCallback(const nav_msgs::OccupancyGrid &_map);
   void robotInfoCallback(const tuw_multi_robot_msgs::RobotInfo &_robotInfo);
+  void goalCallback(const geometry_msgs::PoseStamped &_goal);
   size_t getHash(const std::vector<signed char> &_map, const Eigen::Vector2d &_origin, const float &_resolution);
   size_t getHash(const std::vector<Segment> &_graph);
   static bool sortSegments(const Segment &i, const Segment &j) { return i.getSegmentId() < j.getSegmentId(); }
@@ -147,4 +151,4 @@ private:
   bool preparePlanning(std::vector<float> &_radius, std::vector<Eigen::Vector3d> &_starts, std::vector<Eigen::Vector3d> &_goals, const tuw_multi_robot_msgs::RobotGoalsArray &_ros_goals);
 };
 } // namespace multi_robot_router
-#endif // PLANNER_NODE_H
+#endif // Router_Node_H

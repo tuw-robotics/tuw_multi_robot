@@ -26,14 +26,14 @@ find_package(OpenCV 3 REQUIRED)
 
 
 #check for OpenMP
-find_package(OpenMP)
-if(OPENMP_FOUND)
-message (STATUS "OpenMP found ${OpenMP_INCLUDE_DIRS}") 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}" )
-else(OPENMP_FOUND)
-message (STATUS "OpenMP not found")
-endif()
+#find_package(OpenMP)
+#if(OPENMP_FOUND)
+#message (STATUS "OpenMP found ${OpenMP_INCLUDE_DIRS}") 
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}" )
+#else(OPENMP_FOUND)
+#message (STATUS "OpenMP not found")
+#endif()
 
 
 
@@ -144,7 +144,7 @@ include_directories(
 
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
-    src/planner.cpp
+    src/router.cpp
     src/srr_utils.cpp
     src/point_expander.cpp
     src/multi_robot_router.cpp
@@ -164,7 +164,7 @@ add_library(${PROJECT_NAME}
  )
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 
-add_executable(tuw_multi_robot_router_node src/planner_node.cpp)
+add_executable(tuw_multi_robot_router_node src/router_node.cpp)
 target_link_libraries(tuw_multi_robot_router_node
   ${catkin_LIBRARIES}
   ${PROJECT_NAME}
@@ -177,7 +177,7 @@ add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EX
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/tuw_global_planner_node.cpp)
+# add_executable(${PROJECT_NAME}_node src/tuw_global_router_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

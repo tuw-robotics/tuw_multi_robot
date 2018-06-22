@@ -29,37 +29,35 @@
 #ifndef HEURISTIC_H
 #define HEURISTIC_H
 
-#include <tuw_global_planner/srr_utils.h>
+#include <tuw_global_router/srr_utils.h>
 
 namespace multi_robot_router
 {
-    class Heuristic
-    {
-        public:
-            /**
+class Heuristic
+{
+  public:
+    /**
              * @brief calculates the euclidean distance to the end vertex
              * @param _next the current vertex the heuristic is calculated for
              * @param _end the goal vertex for calculations
              * @returns the euclidean distance to the goal
              */
-            float calcHeuristic(const Vertex &_next, const Vertex &_end) const
-            {
-                float nx = (_next.getSegment().getStart()[0] + _next.getSegment().getEnd()[0]) / 2;
-                float ny = (_next.getSegment().getStart()[1] + _next.getSegment().getEnd()[1]) / 2;
+    float calcHeuristic(const Vertex &_next, const Vertex &_end) const
+    {
+        float nx = (_next.getSegment().getStart()[0] + _next.getSegment().getEnd()[0]) / 2;
+        float ny = (_next.getSegment().getStart()[1] + _next.getSegment().getEnd()[1]) / 2;
 
-                float ex = (_end.getSegment().getStart()[0] + _end.getSegment().getEnd()[0]) / 2;
-                float ey = (_end.getSegment().getStart()[1] + _end.getSegment().getEnd()[1]) / 2;
+        float ex = (_end.getSegment().getStart()[0] + _end.getSegment().getEnd()[0]) / 2;
+        float ey = (_end.getSegment().getStart()[1] + _end.getSegment().getEnd()[1]) / 2;
 
+        float dx = (nx - ex);
+        float dy = (ny - ey);
 
-                float dx = (nx - ex);
-                float dy = (ny - ey);
+        return std::sqrt(dx * dx + dy * dy);
 
-
-                return std::sqrt(dx * dx + dy * dy);
-
-                //return 0; //Dijkstra expansion
-            }
-    };
-}
+        //return 0; //Dijkstra expansion
+    }
+};
+} // namespace multi_robot_router
 
 #endif // HEURISTIC_H

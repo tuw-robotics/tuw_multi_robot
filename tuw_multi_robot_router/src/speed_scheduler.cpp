@@ -26,68 +26,66 @@
  *
  */
 
-#include <tuw_global_planner/speed_scheduler.h>
+#include <tuw_global_router/speed_scheduler.h>
 #include <climits>
 
 namespace multi_robot_router
 {
 
-    const std::vector< float > &SpeedScheduler::getActualSpeeds()
-    {
-        return actualSpeedSchedule_;
-    }
-
-    SpeedScheduler::SpeedScheduler(const uint32_t _nrRobots)
-    {
-        reset(_nrRobots);
-    }
-
-    bool SpeedScheduler::rescheduleSpeeds(const uint32_t  _collidingRobot, const std::vector< uint32_t > &_collisions, std::vector< float > &_newSchedule, int32_t &_firstRobotToReplan)
-    {
-        //Perform only one speed reduction
-
-        //bool found = false;
-
-        //while(!found)
-        //{
-        _firstRobotToReplan = -1;
-        uint32_t collisions = 0;
-
-        for(int i = 0; i < _collisions.size(); i++)
-        {
-            if(_collisions[i] > collisions && i != _collidingRobot)
-            {
-                _firstRobotToReplan = i;
-                collisions = _collisions[i];
-            }
-        }
-
-
-        if(_firstRobotToReplan != -1 && actualSpeedSchedule_[_firstRobotToReplan] == 1.0)
-        {
-            actualSpeedSchedule_[_firstRobotToReplan] *= 2.0;
-            checkedSchedules_.emplace_back(actualSpeedSchedule_);
-            _newSchedule = actualSpeedSchedule_;
-            return true;
-        }
-        else
-        {
-            _firstRobotToReplan = -1;
-            return false;
-        }
-
-        //}
-        //return found;
-
-    }
-
-    void SpeedScheduler::reset(const uint32_t _nrRobots)
-    {
-        checkedSchedules_.clear();
-        actualSpeedSchedule_.clear();
-
-        actualSpeedSchedule_.resize(_nrRobots, 1.0);
-        checkedSchedules_.emplace_back(actualSpeedSchedule_);
-    }
-
+const std::vector<float> &SpeedScheduler::getActualSpeeds()
+{
+    return actualSpeedSchedule_;
 }
+
+SpeedScheduler::SpeedScheduler(const uint32_t _nrRobots)
+{
+    reset(_nrRobots);
+}
+
+bool SpeedScheduler::rescheduleSpeeds(const uint32_t _collidingRobot, const std::vector<uint32_t> &_collisions, std::vector<float> &_newSchedule, int32_t &_firstRobotToReplan)
+{
+    //Perform only one speed reduction
+
+    //bool found = false;
+
+    //while(!found)
+    //{
+    _firstRobotToReplan = -1;
+    uint32_t collisions = 0;
+
+    for (int i = 0; i < _collisions.size(); i++)
+    {
+        if (_collisions[i] > collisions && i != _collidingRobot)
+        {
+            _firstRobotToReplan = i;
+            collisions = _collisions[i];
+        }
+    }
+
+    if (_firstRobotToReplan != -1 && actualSpeedSchedule_[_firstRobotToReplan] == 1.0)
+    {
+        actualSpeedSchedule_[_firstRobotToReplan] *= 2.0;
+        checkedSchedules_.emplace_back(actualSpeedSchedule_);
+        _newSchedule = actualSpeedSchedule_;
+        return true;
+    }
+    else
+    {
+        _firstRobotToReplan = -1;
+        return false;
+    }
+
+    //}
+    //return found;
+}
+
+void SpeedScheduler::reset(const uint32_t _nrRobots)
+{
+    checkedSchedules_.clear();
+    actualSpeedSchedule_.clear();
+
+    actualSpeedSchedule_.resize(_nrRobots, 1.0);
+    checkedSchedules_.emplace_back(actualSpeedSchedule_);
+}
+
+} // namespace multi_robot_router

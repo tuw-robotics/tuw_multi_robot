@@ -29,31 +29,29 @@
 #ifndef ROUTE_GENERATOR_H
 #define ROUTE_GENERATOR_H
 
-#include <tuw_global_planner/srr_utils.h>
-#include <tuw_global_planner/mrr_utils.h>
-#include <tuw_global_planner/route_coordinator.h>
+#include <tuw_global_router/srr_utils.h>
+#include <tuw_global_router/mrr_utils.h>
+#include <tuw_global_router/route_coordinator.h>
 #include <eigen3/Eigen/Dense>
 
 namespace multi_robot_router
 {
-    class RouteGenerator
-    {
-        public:
-            /** 
+class RouteGenerator
+{
+  public:
+    /** 
              * @brief generates a final Routing Table containing Segment List and Preconditions to other robots
              * @param _path the list of route candidates found
              * @param routeQuerry_ the route coordinator, used to find _path 
              */
-            std::vector<std::vector<Checkpoint>> generatePath(const std::vector<std::vector<RouteVertex>> &_paths, const RouteCoordinator &routeQuerry_) const;
+    std::vector<std::vector<Checkpoint>> generatePath(const std::vector<std::vector<RouteVertex>> &_paths, const RouteCoordinator &routeQuerry_) const;
 
-        private:
-            //creates a Checkpoint from a route Vertex
-            Checkpoint createElement(const RouteVertex &_element) const;
-            //Analyzes a segment for preconditions depending a specific robot
-            void addPreconditions(Checkpoint &_segment, const RouteVertex &_segToFind, const uint32_t _pathNr, const std::vector<std::vector<RouteVertex>> &_paths, const RouteCoordinator &routeQuerry_) const;
-
-    };
-}
+  private:
+    //creates a Checkpoint from a route Vertex
+    Checkpoint createElement(const RouteVertex &_element) const;
+    //Analyzes a segment for preconditions depending a specific robot
+    void addPreconditions(Checkpoint &_segment, const RouteVertex &_segToFind, const uint32_t _pathNr, const std::vector<std::vector<RouteVertex>> &_paths, const RouteCoordinator &routeQuerry_) const;
+};
+} // namespace multi_robot_router
 
 #endif
-

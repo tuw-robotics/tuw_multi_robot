@@ -26,7 +26,7 @@
  *
  */
 
-#include <tuw_global_planner/multi_robot_router_threaded_srr.h>
+#include <tuw_global_router/multi_robot_router_threaded_srr.h>
 #include <chrono>
 #include <iostream>
 #include <ros/ros.h>

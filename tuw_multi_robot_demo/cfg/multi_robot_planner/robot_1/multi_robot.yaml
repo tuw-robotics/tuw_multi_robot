@@ -1,2 +1,4 @@
-robot_names: ["robot_0"]
-robot_radius: [0.35]
+robot_name: robot_0
+use_segment_as_goal: true
+allow_endpoint_off_segments: true
+path_optimization_segment_no: 0
