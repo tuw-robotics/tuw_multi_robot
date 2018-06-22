@@ -91,7 +91,7 @@ STANDARD
   9
 $CLAYER
   8
-0
+Lines
   9
 $CELTYPE
   6
@@ -1115,9 +1115,9 @@ AcDbViewportTableRecord
  21
 1
  12
--1.423323064769503
+11.98099693861344
  22
--1.620615370777157
+6.427573464921375
  13
 0
  23
@@ -1143,9 +1143,9 @@ AcDbViewportTableRecord
  37
 0
  40
-12.45759989362614
+41.03362900005806
  41
-2.115384615384615
+1.959899749373434
  42
 50
  43
@@ -2246,6 +2246,10 @@ CONTINUOUS
     0
 390
 F
+1001
+LibreCad
+1070
+    1
   0
 LAYER
   5
@@ -4209,7 +4213,7 @@ AcDbRasterImageDef
  90
     0
   1
-/home/benjamin/ros/ws_tuw_multi_robot/src/tuw_multi_robot/tuw_multi_robot_demo/cfg/maps/roblab/map.pgm
+/home/max/projects/catkin/mpn/ws01/src/tuw_multi_robot/tuw_multi_robot_demo/cfg/dxf/roblab/../../maps/roblab/map.pgm
  10
 3737
  20

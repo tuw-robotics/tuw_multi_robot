@@ -2,7 +2,11 @@
 
 <launch>
     <arg name="cfg" default="default"/>
+    <arg name="robot_names" default="[robot_0, robot_1, robot_2]"/>
+    
     <node pkg="tuw_multi_robot_ctrl" type="tuw_segment_controller" name="controller" output="screen">
-        <rosparam command="load" file="$(find tuw_multi_robot_demo)/cfg/multi_robot_controller/$(arg cfg)/multi_robot.yaml"/>
+        <param name="robot_names" value="$(arg robot_names)" />
+        <!-- rosparam command="load" file="$(find tuw_multi_robot_demo)/cfg/multi_robot_controller/$(arg cfg)/multi_robot.yaml"/ -->
     </node>
+    
 </launch>

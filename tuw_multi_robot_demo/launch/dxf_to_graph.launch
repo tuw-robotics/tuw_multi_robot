@@ -1,11 +1,14 @@
 <?xml version="1.0"?>
 
 <launch>
-    <arg name="seg_length" default="0.5" />
-    <arg name="seg_width" default="0.5" />
+  
+  
+    <arg name="seg_length" default="0.8" />
+    <arg name="seg_width" default="0.8" />
     <arg name="dxf_name" default="segments.dxf" />
     <arg name="graph_name" default="graph" />
     <arg name="room" default="cave" />
-
+    
+    <!-- This node only reads the dxf and stores it a graph in a folder structrue usabe by the graph_generator -->
     <node pkg="tuw_voronoi_graph" type="tuw_dxf_graph_node" name="dxf_graph_node" args="-o $(find tuw_multi_robot_demo)/cfg/graph/$(arg room)/cache/$(arg graph_name) -i $(find tuw_multi_robot_demo)/cfg/dxf/$(arg room)/$(arg dxf_name) -w $(arg seg_width) -l $(arg seg_length)" output="screen"/>
 </launch>

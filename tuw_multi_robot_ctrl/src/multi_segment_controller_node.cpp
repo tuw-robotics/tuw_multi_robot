@@ -37,14 +37,14 @@ MultiSegmentControllerNode::MultiSegmentControllerNode(ros::NodeHandle &n) : n_(
                                                                              n_param_("~"),
                                                                              robot_names_(std::vector<std::string>({"robot0"}))
 {
-    n_param_.param("robot_names", robot_names_, std::vector<std::string>());
-
     std::string robot_names_string = "";
-    n_param_.param("robot_names_str", robot_names_string, robot_names_string);
+    n_param_.param("robot_names", robot_names_string, robot_names_string);
 
     if (robot_names_string.size() > 0)
     {
         robot_names_string.erase(std::remove(robot_names_string.begin(), robot_names_string.end(), ' '), robot_names_string.end());
+        robot_names_string.erase(std::remove(robot_names_string.begin(), robot_names_string.end(), ']'), robot_names_string.end());
+        robot_names_string.erase(std::remove(robot_names_string.begin(), robot_names_string.end(), '['), robot_names_string.end());
         std::istringstream stringStr(robot_names_string);
         std::string result;
 

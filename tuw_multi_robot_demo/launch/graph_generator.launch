@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
 
 <launch>
+    <!-- a map server must publish the map of the room <gridmal> first -->
     <arg name="room" default="cave" /> 
-    <arg name="custom_graph_path" default="" /> 
+    <arg name="custom_graph_path" default="" /> <!-- used only on dxf generated graphs with the full path name such as /home/.../cache/graph -->
 
     <node pkg="tuw_voronoi_graph" type="tuw_voronoi_graph_node" name="graph_generator" output="screen">
         <param name="graph_path" value="$(find tuw_multi_robot_demo)/cfg/graph/$(arg room)/cache/" />
