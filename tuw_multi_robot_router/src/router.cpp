@@ -90,13 +90,13 @@ bool Router::preprocessEndpoints(const std::vector<float> &_radius, const float 
 
         if (pointExpander_.getDistanceToObstacle(realStart_[i]) < _radius[i] / 2)
         {
-            ROS_INFO("Start of robot %i is to close to an obstacle", i);
+            ROS_INFO("Multi Robot Router: Start of robot %i is to close to an obstacle", i);
             return false;
         }
 
         if (pointExpander_.getDistanceToObstacle(realGoals_[i]) < _radius[i] / 2)
         {
-            ROS_INFO("Goal of robot %i is to close to an obstacle", i);
+            ROS_INFO("Multi Robot Router: Goal of robot %i is to close to an obstacle", i);
             return false;
         }
     }
@@ -157,13 +157,13 @@ bool Router::processEndpointsExpander(const cv::Mat &_map, const std::vector<Seg
 
     if (segIdStart == -1)
     {
-        ROS_INFO("Start of robot %i was not found", _index);
+        ROS_INFO("Multi Robot Router: Start of robot %i was not found", _index);
         return false;
     }
 
     if (segIdGoal == -1)
     {
-        ROS_INFO("Goal of robot %i was not found", _index);
+        ROS_INFO("Multi Robot Router: Goal of robot %i was not found", _index);
         return false;
     }
 
@@ -173,13 +173,13 @@ bool Router::processEndpointsExpander(const cv::Mat &_map, const std::vector<Seg
     //Optimize found segments for errors
     if (!resolveSegment(_graph, _segmentStart, _realStart, _diameter, _segmentStart))
     {
-        ROS_INFO("Start of robot %i is not valid", _index);
+        ROS_INFO("Multi Robot Router: Start of robot %i is not valid", _index);
         return false;
     }
 
     if (!resolveSegment(_graph, _segmentGoal, _realGoal, _diameter, _segmentGoal))
     {
-        ROS_INFO("Goal of robot %i is not valid", _index);
+        ROS_INFO("Multi Robot Router: Goal of robot %i is not valid", _index);
         return false;
     }
 
@@ -346,7 +346,7 @@ bool Router::makePlan(const std::vector<Eigen::Vector3d> &_starts, const std::ve
 
     if (!calculateStartPoints(_radius, _map, _resolution, _origin, _graph))
     {
-        ROS_INFO("Multi Robot Router: Failed to find Endpoints");
+        ROS_INFO("Multi Robot Router: Failed to find Endpoints !!!");
         auto t2 = std::chrono::high_resolution_clock::now();
         duration_ = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
         return false;
@@ -367,7 +367,7 @@ bool Router::makePlan(const std::vector<Eigen::Vector3d> &_starts, const std::ve
 
     if (!multiRobotRouter_->getRoutingTable(_graph, startSegments_, goalSegments_, routingTable_, routerTimeLimit_s_))
     {
-        ROS_INFO("Failed to find Routing Table");
+        ROS_INFO("Multi Robot Router: Failed to find Routing Table !!!");
         auto t2 = std::chrono::high_resolution_clock::now();
         duration_ = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
         return false;
