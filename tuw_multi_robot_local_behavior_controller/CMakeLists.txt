@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(tuw_multi_robot_route_to_path)
+project(tuw_multi_robot_local_behavior_controller)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++17)
@@ -106,7 +106,7 @@ find_package(Eigen3 REQUIRED)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES tuw_multi_robot_route_to_path
+#  LIBRARIES tuw_multi_robot_local_behavior_controller
 #  CATKIN_DEPENDS geometry_msgs nav_msgs roscpp tuw_multi_robot_msgs
 #  DEPENDS system_lib
 )
@@ -136,7 +136,7 @@ add_library(${PROJECT_NAME}
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(${PROJECT_NAME}_node src/MultiRobotRouteToPathNode.cpp)
+add_executable(${PROJECT_NAME}_node src/MultiRobotLocalBehaviorController.cpp)
 target_link_libraries(${PROJECT_NAME}_node
   ${PROJECT_NAME}
   ${catkin_LIBRARIES}

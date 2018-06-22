@@ -24,8 +24,9 @@
   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #include <ros/ros.h>
-#include <tuw_multi_robot_route_to_path/MultiRobotRouteToPathNode.h>
+#include <tuw_multi_robot_route_to_path/MultiRobotLocalBehaviorController.h>
 #include <tf/transform_datatypes.h>
+#include <tuw_multi_robot_msgs/RobotInfo.h>
 
 int main(int argc, char **argv)
 {
@@ -33,13 +34,14 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "route_to_path"); /// initializes the ros node with default name
     ros::NodeHandle n;
 
-    tuw_multi_robot_route_to_path::MultiRobotRouteToPathNode ctrl(n);
+    tuw_multi_robot_route_to_path::MultiRobotLocalBehaviorController ctrl(n);
     ros::Rate r(20);
 
     while (ros::ok())
     {
         r.sleep();
         ros::spinOnce();
+        ctrl.publishRobotInfo();
     }
 
     return 0;
@@ -47,9 +49,9 @@ int main(int argc, char **argv)
 
 namespace tuw_multi_robot_route_to_path
 {
-MultiRobotRouteToPathNode::MultiRobotRouteToPathNode(ros::NodeHandle &n) : n_(n),
-                                                                           n_param_("~"),
-                                                                           robot_names_(std::vector<std::string>({"robot_0", "robot_1"}))
+MultiRobotLocalBehaviorController::MultiRobotLocalBehaviorController(ros::NodeHandle &n) : n_(n),
+                                                                                           n_param_("~"),
+                                                                                           robot_names_(std::vector<std::string>({"robot_0", "robot_1"}))
 {
     n_param_.param("robot_names", robot_names_, robot_names_);
     std::string robot_names_string = "";
@@ -69,6 +71,10 @@ MultiRobotRouteToPathNode::MultiRobotRouteToPathNode(ros::NodeHandle &n) : n_(n)
         }
     }
 
+    n_param_.param("robot_radius", robot_radius_, robot_radius_);
+    robotDefaultRadius_ = 0.3;
+    n_param_.param("robot_default_radius", robotDefaultRadius_, robotDefaultRadius_);
+
     no_robots_ = robot_names_.size();
 
     ROS_INFO("Subscribing %i robots", no_robots_);
@@ -77,6 +83,7 @@ MultiRobotRouteToPathNode::MultiRobotRouteToPathNode(ros::NodeHandle &n) : n_(n)
     pubPath_.resize(no_robots_);
     subSegPath_.resize(no_robots_);
     subOdometry_.resize(no_robots_);
+    robot_radius_.resize(no_robots_, robotDefaultRadius_);
 
     topic_path_ = "path_synced";
     n_param_.param("path_topic", topic_path_, topic_path_);
@@ -86,6 +93,9 @@ MultiRobotRouteToPathNode::MultiRobotRouteToPathNode(ros::NodeHandle &n) : n_(n)
 
     topic_odom_ = "odom";
     n_param_.param("odom_topic", topic_odom_, topic_odom_);
+
+    topic_robot_info_ = "/robot_info";
+    n_param_.param("robotInfo_topic", topic_robot_info_, topic_robot_info_);
 
     for (int i = 0; i < no_robots_; i++)
     {
@@ -97,12 +107,14 @@ MultiRobotRouteToPathNode::MultiRobotRouteToPathNode(ros::NodeHandle &n) : n_(n)
     {
         pubPath_[i] = n.advertise<nav_msgs::Path>(robot_names_[i] + "/" + topic_path_, 100);
 
-        subOdometry_[i] = n.subscribe<nav_msgs::Odometry>(robot_names_[i] + "/" + topic_odom_, 1, boost::bind(&MultiRobotRouteToPathNode::subOdomCb, this, _1, i));
-        subSegPath_[i] = n.subscribe<tuw_multi_robot_msgs::Route>(robot_names_[i] + "/" + topic_seg_path_, 1, boost::bind(&MultiRobotRouteToPathNode::subSegPathCb, this, _1, i));
+        subOdometry_[i] = n.subscribe<nav_msgs::Odometry>(robot_names_[i] + "/" + topic_odom_, 1, boost::bind(&MultiRobotLocalBehaviorController::subOdomCb, this, _1, i));
+        subSegPath_[i] = n.subscribe<tuw_multi_robot_msgs::Route>(robot_names_[i] + "/" + topic_seg_path_, 1, boost::bind(&MultiRobotLocalBehaviorController::subSegPathCb, this, _1, i));
     }
+
+    pubRobotInfo_ = n.advertise<tuw_multi_robot_msgs::RobotInfo>(topic_robot_info_, 1);
 }
 
-void MultiRobotRouteToPathNode::subOdomCb(const ros::MessageEvent<const nav_msgs::Odometry> &_event, int _topic)
+void MultiRobotLocalBehaviorController::subOdomCb(const ros::MessageEvent<const nav_msgs::Odometry> &_event, int _topic)
 {
     const nav_msgs::Odometry_<std::allocator<void>>::ConstPtr &odom = _event.getMessage();
 
@@ -126,7 +138,7 @@ void MultiRobotRouteToPathNode::subOdomCb(const ros::MessageEvent<const nav_msgs
     }
 }
 
-void MultiRobotRouteToPathNode::publishPath(std::vector<Eigen::Vector3d> _p, int _topic)
+void MultiRobotLocalBehaviorController::publishPath(std::vector<Eigen::Vector3d> _p, int _topic)
 {
     nav_msgs::Path path;
     path.header.seq = 0;
@@ -157,7 +169,7 @@ void MultiRobotRouteToPathNode::publishPath(std::vector<Eigen::Vector3d> _p, int
     pubPath_[_topic].publish(path);
 }
 
-int MultiRobotRouteToPathNode::findRobotId(std::string _name)
+int MultiRobotLocalBehaviorController::findRobotId(std::string _name)
 {
     for (uint32_t i = 0; i < robot_names_.size(); i++)
     {
@@ -168,7 +180,7 @@ int MultiRobotRouteToPathNode::findRobotId(std::string _name)
     return -1;
 }
 
-void MultiRobotRouteToPathNode::subSegPathCb(const ros::MessageEvent<const tuw_multi_robot_msgs::Route> &_event, int _topic)
+void MultiRobotLocalBehaviorController::subSegPathCb(const ros::MessageEvent<const tuw_multi_robot_msgs::Route> &_event, int _topic)
 {
     const tuw_multi_robot_msgs::Route_<std::allocator<void>>::ConstPtr &path = _event.getMessage();
 
@@ -227,5 +239,23 @@ void MultiRobotRouteToPathNode::subSegPathCb(const ros::MessageEvent<const tuw_m
 
     if (chged)
         publishPath(newPath, _topic);
+}
+
+void MultiRobotLocalBehaviorController::publishRobotInfo()
+{
+    for (uint32_t i = 0; i < robot_names_.size(); i++)
+    {
+        tuw_multi_robot_msgs::RobotInfo ri;
+        ri.robot_name = robot_names_[i];
+        ri.shape = ri.SHAPE_CIRCLE;
+        ri.shape_variables.push_back(robot_radius_[i]);
+        ri.sync.robot_id = robot_names_[i];
+        ri.sync.current_route_segment = robot_steps_[i];
+        ri.mode = ri.MODE_NA;
+        ri.status = ri.STATUS_STOPED; //TODO
+        ri.good_id = ri.GOOD_NA;
+
+        pubRobotInfo_.publish(ri);
+    }
 }
 } // namespace tuw_multi_robot_route_to_path

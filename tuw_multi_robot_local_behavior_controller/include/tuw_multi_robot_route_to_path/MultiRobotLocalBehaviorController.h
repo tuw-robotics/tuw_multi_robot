@@ -39,38 +39,43 @@
 
 namespace tuw_multi_robot_route_to_path
 {
-class MultiRobotRouteToPathNode
+class MultiRobotLocalBehaviorController
 {
-    //special class-member functions.
-  public:
-    MultiRobotRouteToPathNode(ros::NodeHandle &n);
+  //special class-member functions.
+public:
+  MultiRobotLocalBehaviorController(ros::NodeHandle &n);
 
-    //ROS:
-    ros::NodeHandle n_;       ///< Node handler to the root node
-    ros::NodeHandle n_param_; ///< Node handler to the current node
-    std::unique_ptr<ros::Rate> rate_;
+  //ROS:
+  ros::NodeHandle n_;       ///< Node handler to the root node
+  ros::NodeHandle n_param_; ///< Node handler to the current node
+  std::unique_ptr<ros::Rate> rate_;
+  void publishRobotInfo();
 
-  private:
-    void publishPath(std::vector<Eigen::Vector3d> _p, int _topic);
+private:
+  void publishPath(std::vector<Eigen::Vector3d> _p, int _topic);
 
-    std::vector<ros::Publisher> pubPath_;
-    std::vector<ros::Subscriber> subSegPath_;
-    std::vector<ros::Subscriber> subOdometry_;
+  std::vector<ros::Publisher> pubPath_;
+  ros::Publisher pubRobotInfo_;
+  std::vector<ros::Subscriber> subSegPath_;
+  std::vector<ros::Subscriber> subOdometry_;
 
-    // ROS Topic names
-    std::string topic_path_;
-    std::string topic_seg_path_;
-    std::string topic_odom_;
-    std::vector<std::string> robot_names_;
+  // ROS Topic names
+  std::string topic_path_;
+  std::string topic_seg_path_;
+  std::string topic_odom_;
+  std::string topic_robot_info_;
+  std::vector<std::string> robot_names_;
+  std::vector<float> robot_radius_;
+  float robotDefaultRadius_ = 0.6;
 
-    void subOdomCb(const ros::MessageEvent<nav_msgs::Odometry const> &_event, int _topic);
-    void subSegPathCb(const ros::MessageEvent<tuw_multi_robot_msgs::Route const> &_event, int _topic);
-    int findRobotId(std::string _name);
+  void subOdomCb(const ros::MessageEvent<nav_msgs::Odometry const> &_event, int _topic);
+  void subSegPathCb(const ros::MessageEvent<tuw_multi_robot_msgs::Route const> &_event, int _topic);
+  int findRobotId(std::string _name);
 
-    std::vector<RobotRouteToPath> converter_;
-    std::vector<RobotStateObserver> observer_;
-    int no_robots_;
-    std::vector<int> robot_steps_;
+  std::vector<RobotRouteToPath> converter_;
+  std::vector<RobotStateObserver> observer_;
+  int no_robots_;
+  std::vector<int> robot_steps_;
 };
 
 } // namespace tuw_multi_robot_route_to_path

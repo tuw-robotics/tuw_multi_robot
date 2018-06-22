@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>tuw_multi_robot_route_to_path</name>
+  <name>tuw_multi_robot_local_behavior_controller</name>
   <version>0.0.0</version>
   <description>This package presents a node, which converts synchronized robot routes to path segments published sequentially to maintain synchronization</description>
 
@@ -20,7 +20,7 @@
   <!-- Url tags are optional, but multiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/tuw_multi_robot_route_to_path</url> -->
+  <!-- <url type="website">http://wiki.ros.org/tuw_multi_robot_local_behavior_controller</url> -->
 
 
   <!-- Author tags are optional, multiple are allowed, one per tag -->

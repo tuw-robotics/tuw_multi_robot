@@ -31,33 +31,34 @@
 #include <vector>
 #include <eigen3/Eigen/Dense>
 
-namespace  tuw_multi_robot_route_to_path
+namespace tuw_multi_robot_route_to_path
 {
 
-    struct PathPrecondition
-    {
-        int robot_no;
-        int step;
-    };
-    struct SyncedPathPoint
-    {
-        Eigen::Vector3d p;
-        std::vector<PathPrecondition> sync;
-    };
+struct PathPrecondition
+{
+    int robot_no;
+    int step;
+};
+struct SyncedPathPoint
+{
+    Eigen::Vector3d p;
+    std::vector<PathPrecondition> sync;
+};
 
-    class RobotRouteToPath
-    {
-        public:     RobotRouteToPath(const int &nr_of_robots, const int &robot_nr);
-        public:     int init(const std::vector<SyncedPathPoint> &path);                                         //Returns sync Step
-        public:     std::vector<Eigen::Vector3d> updateSync(const std::vector<int> &sync_steps, bool &changed);       //Returns new Path
+class RobotRouteToPath
+{
+  public:
+    RobotRouteToPath(const int &nr_of_robots, const int &robot_nr);
+    int init(const std::vector<SyncedPathPoint> &path);                                         //Returns sync Step
+    std::vector<Eigen::Vector3d> updateSync(const std::vector<int> &sync_steps, bool &changed); //Returns new Path
 
-        private:    int nr_of_robots_;
-        private:    int robot_nr_;
-        private:    std::vector<SyncedPathPoint> path_;
-		private:	int endPublish_;
-    };
+  private:
+    int nr_of_robots_;
+    int robot_nr_;
+    std::vector<SyncedPathPoint> path_;
+    int endPublish_;
+};
 
-}
+} // namespace tuw_multi_robot_route_to_path
 
 #endif
-
