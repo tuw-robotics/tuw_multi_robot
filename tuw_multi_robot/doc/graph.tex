@@ -1,0 +1,188 @@
+\documentclass[]{article}
+
+\usepackage{tikz}
+\usetikzlibrary{matrix,positioning}
+\usetikzlibrary{calc}
+\usetikzlibrary{decorations.pathmorphing}
+\usetikzlibrary{fit}
+\usetikzlibrary{shadows}
+\usetikzlibrary{decorations.markings}
+\usetikzlibrary{arrows}
+\usetikzlibrary{arrows.meta}
+\usetikzlibrary{automata,positioning}
+\usepackage{pgfplots}
+\usepackage{ marvosym }
+\usepackage{pdfrender}
+\usepackage{placeins}
+\usetikzlibrary{arrows.meta,bending,positioning,decorations.text}
+\usetikzlibrary{decorations.pathreplacing}
+
+%opening
+\title{}
+\author{}
+
+\begin{document}
+
+\tikzset{
+	vecArrow/.style={
+		draw, line width=0.5mm, black, -{Triangle[bend, angle=45:2pt 2]}, shorten >=0pt, postaction=decorate, decoration={text along path, text color=black, text align=center, text={|\scriptsize|#1 ||},raise=5pt}
+	}
+}
+\tikzset{
+	vecArrowRev/.style={
+		draw, line width=0.5mm, black, {Triangle[bend, angle=45:2pt 2]}-, shorten >=0pt, postaction=decorate, decoration={text along path, text color=black, text align=center, 	text={|\scriptsize|#1 ||},raise=5pt}
+	}
+}
+\tikzset{
+	vecArrow2/.style={
+		draw, line width=0.5mm, black, {Triangle[bend, angle=45:2pt 2]}-{Triangle[bend, angle=45:2pt 2]}, shorten >=0pt, postaction=decorate, decoration={text along path, text color=black, text align=center, text={|\scriptsize|#1 ||},raise=5pt}
+	}
+}
+\newpage
+
+
+\begin{figure}
+	\begin{tikzpicture}[node distance = 2cm, auto]
+		\def \robotX {-0.5}
+		\def \robotY {-4}
+		\def \ctrlX {5.2}
+		\def \ctrlY {-4}
+		\def \wpX {10.5}
+		\def \wpY {-4}
+		\tikzstyle{block} = [rectangle, draw, fill=gray!20, text width=9em, text centered, minimum height=4em]
+		\node [block] (init) { Map Server };
+		\node [block, right=of init] (voronoi_graph) { Voronoi Graph / Segment to Graph };
+		\node [block, right=of voronoi_graph] (mrr) {Multi Robot Router};
+		\node [block] at (\wpX+0.2, \wpY+0.2) (s2wp1) {Behavior Controller};
+		
+		%R0
+		\node [block] at (\robotX+0.4, \robotY+0.4) (r0) {Robot 0};
+		\node [block] at (\ctrlX+0.4, \ctrlY+0.4) (ctrl0) {Control 0};
+		
+		\draw[vecArrowRev=/path] (ctrl0) -- ([yshift=0.2cm]s2wp1.west);
+		\draw[vecArrowRev=/cmd vel] (r0) -- (ctrl0);
+		
+		%R1
+		\node [block] at (\robotX+0.2, \robotY+0.2) (r1) {Robot 1};
+		\node [block] at (\ctrlX+0.2, \ctrlY+0.2) (ctrl1) {Control 1};
+		
+		\draw[vecArrowRev] (ctrl1) -- ([yshift=0.0cm]s2wp1.west);
+		\draw[vecArrowRev] (r1) -- (ctrl1);
+		
+		%odom 1
+		\draw[vecArrow=/odom] ([xshift=0.0cm]r0.south) to [out=-28,in=-142] ([xshift=-0.6cm]s2wp1.south);
+		\draw[vecArrow] ([xshift=0.1cm]r1.south) to [out=-30,in=-140.0] ([xshift=-0.2cm]s2wp1.south);
+		
+		%R...
+		\node [block] at (\robotX, \robotY) (r2) {Robot n};
+		\node [block] at (\ctrlX, \ctrlY) (ctrl2) {Control n};
+		
+		\draw[vecArrowRev] (ctrl2) -- ([yshift=-0.2cm]s2wp1.west);
+		\draw[vecArrowRev] (r2) -- (ctrl2);
+		
+		\draw[vecArrow=/seg path] ([xshift=0.2cm]mrr.south) to [out=-120,in=120] ([xshift=0.35cm]s2wp1.north); %SegmentPath
+		\draw[vecArrow=] ([xshift=0.0cm]mrr.south)  to [out=-120,in=120] ([xshift=0.15cm]s2wp1.north); %SegmentPath
+		\draw[vecArrow=] ([xshift=-0.2cm]mrr.south)  to [out=-120,in=120] ([xshift=-0.05cm]s2wp1.north); %SegmentPath
+		
+		\draw[vecArrow=/robot info] ([xshift=0.80cm]s2wp1.north) to [out=55,in=-55] ([xshift=0.65cm]mrr.south); %SegmentPath
+		\draw[vecArrowRev=] ([xshift=0.90cm]mrr.south) to [out=-60,in=60] ([xshift=1.05cm]s2wp1.north); %SegmentPath
+		\draw[vecArrowRev=] ([xshift=1.15cm]mrr.south) to [out=-65,in=65] ([xshift=1.3cm]s2wp1.north); %SegmentPath
+		
+		%odom 2
+		\draw[vecArrow] ([xshift=0.2cm]r2.south) to [out=-32,in=-138] ([xshift=0.2cm]s2wp1.south);	
+			
+		
+		\draw[vecArrow=/map] (init) -- (voronoi_graph); %[tuw\_msgs::VoronoiGraph]
+		\path [vecArrow=/segments] (voronoi_graph) to[in=180,out=0] (mrr); %[nav_msgs::OccupancyGrid]
+		
+		\draw[vecArrow=/odom] ([xshift=0.5cm]r0.north) to [out=32,in=-144] ([xshift=-1.3cm]mrr.south);
+		\draw[vecArrow] ([xshift=0.75cm]r1.north) to [out=30,in=-140.0] ([xshift=-0.9cm]mrr.south);
+		\draw[vecArrow] ([xshift=1cm]r2.north) to [out=28,in=-136] ([xshift=-0.5cm]mrr.south);
+		
+		
+		
+		\draw[vecArrow=/goals] ([yshift=1cm]mrr.north) -- (mrr.north);
+		
+		\draw[-, dashed] (r0.north west) -- (r2.north west);
+		\draw[-, dashed] (r0.south east) -- (r2.south east);
+		\draw[-, dashed] (r0.north east) -- (r2.north east);
+		
+		
+		\draw[-, dashed] (ctrl0.north west) -- (ctrl2.north west);
+		\draw[-, dashed] (ctrl0.south east) -- (ctrl2.south east);
+		\draw[-, dashed] (ctrl0.north east) -- (ctrl2.north east);
+		
+		\draw[vecArrow=/map] (init.north) to[out=20, in=160] ([xshift=-0.5cm]mrr.north);
+		
+		\node [dashed, draw,fit=(ctrl0) (ctrl2) (r0) (r2) (s2wp1), inner sep=10pt]	{};
+	\end{tikzpicture}
+\end{figure}
+%
+
+
+\begin{figure}
+	\begin{tikzpicture}[node distance = 2cm, auto]
+	\def \robotX {-0.5}
+	\def \robotY {-4}
+	\def \ctrlX {5.2}
+	\def \ctrlY {-4}
+	\def \wpX {10.5}
+	\def \wpY {-4}
+	\tikzstyle{block} = [rectangle, draw, fill=gray!20, text width=9em, text centered, minimum height=4em]
+	\node [block] (init) { Map Server };
+	\node [block, right=of init] (voronoi_graph) { Voronoi Graph / Segment to Graph };
+	\node [block, right=of voronoi_graph] (mrr) {Multi Robot Router};
+	\node [block] at (\wpX+0.2, \wpY+0.2) (s2wp1) {Multi Robot Controller};
+	
+	%R0
+	\node [block] at (\robotX+0.4, \robotY+0.4) (r0) {Robot 0};
+	\draw[vecArrowRev=/cmd vel] (r0) -- ([yshift=0.2cm]s2wp1.west);
+	
+	%R1
+	\node [block] at (\robotX+0.2, \robotY+0.2) (r1) {Robot 1};
+	\draw[vecArrowRev] (r1) -- ([yshift=0.0cm]s2wp1.west);
+	
+	%odom 1
+	\draw[vecArrow=/odom] ([xshift=0.0cm]r0.south) to [out=-28,in=-142] ([xshift=-0.6cm]s2wp1.south);
+	\draw[vecArrow] ([xshift=0.1cm]r1.south) to [out=-30,in=-140.0] ([xshift=-0.2cm]s2wp1.south);
+	
+	%R...
+	\node [block] at (\robotX, \robotY) (r2) {Robot n};
+	\draw[vecArrowRev] (r2) -- ([yshift=-0.2cm]s2wp1.west);
+	
+	\draw[vecArrow=/seg path] ([xshift=0.2cm]mrr.south) to [out=-120,in=120] ([xshift=0.35cm]s2wp1.north); %SegmentPath
+	\draw[vecArrow=] ([xshift=0.0cm]mrr.south)  to [out=-120,in=120] ([xshift=0.15cm]s2wp1.north); %SegmentPath
+	\draw[vecArrow=] ([xshift=-0.2cm]mrr.south)  to [out=-120,in=120] ([xshift=-0.05cm]s2wp1.north); %SegmentPath
+	
+	\draw[vecArrow=/robot info] ([xshift=0.80cm]s2wp1.north) to [out=55,in=-55] ([xshift=0.65cm]mrr.south); %SegmentPath
+	\draw[vecArrowRev=] ([xshift=0.90cm]mrr.south) to [out=-60,in=60] ([xshift=1.05cm]s2wp1.north); %SegmentPath
+	\draw[vecArrowRev=] ([xshift=1.15cm]mrr.south) to [out=-65,in=65] ([xshift=1.3cm]s2wp1.north); %SegmentPath
+	
+	%odom 2
+	\draw[vecArrow] ([xshift=0.2cm]r2.south) to [out=-32,in=-138] ([xshift=0.2cm]s2wp1.south);	
+	
+	
+	\draw[vecArrow=/map] (init) -- (voronoi_graph); %[tuw\_msgs::VoronoiGraph]
+	\path [vecArrow=/segments] (voronoi_graph) to[in=180,out=0] (mrr); %[nav_msgs::OccupancyGrid]
+	
+	\draw[vecArrow=/odom] ([xshift=0.5cm]r0.north) to [out=32,in=-144] ([xshift=-1.3cm]mrr.south);
+	\draw[vecArrow] ([xshift=0.75cm]r1.north) to [out=30,in=-140.0] ([xshift=-0.9cm]mrr.south);
+	\draw[vecArrow] ([xshift=1cm]r2.north) to [out=28,in=-136] ([xshift=-0.5cm]mrr.south);
+	
+	
+	
+	\draw[vecArrow=/goals] ([yshift=1cm]mrr.north) -- (mrr.north);
+	
+	\draw[-, dashed] (r0.north west) -- (r2.north west);
+	\draw[-, dashed] (r0.south east) -- (r2.south east);
+	\draw[-, dashed] (r0.north east) -- (r2.north east);
+	
+	
+	\draw[vecArrow=/map] (init.north) to[out=20, in=160] ([xshift=-0.5cm]mrr.north);
+	
+	\end{tikzpicture}
+\end{figure}
+%
+
+
+\end{document}
