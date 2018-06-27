@@ -34,37 +34,37 @@ namespace velocity_controller
   n_param_("~")
   {	
     topic_odom_ = "odom";
-    n.getParam("odom_topic", topic_odom_);
+    n_param_.getParam("odom_topic", topic_odom_);
     
     topic_cmdVel_ = "cmd_vel";
-    n.getParam("cmd_vel_topic", topic_cmdVel_);
+    n_param_.getParam("cmd_vel_topic", topic_cmdVel_);
     
     topic_path_ = "path";
-    n.getParam("path_topic", topic_path_);
+    n_param_.getParam("path_topic", topic_path_);
     
     max_vel_v_ = 0.8;
-    n.getParam("max_v", max_vel_v_);
+    n_param_.getParam("max_v", max_vel_v_);
     
     max_vel_w_ = 1.0;
-    n.getParam("max_w", max_vel_w_);
+    n_param_.getParam("max_w", max_vel_w_);
     setSpeedParams(max_vel_v_, max_vel_w_);
     
     goal_r_ = 0.2;
-    n.getParam("goal_radius", goal_r_);
+    n_param_.getParam("goal_radius", goal_r_);
     setGoalRadius(goal_r_);
     
     Kp_val_ = 5.0;
-    n.getParam("Kp", Kp_val_);
+    n_param_.getParam("Kp", Kp_val_);
     
     Ki_val_ = 0.0;
-    n.getParam("Ki", Ki_val_);
+    n_param_.getParam("Ki", Ki_val_);
     
     Kd_val_ = 1.0;
-    n.getParam("Kd", Kd_val_);
+    n_param_.getParam("Kd", Kd_val_);
     setPID(Kp_val_,Ki_val_,Kd_val_);
     
 	topic_ctrl_ = "/ctrl";
-	n.getParam("topic_control", topic_ctrl_);
+	n_param_.getParam("topic_control", topic_ctrl_);
     
     ROS_INFO("%s", topic_cmdVel_.c_str());
     
@@ -108,8 +108,33 @@ namespace velocity_controller
     if(_path->poses.size() == 0)
       return;
     
+    // start at nearest point on path to odom
+    // behavior controller resends full paths, therefore
+    // it is important to start from the robots location
+    
+    float nearest_dist = std::numeric_limits< float >::max();
+    float dist = 0;
+    
+    auto it = _path->poses.begin();
+    bool changed = true; 
+    
+    while(it != _path->poses.end() && changed)
+    {
+      dist = pow(current_pose_.x - it->pose.position.x, 2) + pow(current_pose_.y - it->pose.position.y, 2);
+      if(dist < nearest_dist)
+      {
+        nearest_dist = dist;
+        changed = true;
+        it++;
+      }
+      else
+      {
+        changed = false;
+      }
+    }
+    
     std::vector<PathPoint> path;
-    for (auto it = _path->poses.begin(); it != _path->poses.end(); ++it)
+    for (; it != _path->poses.end(); ++it)
     {
       PathPoint pt;
     
@@ -121,6 +146,7 @@ namespace velocity_controller
       pt.x = it->pose.position.x;
       pt.y = it->pose.position.y;
       pt.theta = yaw;
+      
       path.push_back(pt);
     }
     

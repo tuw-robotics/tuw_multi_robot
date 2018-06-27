@@ -1,0 +1,4 @@
+robot_name: r0
+use_segment_as_goal: true
+allow_endpoint_off_segments: true
+path_optimization_segment_no: 0

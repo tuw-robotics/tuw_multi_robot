@@ -7,10 +7,9 @@
 <arg name="launch_stage"             default="true"            />
 <arg name="launch_map_server"        default="true"            />
 <arg name="launch_planner"           default="true"            />
-<arg name="launch_controller"        default="true"            />
 <arg name="launch_graph_generator"   default="true"            />
-<arg name="cfg"                      default="default"         />
-<arg name="launch_path_synchronizer" default="false"           />
+<arg name="launch_controller"        default="true"            />
+<arg name="cfg"                      default="robot_3"         />
 <arg name="load_segments"            default="false"           />
 <arg name="map_name"                 default=""                />
 
@@ -20,7 +19,6 @@
       <arg name="room" value="$(arg room)" />
       </include>
 </group>
-
 
 <!-- start rviz -->
 <group if="$(arg launch_rviz)">
@@ -44,11 +42,25 @@
 </group>
 
 <group if="$(arg launch_controller)">
-  <include file="$(find tuw_multi_robot_demo)/launch/controller.launch">
-    <arg name="cfg" value="$(arg cfg)" />
-  </include>
+  <node pkg="tuw_multi_robot_ctrl" type="tuw_velocity_controller" name="controller_0" output="screen">
+    <param name="odom_topic" value="/robot_0/odom"/>
+    <param name="cmd_vel_topic" value="/robot_0/cmd_vel"/>
+    <param name="path_topic" value="/robot_0/global_planner/planner/plan"/>
+    <param name="topic_control" value="/robot_0/ctrl"/>
+  </node>
+  <node pkg="tuw_multi_robot_ctrl" type="tuw_velocity_controller" name="controller_1" output="screen">
+    <param name="odom_topic" value="/robot_1/odom"/>
+    <param name="cmd_vel_topic" value="/robot_1/cmd_vel"/>
+    <param name="path_topic" value="/robot_1/global_planner/planner/plan"/>
+    <param name="topic_control" value="/robot_1/ctrl"/>
+  </node>
+  <node pkg="tuw_multi_robot_ctrl" type="tuw_velocity_controller" name="controller_2" output="screen">
+    <param name="odom_topic" value="/robot_2/odom"/>
+    <param name="cmd_vel_topic" value="/robot_2/cmd_vel"/>
+    <param name="path_topic" value="/robot_2/global_planner/planner/plan"/>
+    <param name="topic_control" value="/robot_2/ctrl"/>
+  </node>
 </group>
-
 
 <group if="$(arg launch_graph_generator)">
   <group if="$(arg load_segments)">
@@ -64,9 +76,7 @@
   </group>
 </group>
 
-<group if="$(arg launch_path_synchronizer)">
-  <include file="$(find tuw_multi_robot_demo)/launch/path_synchronizer.launch">
-    <arg name="cfg" value="$(arg cfg)" />
-  </include>
-</group>
+<include file="$(find tuw_multi_robot_demo)/launch/path_synchronizer.launch">
+  <arg name="cfg" value="$(arg cfg)" />
+</include>
 </launch>

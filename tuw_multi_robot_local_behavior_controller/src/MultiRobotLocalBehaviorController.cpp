@@ -70,6 +70,11 @@ MultiRobotLocalBehaviorController::MultiRobotLocalBehaviorController(ros::NodeHa
             robot_names_.push_back(result);
         }
     }
+    
+    for(int i = 0; i < robot_names_.size(); i++)
+    {
+      std::cout << "robot_name[" << i << "] = " << robot_names_[i] << std::endl;
+    }
 
     n_param_.param("robot_radius", robot_radius_, robot_radius_);
     robotDefaultRadius_ = 0.3;
@@ -111,7 +116,7 @@ MultiRobotLocalBehaviorController::MultiRobotLocalBehaviorController(ros::NodeHa
         subSegPath_[i] = n.subscribe<tuw_multi_robot_msgs::Route>(robot_names_[i] + "/" + topic_seg_path_, 1, boost::bind(&MultiRobotLocalBehaviorController::subSegPathCb, this, _1, i));
     }
 
-    pubRobotInfo_ = n.advertise<tuw_multi_robot_msgs::RobotInfo>(topic_robot_info_, 1);
+    pubRobotInfo_ = n.advertise<tuw_multi_robot_msgs::RobotInfo>(topic_robot_info_, 10);
 }
 
 void MultiRobotLocalBehaviorController::subOdomCb(const ros::MessageEvent<const nav_msgs::Odometry> &_event, int _topic)
@@ -246,6 +251,7 @@ void MultiRobotLocalBehaviorController::publishRobotInfo()
     for (uint32_t i = 0; i < robot_names_.size(); i++)
     {
         tuw_multi_robot_msgs::RobotInfo ri;
+        ri.header.stamp = ros::Time::now();
         ri.robot_name = robot_names_[i];
         ri.shape = ri.SHAPE_CIRCLE;
         ri.shape_variables.push_back(robot_radius_[i]);

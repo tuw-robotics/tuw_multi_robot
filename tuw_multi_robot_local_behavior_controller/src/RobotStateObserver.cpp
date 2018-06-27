@@ -46,7 +46,7 @@ namespace  tuw_multi_robot_route_to_path
     {
         float minDist = FLT_MAX;
         bool inSeg;
-		int cstep = currentStep;
+        int cstep = currentStep;
 
         for(int i = currentStep; i < path_.size(); i++)
         {

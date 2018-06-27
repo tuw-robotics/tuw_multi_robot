@@ -75,7 +75,7 @@ window
 
 floorplan
 ( 
-  name "test_1"
+  name "cave"
   bitmap "map.pgm"
   size [16.0 16.0 0]
   pose [ 0 0 0 0 ]
@@ -151,9 +151,17 @@ pioneer2dx_no_sonar
 pioneer2dx_no_sonar 
 (
   # can refer to the robot by this name
-  name "robot_1"
+  name "robot_2"
   color "blue" 
   pose [ 7 7 0 45 ] 
   hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
 )
 
+pioneer2dx_no_sonar 
+(
+  # can refer to the robot by this name
+  name "robot_1"
+  color "green" 
+  pose [ 0 -6 0 45 ] 
+  hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
+)

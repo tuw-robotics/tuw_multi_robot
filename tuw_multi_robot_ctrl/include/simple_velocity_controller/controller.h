@@ -11,9 +11,9 @@ namespace velocity_controller
 {
 typedef struct Point_t
 {
-  float x;
-  float y;
-  float theta;
+  float x = 0;
+  float y = 0;
+  float theta = 0;
 } PathPoint;
 
 typedef enum state_t
@@ -98,6 +98,9 @@ private:
   float goal_radius_ = 0.25;
 
   state actual_cmd_ = run;
+  
+protected:   
+  PathPoint current_pose_;
 };
 
 } // namespace velocity_controller

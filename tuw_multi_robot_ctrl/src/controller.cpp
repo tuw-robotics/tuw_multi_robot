@@ -8,7 +8,8 @@ namespace velocity_controller
 {
   Controller::Controller()
   {
-	actual_cmd_ = run;
+    actual_cmd_ = run;
+    current_pose_ = PathPoint();
   }
   
   void Controller::setPath(std::shared_ptr< std::vector< PathPoint > > _path)
@@ -67,6 +68,7 @@ namespace velocity_controller
   
   void Controller::update(PathPoint _odom, float _delta_t)
   {    
+    current_pose_ = _odom;
     checkGoal(_odom);
     
     if(plan_active && actual_cmd_ != wait_step && actual_cmd_ != stop)
