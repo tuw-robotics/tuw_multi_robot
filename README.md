@@ -1,7 +1,7 @@
 # tuw\_multi\_robot
 This repository includes ros packages to plan routes for multiple robots on a search graph. It creates a graph out of a pixel map and tries to find a path for multiple robots using an extended approach for prioritized planning. The inputs are the odometry messages of the robots, the map and the desired goal poses and the output are multiple synchronized routes given to the single robots. 
 
-#Packages
+# Packages
 
 * tuw\_voronoi\_graph
 * tuw\_multi\_robot\_router
