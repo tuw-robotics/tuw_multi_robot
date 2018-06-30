@@ -27,6 +27,8 @@ sudo apt install ros-$ROS_VERSION-map-server
 
 ```
 ### for Ubuntu 18.04
+#### map-server 
+since we only need the map server of the navigation stack we can to a space checkout
 ```
 mkdir $MRRP_DIR/src/navigation
 cd $MRRP_DIR/src/navigation
