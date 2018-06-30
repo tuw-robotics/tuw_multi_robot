@@ -21,15 +21,22 @@ if you like to run also the demos/tutorials you also need some addinal packages 
 
 Since there are not all programs and pkgs avaliabve for ubuntu 18.04 you have to comple some of them by your own.
 ### for Ubuntu 16.04
+
 ```
 export ROS_VERSION=kinetic
 sudo apt install ros-$ROS_VERSION-map-server
-
+sudo apt install ros-$ROS_VERSION-stage-ros
 ```
 ### for Ubuntu 18.04
+
+```
+export ROS_VERSION=melodic
+sudo apt install ros-$ROS_VERSION-stage-ros
+```
 #### map-server 
 since we only need the map server of the navigation stack we can to a space checkout
 ```
+sudo apt install libsdl-image1.2-dev libsdl-dev
 mkdir $MRRP_DIR/src/navigation
 cd $MRRP_DIR/src/navigation
 git init
