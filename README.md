@@ -26,6 +26,7 @@ This package includes a voronoi-graph-generator a dxf-to-graph-node and a segmen
 The _voronoi-graph-generator-node_ receives a pixel map ([occupancy\_grid](http://docs.ros.org/api/nav_msgs/html/msg/OccupancyGrid.html)) and converts it into a voronoi graph describing the original map. This graph is automatically generated or loaded from a cache folder if saved. Additionally the node can load specific graphs saved in a folder.
 
 ![voronoi-graph](tuw_multi_robot_demo/res/cave_voronoi_graph.png)
+<img src="tuw_multi_robot_demo/res/cave_voronoi_graph.png" alt="drawing" width="200px"/>
 
 The _voronoi-dxf-to-graph_ takes a dxf file as input containing the scaled and transformed map and any number of lines arcs and circles. These lines arcs and circles are converted to a graph and saved to a specific location.
 
