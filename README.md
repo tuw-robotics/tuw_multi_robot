@@ -26,12 +26,12 @@ This package includes a voronoi-graph-generator a dxf-to-graph-node and a segmen
 The _voronoi-graph-generator-node_ receives a pixel map ([occupancy\_grid](http://docs.ros.org/api/nav_msgs/html/msg/OccupancyGrid.html)) and converts it into a voronoi graph describing the original map. This graph is automatically generated or loaded from a cache folder if saved. Additionally the node can load specific graphs saved in a folder.
 
 [//]: <> (![voronoi-graph](tuw_multi_robot_demo/res/cave_voronoi_graph.png) )
-<img src="tuw_multi_robot_demo/res/cave_voronoi_graph.png" alt="voronoi-graph" width="200px"/>
+<img src="tuw_multi_robot_demo/res/cave_voronoi_graph.png" alt="voronoi-graph" width="300px"/>
 
 The _voronoi-dxf-to-graph_ takes a dxf file as input containing the scaled and transformed map and any number of lines arcs and circles. These lines arcs and circles are converted to a graph and saved to a specific location.
 
-![Librecad](tuw_multi_robot_demo/res/roblab_dxf_graph.png)
-<img src="tuw_multi_robot_demo/res/roblab_dxf_graph.png" alt="Librecad" width="200px"/>
+[//]: <> (![Librecad](tuw_multi_robot_demo/res/roblab_dxf_graph.png))
+<img src="tuw_multi_robot_demo/res/roblab_dxf_graph.png" alt="Librecad" width="300px"/>
 
 
 The _voronoi-segment-to-graph-node_ takes a segment file with predefined segments as input and converts it to a graph, which is published afterwords.
