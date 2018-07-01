@@ -27,6 +27,8 @@ The _voronoi-graph-generator-node_ receives a pixel map ([occupancy\_grid](http:
 
 The _voronoi-dxf-to-graph_ takes a dxf file as input containing the scaled and transformed map and any number of lines arcs and circles. These lines arcs and circles are converted to a graph and saved to a specific location.
 
+![Librecad][tuw_multi_robot/tuw_multi_robot_demo/res/roblab_dxf_graph.png]
+
 The _voronoi-segment-to-graph-node_ takes a segment file with predefined segments as input and converts it to a graph, which is published afterwords.
 
 The _graph-generator-node_ receives a grid\_map like the one published from voronoi-map-generator-node and converts it into a graph message for use in tuw\_multi\_robot\_route\_planner.
