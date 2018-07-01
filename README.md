@@ -31,7 +31,6 @@ The _voronoi-dxf-to-graph_ takes a dxf file as input containing the scaled and t
 
 <img src="tuw_multi_robot_demo/res/roblab_dxf_graph.png" alt="Librecad" width="300px"/>
 
-
 The _voronoi-segment-to-graph-node_ takes a segment file with predefined segments as input and converts it to a graph, which is published afterwords.
 
 The _graph-generator-node_ receives a grid\_map like the one published from voronoi-map-generator-node and converts it into a graph message for use in tuw\_multi\_robot\_route\_planner.
