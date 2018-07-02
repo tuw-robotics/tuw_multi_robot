@@ -1,7 +1,13 @@
-# tuw\_multi\_robot
+tuw\_multi\_robot
+===
+
+<img src="tuw_multi_robot/res/MultiRobotPreview.png" alt="MultiRobotPreview" width="400px" />
+
 This repository includes ros packages to plan routes for multiple robots on a search graph. It creates a search graph out of a pixel map and tries to find a path for multiple robots using an extended approach for prioritized planning. The inputs are the tuw_multi_robot_msgs/RobotInfo messages which include the robots pose, the map and the desired goal poses. The output are multiple synchronized routes given to the individual robots. 
+
 # Installation
 Have a look at the [INSTALL.md](INSTALL.md) file
+
 # Demos / Tutorials
 Have a look at the [tuw_multi_robot_demo/README.md](tuw_multi_robot_demo/README.md) file
 
@@ -25,11 +31,11 @@ This package includes a voronoi-graph-generator a dxf-to-graph-node and a segmen
 
 The _voronoi-graph-generator-node_ receives a pixel map ([occupancy\_grid](http://docs.ros.org/api/nav_msgs/html/msg/OccupancyGrid.html)) and converts it into a voronoi graph describing the original map. This graph is automatically generated or loaded from a cache folder if saved. Additionally the node can load specific graphs saved in a folder.
 
-<img src="tuw_multi_robot_demo/res/cave_voronoi_graph.png" alt="voronoi-graph" width="300px"/>
+<img src="tuw_multi_robot/res/cave_voronoi_graph.png" alt="voronoi-graph" width="300px"/>
 
 The _voronoi-dxf-to-graph_ takes a dxf file as input containing the scaled and transformed map and any number of lines arcs and circles. These lines arcs and circles are converted to a graph and saved to a specific location.
 
-<img src="tuw_multi_robot_demo/res/roblab_dxf_graph.png" alt="Librecad" width="300px"/>
+<img src="tuw_multi_robot/res/roblab_dxf_graph.png" alt="Librecad" width="300px"/>
 
 The _voronoi-segment-to-graph-node_ takes a segment file with predefined segments as input and converts it to a graph, which is published afterwards.
 
@@ -43,6 +49,8 @@ The MRRP uses a prioritized planning approach to find the robots routes. Additio
 ## tuw\_multi\_robot\_rviz
 Presents rviz plugins to set goal positions for the planner and a tool to visualize generated graphs. 
 
+<img src="tuw_multi_robot/res/rviz_plugin.png" alt="rviz plugin" width="300px"/>
+
 ## tuw\_multi\_robot\_ctrl
 A simple multi robot controller using tuw_multi_robot_msgs/Route messages as input, which are used to execute the path in a synchronized fashion. (The global controller is used for testing with a high number of robots)
 
@@ -52,8 +60,13 @@ This package contains a node, which receives the tuw_multi_robot_msgs/RouteSegme
 A tuw_multi_robot_msgs/RouteSegment contains a set of segments, where each of them has preconditions to tell when a robot is allowed to enter a certain segment. The tuw_multi_robot_route_to_path_node subscribes to these messages and checks how many of these preconditions are met and publishes a path from start to the last segment, for which the preconditions are met. This node subscribes to all robots as one node for performance reasons while testing with a large number of robots. 
 
 # Dependencies
-libdxflib-dev
-tuw\_multi\_robot\_msgs
+## System:
+``` sudo apt-get install libdxflib-dev ```
+
+## ROS:
+```
+tuw_multi_robot_msgs
+```
 
 # References
 http://wiki.ros.org/tuw_multi_robot
