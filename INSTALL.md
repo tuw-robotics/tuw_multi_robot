@@ -36,7 +36,7 @@ sudo apt install ros-$ROS_VERSION-stage-ros
 #### map-server 
 since we only need the map server of the navigation stack we can to a space checkout
 ```
-sudo apt install libsdl-image1.2-dev libsdl-dev
+sudo apt install libsdl-image1.2-dev libsdl-dev libbullet-dev
 mkdir $MRRP_DIR/src/navigation
 cd $MRRP_DIR/src/navigation
 git init
