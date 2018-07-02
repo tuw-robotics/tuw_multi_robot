@@ -59,14 +59,6 @@ This package contains a node, which receives the tuw_multi_robot_msgs/RouteSegme
 
 A tuw_multi_robot_msgs/RouteSegment contains a set of segments, where each of them has preconditions to tell when a robot is allowed to enter a certain segment. The tuw_multi_robot_route_to_path_node subscribes to these messages and checks how many of these preconditions are met and publishes a path from start to the last segment, for which the preconditions are met. This node subscribes to all robots as one node for performance reasons while testing with a large number of robots. 
 
-# Dependencies
-## System:
-``` sudo apt-get install libdxflib-dev ```
-
-## ROS:
-```
-tuw_multi_robot_msgs
-```
 
 # References
 http://wiki.ros.org/tuw_multi_robot
