@@ -2,7 +2,7 @@
 <package format="2">
   <name>tuw_multi_robot</name>
   <version>0.0.0</version>
-  <description>This repository includes ros packages to plan routes for multiple robots on a search graph. It creates a graph out of a pixel map and tries to find a path for multiple robots using an extended approach for prioritized planning. The inputs are the odometry messages of the robots, the map and the desired goal poses and the output are multiple synchronized routes given to the single robots.</description>
+  <description>This repository includes ros packages to plan routes for multiple robots on a search graph. It creates a search graph out of a pixel map and tries to find a path for multiple robots using an extended approach for prioritized planning. The inputs are the tuw_multi_robot_msgs/RobotInfo messages which include the robots pose, the map and the desired goal poses. The output are multiple synchronized routes given to the individual robots.</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
