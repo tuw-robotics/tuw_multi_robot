@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   tf
   tuw_multi_robot_msgs
+  nodelet
 )
 
 ## System dependencies are found with CMake's conventions
@@ -129,6 +130,7 @@ include_directories(
 add_library(${PROJECT_NAME}
   src/controller.cpp
   src/segment_controller.cpp
+  src/fake_pose_estimation_nodelet.cpp
 )
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 ## Add cmake target dependencies of the library
