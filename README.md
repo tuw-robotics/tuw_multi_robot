@@ -1,7 +1,7 @@
 tuw\_multi\_robot
 ===
 
-<img src="tuw_multi_robot/res/MultiRobotPreview.png" alt="MultiRobotPreview" width="400px" />
+<img src="tuw_multi_robot/res/maze_stage.png" alt="200 Robots in stage" width="400px" />
 
 This repository includes ros packages to plan routes for multiple robots on a search graph. It creates a search graph out of a pixel map and tries to find a path for multiple robots using an extended approach for prioritized planning. The inputs are the tuw_multi_robot_msgs/RobotInfo messages which include the robots pose, the map and the desired goal poses. The output are multiple synchronized routes given to the individual robots. 
 
@@ -18,6 +18,12 @@ Have a look at the [tuw_multi_robot_demo/README.md](tuw_multi_robot_demo/README.
 * tuw\_multi\_robot\_rviz
 * tuw\_multi\_robot\_ctrl
 * tuw\_multi\_robot\_local\_behavior\_controller
+
+# System overview
+<img src="tuw_multi_robot/res/dataflow.png" alt="200 Robots in stage" width="400px" />
+
+This figure reprecents the current state and planed developments on the tuw\_multi\_robot framework. The framework is designed to cover all tools needed for a automated delivery system with autonomouos vehicles. In the current state of the system allows one to set goals for multiple vehicles using RViz or by a configuration file while in the future we also want to integrate a order mangement system which is capable to assigne vehiles for spezific deliverys and generates goals for the multi robot route planner. The green boxes do show allready existing modules while the red boxes are not yet implmented/released.
+The system provides for simple local motion controller which allow a high number (> 100) of vehicles to be controled in real time using stage but the desin allows also the usage of a existing controllers such as DWA implmented in move_base.
 
 ## tuw\_multi\_robot\_demo
 Contains launch and config files to run a sample demo. 
