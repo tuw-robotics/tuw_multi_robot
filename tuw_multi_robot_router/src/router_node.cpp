@@ -260,6 +260,13 @@ void Router_Node::robotInfoCallback(const tuw_multi_robot_msgs::RobotInfo &_robo
     {
         robot_radius_[_robotInfo.robot_name] = radius_pair;
     }
+    
+    robot_radius_max_ = 0;
+    for(auto&& it = robot_radius_.begin(); it != robot_radius_.end(); it++)
+    {
+      if(it->second.second > robot_radius_max_)
+        robot_radius_max_ = it->second.second;
+    }
 }
 
 void Router_Node::graphCallback(const tuw_multi_robot_msgs::Graph &msg)
@@ -290,9 +297,13 @@ void Router_Node::graphCallback(const tuw_multi_robot_msgs::Graph &msg)
         }
 
         if (segment.valid)
-            graph.emplace_back(segment.id, points, successors, predecessors, segment.width);
+        {
+            graph.emplace_back(segment.id, points, successors, predecessors,  3 * robot_radius_max_ / mapResolution_); //segment.width);
+        }
         else
+        {
             graph.emplace_back(segment.id, points, successors, predecessors, 0);
+        }
     }
 
     std::sort(graph.begin(), graph.end(), sortSegments);

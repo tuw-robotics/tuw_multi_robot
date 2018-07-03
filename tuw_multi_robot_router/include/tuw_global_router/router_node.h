@@ -113,6 +113,7 @@ private:
   std::vector<std::string> missing_robots_;
   std::map<std::string, std::pair<TopicStatus, Eigen::Vector3d>> robot_starts_;
   std::map<std::string, std::pair<TopicStatus, float>> robot_radius_;
+  float robot_radius_max_;
   cv::Mat distMap_;
   Eigen::Vector2d mapOrigin_;
   float mapResolution_;
