@@ -93,8 +93,8 @@ MultiRobotLocalBehaviorController::MultiRobotLocalBehaviorController(ros::NodeHa
     topic_path_ = "path_synced";
     n_param_.param("path_topic", topic_path_, topic_path_);
 
-    topic_seg_path_ = "seg_path";
-    n_param_.param("seg_path_topic", topic_seg_path_, topic_seg_path_);
+    topic_route_ = "route";
+    n_param_.param("route_topic", topic_route_, topic_route_);
 
     topic_odom_ = "odom";
     n_param_.param("odom_topic", topic_odom_, topic_odom_);
@@ -113,7 +113,7 @@ MultiRobotLocalBehaviorController::MultiRobotLocalBehaviorController(ros::NodeHa
         pubPath_[i] = n.advertise<nav_msgs::Path>(robot_names_[i] + "/" + topic_path_, 100);
 
         subOdometry_[i] = n.subscribe<nav_msgs::Odometry>(robot_names_[i] + "/" + topic_odom_, 1, boost::bind(&MultiRobotLocalBehaviorController::subOdomCb, this, _1, i));
-        subSegPath_[i] = n.subscribe<tuw_multi_robot_msgs::Route>(robot_names_[i] + "/" + topic_seg_path_, 1, boost::bind(&MultiRobotLocalBehaviorController::subSegPathCb, this, _1, i));
+        subSegPath_[i] = n.subscribe<tuw_multi_robot_msgs::Route>(robot_names_[i] + "/" + topic_route_, 1, boost::bind(&MultiRobotLocalBehaviorController::subSegPathCb, this, _1, i));
     }
 
     pubRobotInfo_ = n.advertise<tuw_multi_robot_msgs::RobotInfo>(topic_robot_info_, 10);

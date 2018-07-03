@@ -1,5 +1,5 @@
 robot_names:            ["r1"]
-robot_default_radius:   0.3
+robot_default_radius:   0.4
 path_topic:             "global_planner/planner/plan"
 odom_topic:             "odom"
-seg_path_topic:         "seg_path"
+route_topic:            "route"

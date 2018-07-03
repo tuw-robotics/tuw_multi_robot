@@ -59,7 +59,7 @@ MultiSegmentControllerNode::MultiSegmentControllerNode(ros::NodeHandle &n) : n_(
     pubCmdVel_.resize(robot_names_.size());
     subCtrl_.resize(robot_names_.size());
     subOdom_.resize(robot_names_.size());
-    subPath_.resize(robot_names_.size());
+    subRoute_.resize(robot_names_.size());
 
     n_param_.param("robot_radius", robot_radius_, robot_radius_);
 
@@ -74,8 +74,8 @@ MultiSegmentControllerNode::MultiSegmentControllerNode(ros::NodeHandle &n) : n_(
     topic_cmdVel_ = "cmd_vel";
     n.getParam("cmd_vel_topic", topic_cmdVel_);
 
-    topic_path_ = "seg_path";
-    n.getParam("path_topic", topic_path_);
+    topic_route_ = "route";
+    n.getParam("route_topic", topic_route_);
 
     topic_robot_info_ = "/robot_info";
     n.getParam("robot_info_topic", topic_robot_info_);
@@ -115,7 +115,7 @@ MultiSegmentControllerNode::MultiSegmentControllerNode(ros::NodeHandle &n) : n_(
         pubCmdVel_[i] = n.advertise<geometry_msgs::Twist>(robot_names_[i] + "/" + topic_cmdVel_, 1);
         pubRobotInfo_ = n.advertise<tuw_multi_robot_msgs::RobotInfo>(topic_robot_info_, robot_names_.size() * 2);
         subOdom_[i] = n.subscribe<nav_msgs::Odometry>(robot_names_[i] + "/" + topic_odom_, 1, boost::bind(&MultiSegmentControllerNode::subOdomCb, this, _1, i));
-        subPath_[i] = n.subscribe<tuw_multi_robot_msgs::Route>(robot_names_[i] + "/" + topic_path_, 1, boost::bind(&MultiSegmentControllerNode::subPathCb, this, _1, i));
+        subRoute_[i] = n.subscribe<tuw_multi_robot_msgs::Route>(robot_names_[i] + "/" + topic_route_, 1, boost::bind(&MultiSegmentControllerNode::subRouteCb, this, _1, i));
         subCtrl_[i] = n.subscribe<std_msgs::String>(robot_names_[i] + "/" + topic_ctrl_, 1, boost::bind(&MultiSegmentControllerNode::subCtrlCb, this, _1, i));
     }
 }
@@ -159,7 +159,7 @@ void velocity_controller::MultiSegmentControllerNode::subOdomCb(const ros::Messa
     }
 }
 
-void velocity_controller::MultiSegmentControllerNode::subPathCb(const ros::MessageEvent<const tuw_multi_robot_msgs::Route> &_event, int _topic)
+void velocity_controller::MultiSegmentControllerNode::subRouteCb(const ros::MessageEvent<const tuw_multi_robot_msgs::Route> &_event, int _topic)
 {
     const tuw_multi_robot_msgs::Route_<std::allocator<void>>::ConstPtr &path = _event.getMessage();
 

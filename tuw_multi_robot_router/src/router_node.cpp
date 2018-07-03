@@ -82,8 +82,8 @@ Router_Node::Router_Node(ros::NodeHandle &_n) : Router(),
     voronoi_topic_ = "segments";
     n_param_.param("graph_topic", voronoi_topic_, voronoi_topic_);
 
-    segpath_topic_ = "seg_path";
-    n_param_.param("seg_path", segpath_topic_, segpath_topic_);
+    route_topic_ = "route";
+    n_param_.param("route", route_topic_, route_topic_);
 
     robot_info_topic_ = "/robot_info";
     n_param_.param("robot_info", robot_info_topic_, robot_info_topic_);
@@ -253,8 +253,8 @@ void Router_Node::robotInfoCallback(const tuw_multi_robot_msgs::RobotInfo &_robo
 
         ROS_INFO("Multi Robot Router: advertising on %s", (_robotInfo.robot_name + "/" + path_topic_).c_str());
         pubPaths_.emplace_back(n_.advertise<nav_msgs::Path>(_robotInfo.robot_name + "/" + path_topic_, 1, true));
-        ROS_INFO("Multi Robot Router: advertising on %s", (_robotInfo.robot_name + "/" + segpath_topic_).c_str());
-        pubSegPaths_.emplace_back(n_.advertise<tuw_multi_robot_msgs::Route>(_robotInfo.robot_name + "/" + segpath_topic_, 1, true));
+        ROS_INFO("Multi Robot Router: advertising on %s", (_robotInfo.robot_name + "/" + route_topic_).c_str());
+        pubSegPaths_.emplace_back(n_.advertise<tuw_multi_robot_msgs::Route>(_robotInfo.robot_name + "/" + route_topic_, 1, true));
     }
     else
     {

@@ -116,7 +116,7 @@ private:
   cv::Mat distMap_;
   Eigen::Vector2d mapOrigin_;
   float mapResolution_;
-  std::string segpath_topic_;
+  std::string route_topic_;
   std::string odom_topic_;
   std::string path_topic_;
   std::string goal_topic_;

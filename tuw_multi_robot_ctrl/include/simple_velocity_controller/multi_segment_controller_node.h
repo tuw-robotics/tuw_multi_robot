@@ -36,11 +36,11 @@ private:
   std::vector<ros::Publisher> pubCmdVel_;
   ros::Publisher pubRobotInfo_;
   std::vector<ros::Subscriber> subOdom_;
-  std::vector<ros::Subscriber> subPath_;
+  std::vector<ros::Subscriber> subRoute_;
   std::vector<ros::Subscriber> subCtrl_;
   std::string topic_cmdVel_;
   std::string topic_odom_;
-  std::string topic_path_;
+  std::string topic_route_;
   std::string topic_ctrl_;
   std::string topic_robot_info_;
   float max_vel_v_;
@@ -53,7 +53,7 @@ private:
   std::vector<std::string> robot_names_;
   std::vector<float> robot_radius_;
   void subOdomCb(const ros::MessageEvent<nav_msgs::Odometry const> &_event, int _topic);
-  void subPathCb(const ros::MessageEvent<tuw_multi_robot_msgs::Route const> &_event, int _topic);
+  void subRouteCb(const ros::MessageEvent<tuw_multi_robot_msgs::Route const> &_event, int _topic);
   void subCtrlCb(const ros::MessageEvent<std_msgs::String const> &_event, int _topic);
   std::vector<SegmentController> controller;
   int findRobotId(std::string robot_name);

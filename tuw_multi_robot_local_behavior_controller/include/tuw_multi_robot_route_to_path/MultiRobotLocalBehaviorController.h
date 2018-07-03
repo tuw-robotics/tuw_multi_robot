@@ -61,7 +61,7 @@ private:
 
   // ROS Topic names
   std::string topic_path_;
-  std::string topic_seg_path_;
+  std::string topic_route_;
   std::string topic_odom_;
   std::string topic_robot_info_;
   std::vector<std::string> robot_names_;
