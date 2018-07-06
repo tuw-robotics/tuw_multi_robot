@@ -98,7 +98,7 @@ Router_Node::Router_Node(ros::NodeHandle &_n) : Router(),
     subGoalSet_ = _n.subscribe(goal_topic_, 1, &Router_Node::goalsCallback, this);
     subMap_ = _n.subscribe(map_topic_, 1, &Router_Node::mapCallback, this);
     subVoronoiGraph_ = _n.subscribe(voronoi_topic_, 1, &Router_Node::graphCallback, this);
-    subRobotInfo_ = _n.subscribe(robot_info_topic_, 1000, &Router_Node::robotInfoCallback, this);
+    subRobotInfo_ = _n.subscribe(robot_info_topic_, 10000, &Router_Node::robotInfoCallback, this);
 
     if (!singleRobotName_.size() == 0)
     {
@@ -242,7 +242,7 @@ void Router_Node::robotInfoCallback(const tuw_multi_robot_msgs::RobotInfo &_robo
 {
     TopicStatus s(TopicStatus::status::active, topic_timeout_s_);
     std::pair<TopicStatus, float> radius_pair(s, calcRadius(_robotInfo.shape, _robotInfo.shape_variables));
-
+    
     if (std::find(subscribed_robot_names_.begin(), subscribed_robot_names_.end(), _robotInfo.robot_name) == subscribed_robot_names_.end())
     {
         subscribed_robot_names_.push_back(_robotInfo.robot_name);
@@ -324,9 +324,19 @@ bool Router_Node::preparePlanning(std::vector<float> &_radius, std::vector<Eigen
     bool retval = true;
     missing_robots_.clear();
     std::vector<std::string> robot_names;
-    for (int i = 0; i < _rosGoals.goals.size(); i++)
+    
+    // sort _rosGoals according to subscribed_robot_names_
+    
+    tuw_multi_robot_msgs::RobotGoalsArray goals_tmp = _rosGoals;
+    
+    for(int k = 0; k < _rosGoals.goals.size(); k++)
     {
-        std::string name = _rosGoals.goals[i].robot_name;
+      goals_tmp.goals[k] = _rosGoals.goals[std::distance(subscribed_robot_names_.begin(), std::find(subscribed_robot_names_.begin(), subscribed_robot_names_.end(), _rosGoals.goals[k].robot_name))];
+    }
+    
+    for (int i = 0; i < goals_tmp.goals.size(); i++)
+    {
+        std::string name = goals_tmp.goals[i].robot_name;
         //Check duplicated goals
         if (std::find(robot_names.begin(), robot_names.end(), name) != robot_names.end())
         {
@@ -343,12 +353,12 @@ bool Router_Node::preparePlanning(std::vector<float> &_radius, std::vector<Eigen
             std::pair<TopicStatus, float> radius_pair = robot_radius_[name];
             _radius.push_back(robot_radius_[name].second);
 
-            if (_rosGoals.goals[i].path_points.size() == 0)
+            if (goals_tmp.goals[i].path_points.size() == 0)
             {
-                ROS_INFO("Multi Robot Router: To less goal points for robot %s", name.c_str());
+                ROS_INFO("Multi Robot Router: Not enough goal points for robot %s", name.c_str());
                 return false;
             }
-            Eigen::Vector3d goal(_rosGoals.goals[i].path_points.back().position.x, _rosGoals.goals[i].path_points.back().position.y, getYaw(_rosGoals.goals[i].path_points.back().orientation));
+            Eigen::Vector3d goal(goals_tmp.goals[i].path_points.back().position.x, goals_tmp.goals[i].path_points.back().position.y, getYaw(goals_tmp.goals[i].path_points.back().orientation));
             _goals.push_back(goal);
         }
         else
@@ -358,7 +368,7 @@ bool Router_Node::preparePlanning(std::vector<float> &_radius, std::vector<Eigen
             missing_robots_.push_back(name);
         }
 
-        if (_rosGoals.goals[i].path_points.size() == 1)
+        if (goals_tmp.goals[i].path_points.size() == 1)
         {
             //use current robot pose
             if (robot_starts_[name].first.getStatus() == TopicStatus::status::active)
@@ -374,7 +384,7 @@ bool Router_Node::preparePlanning(std::vector<float> &_radius, std::vector<Eigen
         }
         else
         {
-            Eigen::Vector3d start(_rosGoals.goals[i].path_points.front().position.x, _rosGoals.goals[i].path_points.front().position.y, getYaw(_rosGoals.goals[i].path_points.front().orientation));
+            Eigen::Vector3d start(goals_tmp.goals[i].path_points.front().position.x, goals_tmp.goals[i].path_points.front().position.y, getYaw(goals_tmp.goals[i].path_points.front().orientation));
             _starts.push_back(start);
         }
     }
