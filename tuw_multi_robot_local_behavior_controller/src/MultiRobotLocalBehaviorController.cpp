@@ -258,7 +258,7 @@ void MultiRobotLocalBehaviorController::publishRobotInfo()
         ri.sync.robot_id = robot_names_[i];
         ri.sync.current_route_segment = robot_steps_[i];
         ri.mode = ri.MODE_NA;
-        ri.status = ri.STATUS_STOPED; //TODO
+        ri.status = ri.STATUS_STOPPED; //TODO
         ri.good_id = ri.GOOD_NA;
 
         pubRobotInfo_.publish(ri);
