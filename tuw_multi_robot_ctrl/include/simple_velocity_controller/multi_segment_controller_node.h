@@ -9,6 +9,7 @@
 #include <std_msgs/String.h>
 #include <tuw_multi_robot_msgs/Route.h>
 #include <tuw_multi_robot_msgs/RobotInfo.h>
+#include <tuw_multi_robot_msgs/Pickup.h>
 
 #include <simple_velocity_controller/segment_controller.h>
 #include <memory>
@@ -38,6 +39,7 @@ private:
   std::vector<ros::Subscriber> subOdom_;
   std::vector<ros::Subscriber> subRoute_;
   std::vector<ros::Subscriber> subCtrl_;
+  ros::Subscriber subPickup_;
   std::string topic_cmdVel_;
   std::string topic_odom_;
   std::string topic_route_;
@@ -55,6 +57,7 @@ private:
   void subOdomCb(const ros::MessageEvent<nav_msgs::Odometry const> &_event, int _topic);
   void subRouteCb(const ros::MessageEvent<tuw_multi_robot_msgs::Route const> &_event, int _topic);
   void subCtrlCb(const ros::MessageEvent<std_msgs::String const> &_event, int _topic);
+  void subPickupCb(const tuw_multi_robot_msgs::Pickup::ConstPtr&);
   std::vector<SegmentController> controller;
   int findRobotId(std::string robot_name);
 };

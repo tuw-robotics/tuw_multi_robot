@@ -138,6 +138,10 @@ add_library(FakePoseEstimationNodelet
 )
 target_link_libraries(FakePoseEstimationNodelet ${catkin_LIBRARIES})
 
+add_dependencies(${PROJECT_NAME}
+  tuw_multi_robot_msgs_generate_messages_cpp
+)
+
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure

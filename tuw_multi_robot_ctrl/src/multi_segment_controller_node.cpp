@@ -117,7 +117,11 @@ MultiSegmentControllerNode::MultiSegmentControllerNode(ros::NodeHandle &n) : n_(
         subOdom_[i] = n.subscribe<nav_msgs::Odometry>(robot_names_[i] + "/" + topic_odom_, 1, boost::bind(&MultiSegmentControllerNode::subOdomCb, this, _1, i));
         subRoute_[i] = n.subscribe<tuw_multi_robot_msgs::Route>(robot_names_[i] + "/" + topic_route_, 1, boost::bind(&MultiSegmentControllerNode::subRouteCb, this, _1, i));
         subCtrl_[i] = n.subscribe<std_msgs::String>(robot_names_[i] + "/" + topic_ctrl_, 1, boost::bind(&MultiSegmentControllerNode::subCtrlCb, this, _1, i));
+
+        controller[i].setGoodId(tuw_multi_robot_msgs::RobotInfo::GOOD_EMPTY);
     }
+
+    subPickup_ = n.subscribe("/pickup", 10, &velocity_controller::MultiSegmentControllerNode::subPickupCb, this);
 }
 
 void velocity_controller::MultiSegmentControllerNode::subOdomCb(const ros::MessageEvent<const nav_msgs::Odometry> &_event, int _topic)
@@ -231,6 +235,19 @@ void velocity_controller::MultiSegmentControllerNode::subCtrlCb(const ros::Messa
     }
 }
 
+void velocity_controller::MultiSegmentControllerNode::subPickupCb(const tuw_multi_robot_msgs::Pickup::ConstPtr& pickup)
+{
+    for (uint32_t i = 0; i < robot_names_.size(); i++)
+    {
+        if ( robot_names_[i] == pickup->robot_name )
+        {
+            controller[i].setGoodId(pickup->good_id);
+            publishRobotInfo();
+            break;
+        }
+    }
+}
+
 void MultiSegmentControllerNode::publishRobotInfo()
 {
     for (uint32_t i = 0; i < robot_names_.size(); i++)
@@ -242,8 +259,8 @@ void MultiSegmentControllerNode::publishRobotInfo()
         ri.sync.robot_id = robot_names_[i];
         ri.sync.current_route_segment = controller[i].getCount();
         ri.mode = ri.MODE_NA;
-        ri.status = ri.STATUS_STOPPED; //TODO
-        ri.good_id = ri.GOOD_NA;
+        ri.status = controller[i].getStatus();
+        ri.good_id = controller[i].getGoodId();
 
         pubRobotInfo_.publish(ri);
     }

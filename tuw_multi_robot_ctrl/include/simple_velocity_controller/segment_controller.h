@@ -6,6 +6,7 @@
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
 #include <nav_msgs/Path.h>
+#include <tuw_multi_robot_msgs/RobotInfo.h>
 
 namespace velocity_controller
 {
@@ -100,6 +101,10 @@ class SegmentController
      */
     int getCount();
 
+    int getStatus();
+    void setGoodId(int);
+    int getGoodId();
+
   private:
     bool checkPrecondition(PathPoint p);
     float normalizeAngle(float _angle);
@@ -116,6 +121,9 @@ class SegmentController
     float Kd_ = 1;
     float Ki_ = 0.0;
     float goal_radius_ = 0.25;
+
+    int robot_status = tuw_multi_robot_msgs::RobotInfo::STATUS_STOPPED;
+    int goodId;
 
     std::vector<int> actualPreconditions;
 
