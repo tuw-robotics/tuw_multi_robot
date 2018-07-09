@@ -1,0 +1,14 @@
+<package>
+  <description brief="tuw_station_manager">
+
+     tuw_station_manager
+
+  </description>
+  <author>Markus Bader</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/tuw_station_manager</url>
+
+</package>
+
+
