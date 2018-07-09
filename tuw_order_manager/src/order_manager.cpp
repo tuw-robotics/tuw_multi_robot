@@ -12,7 +12,7 @@ OrderManager::OrderManager(int argc, char** argv)
     mode = MODE_INIT;
     ros::init(argc, argv, "order_manager");
     nodeHandle = new ros::NodeHandle();
-    subscribers.push_back( nodeHandle->subscribe("/tuw_rqt_goods/goods", 0, &OrderManager::goodsCallback, this) );
+    subscribers.push_back( nodeHandle->subscribe("/goods", 0, &OrderManager::goodsCallback, this) );
     subscribers.push_back( nodeHandle->subscribe("/robot_info", 10, &OrderManager::robotInfoCallback, this) );
     subscribe_robot_odom();
     pub_robot_goals = nodeHandle->advertise<tuw_multi_robot_msgs::RobotGoalsArray>("goals", 0);
