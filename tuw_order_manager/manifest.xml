@@ -4,7 +4,7 @@
      tuw_order_manager
 
   </description>
-  <author>Markus Bader</author>
+  <author>Eric Aichinger</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/tuw_order_manager</url>
