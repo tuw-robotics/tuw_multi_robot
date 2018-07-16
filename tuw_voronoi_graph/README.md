@@ -34,17 +34,17 @@ Each resutling segment has a width, given by the commandline argument -w and a l
 
 Receives a pixel map (occupancy_grid) and converts it into a `tuw_msgs::graph` message spanning the whole free space of the map. Additionally the graph is saved to a given folder. If a map is allready converted to a graph the graph is loaded from memory to save computation time.
 
-###Subscribed Topics
+### Subscribed Topics
 
 `~map` (`nav_msgs::occupancy_grid`)
     The map used for planning (used for matching odom pose to graph)
 
-###Published Topics
+### Published Topics
 
 `~segments` (`tuw_multi_robot_msgs::VoronoiGraph`)
     The generated graph
 
-###Parameters
+### Parameters
 
 `~map_topic` (`string` default: "/map")
 
@@ -80,7 +80,7 @@ Receives a pixel map (occupancy_grid) and converts it into a `tuw_msgs::graph` m
      If this param is set a custom generated graph is loded from this path
 
 
-##tuw segment to graph node
+## tuw segment to graph node
 
 Receives a pixel map (occupancy_grid) and converts it into a `tuw_msgs::graph` message spanning the whole free space of the map. Additionally the graph is saved to a given folder. If a map is allready converted to a graph the graph is loaded from memory to save computation time.
 
