@@ -11,7 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   roscpp
   std_msgs
-  tuw_geometry_msgs
+  geometry_msgs
   tuw_multi_robot_msgs
 )
 
@@ -213,6 +213,3 @@ target_link_libraries(
     ${catkin_LIBRARIES}
 )
 
-add_dependencies(${PROJECT_NAME}
-    tuw_multi_robot_msgs_generate_messages_cpp
-)

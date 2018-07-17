@@ -2,19 +2,22 @@
 #define __TUW_ORDERMANAGER_SIMPLESOLVER_H
 #include "abstractsolver.h"
 
-namespace tuw_order_planner {
+namespace tuw_order_planner
+{
 
-struct dist_pair {
-    float distance;
-    std::string robot_name;
-    int good_id;
+struct dist_pair
+{
+  float distance;
+  std::string robot_name;
+  int good_id;
 };
 
-class SimpleSolver : public AbstractSolver {
+class SimpleSolver : public AbstractSolver
+{
 public:
-    using AbstractSolver::AbstractSolver;
-    std::vector<transport_pair> solve() override;
+  using AbstractSolver::AbstractSolver;
+  std::vector<TransportPair> solve() override;
 };
 
-} // end namespace tuw_order_planner
+}  // end namespace tuw_order_planner
 #endif
