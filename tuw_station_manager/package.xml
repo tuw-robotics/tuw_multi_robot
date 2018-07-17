@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+
+<package format="2">
+
+  <name>tuw_station_manager</name>
+
+  <version>0.0.0</version>
+
+  <description>Node to Receive Stations via Service and Publish them to a Topic</description>
+
+  <maintainer email="eugen.kaltenegger@gmail.com">Eugen Kaltenegger</maintainer>
+
+  <license>BSD</license>
+
+  <author email="eugen.kaltengger@gmail.com">Eugen Kaltenegger</author>
+
+</package>
