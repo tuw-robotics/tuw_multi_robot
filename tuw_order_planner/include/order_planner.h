@@ -15,17 +15,17 @@
 #include "abstractsolver.h"
 #include "simplesolver.h"
 
-namespace tuw_order_manager {
+namespace tuw_order_planner {
 
 enum modes {
     MODE_INIT,
     MODE_PROGRESS
 };
 
-class OrderManager
+class OrderPlanner
 {
 public:
-    OrderManager(int, char**);
+    OrderPlanner(int, char**);
     void run();
 private:
     ros::Publisher pub_robot_goals;
@@ -60,6 +60,6 @@ private:
     void publishPickup(std::string robot_name, int good_id);
 };
 
-} // end namespace tuw_order_manager
+} // end namespace tuw_order_planner
 
 #endif

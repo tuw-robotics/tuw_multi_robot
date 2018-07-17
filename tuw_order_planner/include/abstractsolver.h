@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-namespace tuw_order_manager {
+namespace tuw_order_planner {
 
 struct transport_pair {
     std::string robot_name;
@@ -25,6 +25,6 @@ protected:
     std::vector<tuw_multi_robot_msgs::Good> goods;
 };
 
-} // end namespace tuw_order_manager
+} // end namespace tuw_order_planner
 
 #endif

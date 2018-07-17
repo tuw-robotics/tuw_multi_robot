@@ -2,7 +2,7 @@
 #define __TUW_ORDERMANAGER_SIMPLESOLVER_H
 #include "abstractsolver.h"
 
-namespace tuw_order_manager {
+namespace tuw_order_planner {
 
 struct dist_pair {
     float distance;
@@ -16,5 +16,5 @@ public:
     std::vector<transport_pair> solve() override;
 };
 
-} // end namespace tuw_order_manager
+} // end namespace tuw_order_planner
 #endif

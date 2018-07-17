@@ -1,33 +1,33 @@
-#include "order_manager.h"
+#include "order_planner.h"
 #include <regex>
 
 #include <tuw_multi_robot_msgs/RobotGoals.h>
 #include <tuw_multi_robot_msgs/RobotGoalsArray.h>
 #include <tuw_multi_robot_msgs/RobotInfo.h>
 
-namespace tuw_order_manager {
+namespace tuw_order_planner {
 
-OrderManager::OrderManager(int argc, char** argv)
+OrderPlanner::OrderPlanner(int argc, char** argv)
 {
     mode = MODE_INIT;
-    ros::init(argc, argv, "order_manager");
+    ros::init(argc, argv, "order_planner");
     nodeHandle = new ros::NodeHandle();
-    subscribers.push_back( nodeHandle->subscribe("/goods", 0, &OrderManager::goodsCallback, this) );
-    subscribers.push_back( nodeHandle->subscribe("/robot_info", 10, &OrderManager::robotInfoCallback, this) );
+    subscribers.push_back( nodeHandle->subscribe("/goods", 0, &OrderPlanner::goodsCallback, this) );
+    subscribers.push_back( nodeHandle->subscribe("/robot_info", 10, &OrderPlanner::robotInfoCallback, this) );
     subscribe_robot_odom();
     pub_robot_goals = nodeHandle->advertise<tuw_multi_robot_msgs::RobotGoalsArray>("goals", 0);
     pub_pickup = nodeHandle->advertise<tuw_multi_robot_msgs::Pickup>("pickup", 10);
     pub_good_pose = nodeHandle->advertise<tuw_multi_robot_msgs::GoodPosition>("good_pose", 10);
 }
 
-void OrderManager::run()
+void OrderPlanner::run()
 {
     ros::spin();
 }
 
 
 
-int OrderManager::increment_robot_progress(std::string robot_name)
+int OrderPlanner::increment_robot_progress(std::string robot_name)
 {
     std::map<std::string, int>::iterator search = robots_progress.find(robot_name);
     int progress = 0;
@@ -44,7 +44,7 @@ int OrderManager::increment_robot_progress(std::string robot_name)
     return progress;
 }
 
-void OrderManager::reset()
+void OrderPlanner::reset()
 {
     goods.clear();
     std::map<std::string, int>::iterator search = robots_progress.begin();
@@ -63,7 +63,7 @@ void OrderManager::reset()
     mode = MODE_INIT;
 }
 
-void OrderManager::robotInfoCallback(const tuw_multi_robot_msgs::RobotInfo::ConstPtr& robotInfo)
+void OrderPlanner::robotInfoCallback(const tuw_multi_robot_msgs::RobotInfo::ConstPtr& robotInfo)
 {
     std::string robot_name = robotInfo->robot_name;
     int status = robotInfo->status;
@@ -139,7 +139,7 @@ void OrderManager::robotInfoCallback(const tuw_multi_robot_msgs::RobotInfo::Cons
     }
 }
 
-void OrderManager::goodsCallback(const tuw_multi_robot_msgs::Goods::ConstPtr& goods)
+void OrderPlanner::goodsCallback(const tuw_multi_robot_msgs::Goods::ConstPtr& goods)
 {
     reset();
     this->goods = goods->goods;
@@ -154,7 +154,7 @@ void OrderManager::goodsCallback(const tuw_multi_robot_msgs::Goods::ConstPtr& go
     route();
 }
 
-void OrderManager::route()
+void OrderPlanner::route()
 {
     if ( goods.size() == 0 )
         return;
@@ -292,7 +292,7 @@ void OrderManager::route()
 }
 
 
-void OrderManager::subscribe_robot_odom()
+void OrderPlanner::subscribe_robot_odom()
 {
     ros::master::V_TopicInfo master_topics;
     ros::master::getTopics(master_topics);
@@ -302,12 +302,12 @@ void OrderManager::subscribe_robot_odom()
         if(std::regex_match(info.name, std::regex("/robot_(\\d)+/odom")))
         {
             subscribers.push_back(
-                nodeHandle->subscribe(info.name, 1, &OrderManager::odomCallback, this));
+                nodeHandle->subscribe(info.name, 1, &OrderPlanner::odomCallback, this));
         }
     }
 }
 
-void OrderManager::odomCallback(const nav_msgs::Odometry& odom) {
+void OrderPlanner::odomCallback(const nav_msgs::Odometry& odom) {
     std::string robot_name = odom.header.frame_id.substr(1, odom.header.frame_id.find_last_of('/')-1);
 
     float x = odom.pose.pose.position.x;
@@ -338,12 +338,12 @@ void OrderManager::odomCallback(const nav_msgs::Odometry& odom) {
 }
 
 
-tuw_multi_robot_msgs::Good *OrderManager::findGoodByRobotName(std::string robot_name)
+tuw_multi_robot_msgs::Good *OrderPlanner::findGoodByRobotName(std::string robot_name)
 {
     return findGoodByGoodId(findGoodIdByRobotName(robot_name));
 }
 
-tuw_multi_robot_msgs::Good *OrderManager::findGoodByGoodId(int id)
+tuw_multi_robot_msgs::Good *OrderPlanner::findGoodByGoodId(int id)
 {
     if ( id < 0 )
         return nullptr;
@@ -356,7 +356,7 @@ tuw_multi_robot_msgs::Good *OrderManager::findGoodByGoodId(int id)
     return nullptr;
 }
 
-int OrderManager::findGoodIdByRobotName(std::string robot_name)
+int OrderPlanner::findGoodIdByRobotName(std::string robot_name)
 {
     int good_id;
     for( auto const& pair : transport_pairs )
@@ -369,7 +369,7 @@ int OrderManager::findGoodIdByRobotName(std::string robot_name)
     return -1;
 }
 
-void OrderManager::publishGoodPosition(int good_id, geometry_msgs::Pose pose)
+void OrderPlanner::publishGoodPosition(int good_id, geometry_msgs::Pose pose)
 {
     tuw_multi_robot_msgs::GoodPosition goodPosition;
     goodPosition.good_id = good_id;
@@ -377,7 +377,7 @@ void OrderManager::publishGoodPosition(int good_id, geometry_msgs::Pose pose)
     pub_good_pose.publish(goodPosition);
 }
 
-void OrderManager::publishPickup(std::string robot_name, int good_id)
+void OrderPlanner::publishPickup(std::string robot_name, int good_id)
 {
     tuw_multi_robot_msgs::Pickup pickup;
     pickup.robot_name = robot_name;
@@ -385,12 +385,12 @@ void OrderManager::publishPickup(std::string robot_name, int good_id)
     pub_pickup.publish(pickup);
 }
 
-} // end namespace tuw_order_manager
+} // end namespace tuw_order_planner
 
 int main(int argc, char** argv)
 {
 
-    tuw_order_manager::OrderManager *controller = new tuw_order_manager::OrderManager(argc, argv);
+    tuw_order_planner::OrderPlanner *controller = new tuw_order_planner::OrderPlanner(argc, argv);
     controller->run();
 
     return 0;

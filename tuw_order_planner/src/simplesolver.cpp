@@ -1,7 +1,7 @@
 #include "simplesolver.h"
 #include <cmath>
 
-namespace tuw_order_manager {
+namespace tuw_order_planner {
 
 float distance(float x1, float y1, float x2, float y2)
 {
@@ -68,4 +68,4 @@ std::vector<transport_pair> SimpleSolver::solve()
     return plan;
 }
 
-} // end namespace tuw_order_manager
+} // end namespace tuw_order_planner
