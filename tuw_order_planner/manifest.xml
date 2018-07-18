@@ -1,13 +1,13 @@
 <package>
-  <description brief="tuw_order_manager">
+  <description brief="tuw_order_planner">
 
-     tuw_order_manager
+     tuw_order_planner
 
   </description>
   <author>Eric Aichinger</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/tuw_order_manager</url>
+  <url>http://ros.org/wiki/tuw_order_planner</url>
 
 </package>
 

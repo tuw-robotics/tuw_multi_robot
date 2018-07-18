@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>tuw_order_manager</name>
+  <name>tuw_order_planner</name>
   <version>0.0.0</version>
-  <description>The tuw_order_manager package</description>
+  <description>The tuw_order_planner package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
@@ -19,7 +19,7 @@
   <!-- Url tags are optional, but multiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/tuw_order_manager</url> -->
+  <!-- <url type="website">http://wiki.ros.org/tuw_order_planner</url> -->
   <url type="website">https://github.com/tuw-robotics/tuw_multi_robot</url>
 
 
@@ -53,17 +53,17 @@
   <build_depend>nav_msgs</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>std_msgs</build_depend>
-  <build_depend>tuw_geometry_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
   <build_depend>tuw_multi_robot_msgs</build_depend>
   <build_export_depend>nav_msgs</build_export_depend>
   <build_export_depend>roscpp</build_export_depend>
   <build_export_depend>std_msgs</build_export_depend>
-  <build_export_depend>tuw_geometry_msgs</build_export_depend>
+  <build_export_depend>geometry_msgs</build_export_depend>
   <build_export_depend>tuw_multi_robot_msgs</build_export_depend>
   <exec_depend>nav_msgs</exec_depend>
   <exec_depend>roscpp</exec_depend>
   <exec_depend>std_msgs</exec_depend>
-  <exec_depend>tuw_geometry_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>tuw_multi_robot_msgs</exec_depend>
 
 
