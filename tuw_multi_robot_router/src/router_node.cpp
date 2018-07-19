@@ -298,7 +298,7 @@ void Router_Node::graphCallback(const tuw_multi_robot_msgs::Graph &msg)
 
         if (segment.valid)
         {
-            graph.emplace_back(segment.id, points, successors, predecessors,  3 * robot_radius_max_ / mapResolution_); //segment.width);
+            graph.emplace_back(segment.id, points, successors, predecessors,  2 * robot_radius_max_ / mapResolution_); //segment.width);
         }
         else
         {
