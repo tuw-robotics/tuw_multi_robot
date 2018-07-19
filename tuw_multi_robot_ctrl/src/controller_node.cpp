@@ -13,11 +13,13 @@ int main(int argc, char** argv)
 
     velocity_controller::ControllerNode ctrl(n);
     ros::Rate r(20);
-
+    
     while (ros::ok())
     {
       ros::spinOnce();
+      r.sleep();
     }
+    
     return 0;
   }
   else
