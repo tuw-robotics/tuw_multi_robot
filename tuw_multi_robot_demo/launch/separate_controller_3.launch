@@ -43,21 +43,21 @@
 
 <group if="$(arg launch_controller)">
   <node pkg="tuw_multi_robot_ctrl" type="tuw_velocity_controller" name="controller_0" output="screen" >
-    <param name="odom_topic" value="/robot_0/odom"/>
+    <param name="pose_topic" value="/robot_0/pose"/>
     <param name="cmd_vel_topic" value="/robot_0/cmd_vel"/>
     <param name="path_topic" value="/robot_0/path"/>
     <param name="topic_control" value="/robot_0/ctrl"/>
   </node>
   
   <node pkg="tuw_multi_robot_ctrl" type="tuw_velocity_controller" name="controller_1" output="screen" >
-    <param name="odom_topic" value="/robot_1/odom"/>
+    <param name="pose_topic" value="/robot_1/pose"/>
     <param name="cmd_vel_topic" value="/robot_1/cmd_vel"/>
     <param name="path_topic" value="/robot_1/path"/>
     <param name="topic_control" value="/robot_1/ctrl"/>
   </node>
   
   <node pkg="tuw_multi_robot_ctrl" type="tuw_velocity_controller" name="controller_2" output="screen">
-    <param name="odom_topic" value="/robot_2/odom"/>
+    <param name="pose_topic" value="/robot_2/pose"/>
     <param name="cmd_vel_topic" value="/robot_2/cmd_vel"/>
     <param name="path_topic" value="/robot_2/path"/>
     <param name="topic_control" value="/robot_2/ctrl"/>

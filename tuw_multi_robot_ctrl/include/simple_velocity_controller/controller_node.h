@@ -3,7 +3,7 @@
 
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
-#include <nav_msgs/Odometry.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <nav_msgs/Path.h>
 #include <std_msgs/String.h>
 
@@ -29,11 +29,11 @@ public:
 
 private:
   ros::Publisher pubCmdVel_;
-  ros::Subscriber subOdom_;
+  ros::Subscriber subPose_;
   ros::Subscriber subPath_;
   ros::Subscriber subCtrl_;
   std::string topic_cmdVel_;
-  std::string topic_odom_;
+  std::string topic_pose_;
   std::string topic_path_;
   std::string topic_ctrl_;
   float max_vel_v_;
@@ -43,7 +43,7 @@ private:
   float Ki_val_;
   float Kd_val_;
   ros::Time last_update_;
-  void subOdomCb(const nav_msgs::Odometry::ConstPtr &_odom);
+  void subPoseCb(const geometry_msgs::PoseWithCovarianceStampedConstPtr &_pose);
   void subPathCb(const nav_msgs::Path::ConstPtr &_path);
   void subCtrlCb(const std_msgs::String _cmd);
 };

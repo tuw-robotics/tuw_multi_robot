@@ -33,7 +33,7 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
 
   tuw_multi_robot_route_to_path::LocalBehaviorControllerNode ctrl(n);
-  ros::Rate r(2);
+  ros::Rate r(30);
 
   while (ros::ok())
   {
@@ -81,7 +81,7 @@ LocalBehaviorControllerNode::LocalBehaviorControllerNode(ros::NodeHandle &n)
                                                        &LocalBehaviorControllerNode::subRouteCb, this);
   
   pubRobotInfo_ = n.advertise<tuw_multi_robot_msgs::RobotInfo>(topic_robot_info_, 10000);
-  pubPath_ = n.advertise<nav_msgs::Path>(robot_name_ + "/" + topic_path_, 100);
+  pubPath_ = n.advertise<nav_msgs::Path>(robot_name_ + "/" + topic_path_, 1);
 }
 
 void LocalBehaviorControllerNode::publishPath(std::vector<Eigen::Vector3d> _p)
@@ -110,7 +110,6 @@ void LocalBehaviorControllerNode::publishPath(std::vector<Eigen::Vector3d> _p)
     
     path.poses.push_back(ps);
   }
-//  ROS_INFO("robot: %s, publishPath path size = %d", robot_name_.c_str(), path.poses.size());
   pubPath_.publish(path);
 }
 
@@ -120,25 +119,16 @@ void LocalBehaviorControllerNode::updatePath()
     return;
     
   std::vector<Eigen::Vector3d> path;
-  std::vector<PathSegment> seg_path;
+  // std::vector<PathSegment> seg_path;
   
   auto&& seg = robot_route_.segments.begin();
   seg += robot_step_;
   
+  bool valid = true;
+  
   // go through all segments in the route
-  for(; seg != robot_route_.segments.end(); seg++)
+  for(; valid && seg != robot_route_.segments.end(); seg++)
   {
-    PathSegment path_seg;
-    path_seg.start[0] = seg->start.position.x;
-    path_seg.start[1] = seg->start.position.y;
-    path_seg.goal[0] = seg->end.position.x;
-    path_seg.goal[1] = seg->end.position.y;
-    path_seg.width = seg->width;
-    
-    seg_path.emplace_back(path_seg);
-    
-    bool valid = true;
-    
     // go through all preconditions and check if they are fulfilled
     for(auto&& prec : seg->preconditions)
     {
@@ -164,8 +154,6 @@ void LocalBehaviorControllerNode::updatePath()
       path.emplace_back(pose);
     }
   }
-  
-  //observer_.init(seg_path);
   
   if(path.size() > 1)
   {
