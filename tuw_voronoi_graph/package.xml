@@ -60,6 +60,8 @@
   <build_depend>tf</build_depend>
   <build_depend>tuw_multi_robot_msgs</build_depend>
   <build_depend>dynamic_reconfigure</build_depend>
+  <build_depend>libdxflib-dev</build_depend>
+  
   <exec_depend>cv_bridge</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>nav_msgs</exec_depend>
@@ -67,7 +69,7 @@
   <exec_depend>tf</exec_depend>
   <exec_depend>tuw_multi_robot_msgs</exec_depend>
   <exec_depend>dynamic_reconfigure</exec_depend>
-
+  <exec_depend>libdxflib-dev</exec_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
