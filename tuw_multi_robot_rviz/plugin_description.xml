@@ -1,5 +1,5 @@
 <library path="lib/libtuw_multi_robot_rviz">
-  <class name="tuw_voronoi_graph"
+  <class name="VoronoiGraph"
          type="tuw_multi_robot_rviz::VoronoiGraphDisplay"
          base_class_type="rviz::Display">
     <description>
@@ -7,7 +7,7 @@
     </description>
     <message_type>voronoi_segmentation/VoronoiGraph</message_type>
   </class>
-  <class name="tuw_voronoi_segment"
+  <class name="VoronoiSegment"
          type="tuw_multi_robot_rviz::VoronoiSegmentDisplay"
          base_class_type="rviz::Display">
     <description>
