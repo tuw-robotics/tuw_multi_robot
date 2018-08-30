@@ -1,0 +1,6 @@
+map_topic: "/map"
+map_smoothing: 5
+segments_topic: "/segments"
+segment_length: 0.7
+crossingOptimization: 0.2
+endSegmentOptimization: 0.4
