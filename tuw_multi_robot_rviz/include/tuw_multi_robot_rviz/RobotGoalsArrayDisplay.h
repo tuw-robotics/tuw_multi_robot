@@ -91,7 +91,6 @@ private:
   // User-editable property variables.
   rviz::FloatProperty* property_scale_pose_;
   rviz::ColorProperty* property_color_pose_;
-  rviz::ColorProperty* property_color_variance_;
 };
 
 } // end namespace tuw_pose_rviz

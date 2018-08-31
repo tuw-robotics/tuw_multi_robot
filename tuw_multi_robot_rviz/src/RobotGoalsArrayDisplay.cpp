@@ -54,10 +54,6 @@ RobotGoalsArrayDisplay::RobotGoalsArrayDisplay() {
     property_color_pose_ = new rviz::ColorProperty ( "Color Pose", QColor ( 204, 51, 0 ),
             "Color to draw the pose's pose.",
             this, SLOT ( updateColorPose() ) );
-
-    property_color_variance_ = new rviz::ColorProperty ( "Color Variance", QColor ( 204, 51, 204 ),
-            "Color to draw the pose's variance.",
-            this, SLOT ( updateColorVariance() ) );
 }
 
 // After the top-level rviz::Display::initialize() does its own setup,

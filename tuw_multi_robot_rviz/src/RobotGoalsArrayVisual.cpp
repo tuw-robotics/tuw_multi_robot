@@ -85,6 +85,7 @@ void RobotGoalsArrayVisual::setMessage ( const tuw_multi_robot_msgs::RobotGoalsA
 
         arrow->setPosition( position );
         arrow->setOrientation( orientation );
+    }
 }
 
 // Position is passed through to the SceneNode.
