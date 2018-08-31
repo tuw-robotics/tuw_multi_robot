@@ -2,7 +2,7 @@
 #include "tuw_multi_robot_goal_generator/multi_robot_goal_generator.h"
 #include "tuw_multi_robot_msgs/RobotGoalsArray.h"
 
-
+ 
 
 
 RadomGoalGeneratorNode::RadomGoalGeneratorNode ( ros::NodeHandle & n ){
@@ -11,7 +11,8 @@ RadomGoalGeneratorNode::RadomGoalGeneratorNode ( ros::NodeHandle & n ){
 }
 
 void RadomGoalGeneratorNode::callback ( const nav_msgs::OccupancyGrid::ConstPtr& msg ) {
-    map_.init ( msg->info, &msg->data[0] );
+    map_.init ( msg->info, &msg->data[0] );  
+    std::cout << "hihi\n";
 }
 
 void RadomGoalGeneratorNode::publish () {
@@ -19,7 +20,7 @@ void RadomGoalGeneratorNode::publish () {
 
 
 int main ( int argc, char **argv ) {
-    ros::init ( argc, argv, "random goal generator" );
+    ros::init ( argc, argv, "RandomGoalGenerator" );
     ros::NodeHandle n;
     RadomGoalGeneratorNode node ( n );
     ros::spin();

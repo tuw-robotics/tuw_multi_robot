@@ -208,6 +208,8 @@ int MultiRobotGoalSelector::processMouseEvent(rviz::ViewportMouseEvent &event)
                     array.goals.push_back(goals);
                 }
 
+                array.header.stamp = ros::Time::now();
+                array.header.frame_id = context_->getFixedFrame().toStdString();
                 pubGoals_.publish(array);
             }
 

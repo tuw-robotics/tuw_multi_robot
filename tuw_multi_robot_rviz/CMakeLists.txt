@@ -150,6 +150,10 @@ add_definitions(-DQT_NO_KEYWORDS)
 
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
+  include/tuw_multi_robot_rviz/RobotGoalsArrayVisual.h
+  include/tuw_multi_robot_rviz/RobotGoalsArrayDisplay.h
+  src/RobotGoalsArrayVisual.cpp
+  src/RobotGoalsArrayDisplay.cpp
   include/tuw_multi_robot_rviz/VoronoiGraphVisual.h
   include/tuw_multi_robot_rviz/VoronoiGraphDisplay.h
   src/VoronoiGraphVisual.cpp

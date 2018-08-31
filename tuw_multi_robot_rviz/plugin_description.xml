@@ -15,6 +15,14 @@
     </description>
     <message_type>voronoi_segmentation/VoronoiGraph</message_type>
   </class>
+  <class name="RobotGoalArray"
+         type="tuw_multi_robot_rviz::RobotGoalsArrayDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      Displays Robot Goals in RVIZ
+    </description>
+    <message_type>tuw_multi_robot_msgs/RobotGoalsArray</message_type>
+  </class>
   <class name="Goal Selector"
          type="tuw_multi_robot_rviz::MultiRobotGoalSelector"
          base_class_type="rviz::Tool">
