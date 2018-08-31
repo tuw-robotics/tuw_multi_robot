@@ -79,16 +79,9 @@ public:
   // parameter and therefore don't come from the RobotGoalsArrayStamped message.
   void setColorPose( Ogre::ColourValue color );
 
-  // Set the color of the visual's variance, which is an user-editable
-  // parameter and therefore don't come from the RobotGoalsArrayStamped message.
-  void setColorVariance( Ogre::ColourValue color );
-
 private:
   // The object implementing the actual pose shape
-  boost::shared_ptr<rviz::Arrow> pose_;
-
-  // The object implementing the actual variance shape
-  boost::shared_ptr<rviz::Shape> variance_;
+  std::vector< boost::shared_ptr<rviz::Arrow> > goals_;
 
   // A SceneNode whose pose is set to match the coordinate frame of
   // the Imu message header.

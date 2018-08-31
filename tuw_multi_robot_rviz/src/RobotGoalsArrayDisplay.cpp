@@ -95,12 +95,6 @@ void RobotGoalsArrayDisplay::updateColorPose() {
     visual_->setColorPose ( color );
 }
 
-// Set the current color for the visual's variance.
-void RobotGoalsArrayDisplay::updateColorVariance() {
-    Ogre::ColourValue color = property_color_variance_->getOgreColor();
-    visual_->setColorVariance ( color );
-}
-
 // This is our callback to handle an incoming message.
 void RobotGoalsArrayDisplay::processMessage ( const tuw_multi_robot_msgs::RobotGoalsArray::ConstPtr& msg ) {
     // Here we call the rviz::FrameManager to get the transform from the
@@ -121,7 +115,6 @@ void RobotGoalsArrayDisplay::processMessage ( const tuw_multi_robot_msgs::RobotG
     visual_->setFrameOrientation ( orientation );
     visual_->setScalePose ( property_scale_pose_->getFloat() );
     visual_->setColorPose ( property_color_pose_->getOgreColor() );
-    visual_->setColorVariance ( property_color_variance_->getOgreColor() );
 }
 
 } // end namespace tuw_geometry_rviz

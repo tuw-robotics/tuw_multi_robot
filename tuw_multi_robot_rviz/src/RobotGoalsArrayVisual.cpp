@@ -50,10 +50,6 @@ RobotGoalsArrayVisual::RobotGoalsArrayVisual ( Ogre::SceneManager* scene_manager
     // relative to the RViz fixed frame.
     frame_node_ = parent_node->createChildSceneNode();
 
-    // We create the visual objects within the frame node so that we can
-    // set thier position and direction relative to their header frame.
-    pose_.reset ( new rviz::Arrow( scene_manager_, frame_node_ ) );
-    variance_.reset ( new rviz::Shape ( rviz::Shape::Sphere, scene_manager_, frame_node_ ) );
 }
 
 RobotGoalsArrayVisual::~RobotGoalsArrayVisual() {
@@ -62,44 +58,33 @@ RobotGoalsArrayVisual::~RobotGoalsArrayVisual() {
 }
 
 void RobotGoalsArrayVisual::setMessage ( const tuw_multi_robot_msgs::RobotGoalsArray::ConstPtr& msg ) {
-    std::cout << "RobotGoalsArrayVisual\n";
-    /*
-    Ogre::Vector3 position = Ogre::Vector3 ( msg->pose.pose.position.x, msg->pose.pose.position.y, msg->pose.pose.position.z );
-    Ogre::Quaternion orientation = Ogre::Quaternion ( msg->pose.pose.orientation.x, msg->pose.pose.orientation.y, msg->pose.pose.orientation.z, msg->pose.pose.orientation.w );
-
-    // Arrow points in -Z direction, so rotate the orientation before display.
-    // TODO: is it safe to change Arrow to point in +X direction?
-    Ogre::Quaternion rotation1 = Ogre::Quaternion ( Ogre::Degree( -90 ), Ogre::Vector3::UNIT_Y );
-    Ogre::Quaternion rotation2 = Ogre::Quaternion ( Ogre::Degree( -180 ), Ogre::Vector3::UNIT_X );
-    orientation = rotation2 * rotation1 * orientation;
-
-    pose_->setPosition( position );
-    pose_->setOrientation( orientation );
-
-    Ogre::Matrix3 C = Ogre::Matrix3 ( msg->pose.covariance[6*0 + 0], msg->pose.covariance[6*0 + 1], msg->pose.covariance[6*0 + 5],
-                                        msg->pose.covariance[6*1 + 0], msg->pose.covariance[6*1 + 1], msg->pose.covariance[6*1 + 5],
-                                        msg->pose.covariance[6*5 + 0], msg->pose.covariance[6*5 + 1], msg->pose.covariance[6*5 + 5] );
-    Ogre::Real eigenvalues[3];
-    Ogre::Vector3 eigenvectors[3];
-    C.EigenSolveSymmetric(eigenvalues, eigenvectors);
-    if ( eigenvalues[0] < 0 ) {
-        ROS_WARN ( "[RobotGoalsArrayVisual setMessage] eigenvalue[0]: %f < 0 ",  eigenvalues[0] );
-        eigenvalues[0] = 0;
+    
+    if(goals_.size() != msg->goals.size()){
+        goals_.resize(msg->goals.size());
+        for (size_t i = 0; i < msg->goals.size(); i++){
+            goals_[i].reset ( new rviz::Arrow( scene_manager_, frame_node_ ) );
+        }
     }
-    if ( eigenvalues[1] < 0 ) {
-        ROS_WARN ( "[RobotGoalsArrayVisual setMessage] eigenvalue[1]: %f < 0 ",  eigenvalues[1] );
-        eigenvalues[1] = 0;
-    }
-    if ( eigenvalues[2] < 0 ) {
-        ROS_WARN ( "[RobotGoalsArrayVisual setMessage] eigenvalue[2]: %f < 0 ",  eigenvalues[2] );
-        eigenvalues[2] = 0;
-    }
+    for (size_t i = 0; i < msg->goals.size(); i++){
+        boost::shared_ptr<rviz::Arrow> arrow = goals_[i];
+        /// @ToDo generate an error message
+        if(msg->goals[i].path_points.size() == 0) continue;  
+        
+        /// @Info # if there are more than one points the first one is the start pose  else the current pose of the robot is used as start
+        const geometry_msgs::Pose &pose = msg->goals[i].path_points.back();  
+        
+        Ogre::Vector3 position = Ogre::Vector3 ( pose.position.x, pose.position.y, pose.position.z );
+        Ogre::Quaternion orientation = Ogre::Quaternion ( pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w );
+        
 
-    variance_->setColor ( color_variance_ );
-    variance_->setPosition ( position );
-    variance_->setOrientation ( Ogre::Quaternion ( eigenvectors[0], eigenvectors[1], eigenvectors[2] ) );
-    variance_->setScale ( Ogre::Vector3 ( 2*sqrt(eigenvalues[0]), 2*sqrt(eigenvalues[1]), 2*sqrt(eigenvalues[2]) ) );
-    */
+        // Arrow points in -Z direction, so rotate the orientation before display.
+        // TODO: is it safe to change Arrow to point in +X direction?
+        Ogre::Quaternion rotation1 = Ogre::Quaternion ( Ogre::Degree( -90 ), Ogre::Vector3::UNIT_Y );
+        Ogre::Quaternion rotation2 = Ogre::Quaternion ( Ogre::Degree( -180 ), Ogre::Vector3::UNIT_X );
+        orientation = rotation2 * rotation1 * orientation;
+
+        arrow->setPosition( position );
+        arrow->setOrientation( orientation );
 }
 
 // Position is passed through to the SceneNode.
@@ -114,20 +99,19 @@ void RobotGoalsArrayVisual::setFrameOrientation ( const Ogre::Quaternion& orient
 
 // Scale is passed through to the pose Shape object.
 void RobotGoalsArrayVisual::setScalePose ( float scale ) {
-    pose_->setScale ( Ogre::Vector3 ( scale, scale, scale ) );
+    
+    for(boost::shared_ptr<rviz::Arrow>& goal: goals_){
+        goal->setScale ( Ogre::Vector3 ( scale, scale, scale ));
+    }
     scale_pose_ = scale;
 }
 
 // Color is passed through to the pose Shape object.
 void RobotGoalsArrayVisual::setColorPose ( Ogre::ColourValue color ) {
-    pose_->setColor ( color );
+    for(boost::shared_ptr<rviz::Arrow>& goal: goals_){
+        goal->setColor ( color );;
+    }
     color_pose_ = color;
-}
-
-// Color is passed through to the variance Shape object.
-void RobotGoalsArrayVisual::setColorVariance ( Ogre::ColourValue color ) {
-    variance_->setColor ( color );
-    color_variance_ = color;
 }
 
 } // end namespace tuw_multi_robot_rviz

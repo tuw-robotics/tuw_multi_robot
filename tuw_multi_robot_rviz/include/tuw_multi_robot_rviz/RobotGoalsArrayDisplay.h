@@ -80,7 +80,6 @@ protected:
 private Q_SLOTS:
   void updateScalePose();
   void updateColorPose();
-  void updateColorVariance();
 
   // Function to handle an incoming ROS message.
 private:
