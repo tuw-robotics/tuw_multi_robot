@@ -35,11 +35,16 @@
 #include <rviz/properties/int_property.h>
 #include <rviz/properties/string_property.h>
 #include <rviz/properties/float_property.h>
+#include <rviz/ogre_helpers/arrow.h>
+#include <memory>
+
+#include <geometry_msgs/Pose.h>
 
 namespace Ogre
 {
 class SceneNode;
 class Vector3;
+class Quaternion;
 }
 
 namespace rviz
@@ -74,10 +79,17 @@ public:
   virtual int processMouseEvent( rviz::ViewportMouseEvent& event );
 
 protected Q_SLOTS:
-  void onRobotNrChanged();  
+  void onRobotNrChanged();
 
 private:
-  void makeFlag( const Ogre::Vector3& position );
+  enum state {
+    Position,
+    Orientation
+  };
+
+  void make_quaternion(geometry_msgs::Pose::_orientation_type &q, double pitch, double roll, double yaw);
+  void make_quaternion(Ogre::Quaternion &q, double pitch, double roll, double yaw);
+  void makeFlag( const Ogre::Vector3& position, const Ogre::Quaternion &orientation);
 
   ros::NodeHandle nh_;
   ros::Publisher pubGoals_;
@@ -90,6 +102,9 @@ private:
   std::vector<rviz::StringProperty*> robot_names_;
   rviz::Property *group_robot_names_;
   rviz::Property *group_robot_goals_;
+  std::unique_ptr<rviz::Arrow> arrow_;
+  state state_;
+  std::vector<double> current_flag_angles_;
   
   uint32_t currentRobotNr_;
   uint32_t maxRobots_; 
