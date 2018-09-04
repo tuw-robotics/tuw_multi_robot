@@ -144,7 +144,8 @@ void MultiRobotGoalSelector::activate()
             group_robot_goals_->removeChildren(0, -1);
         }
         flag_nodes_.clear();
-        vector_properties_.clear();
+        flag_positions_.clear();
+        arrows_robot2flag_.clear();
     }
 
     if (moving_flag_node_)
@@ -154,7 +155,7 @@ void MultiRobotGoalSelector::activate()
         state_ = state::Position;
         current_flag_property_ = new rviz::VectorProperty("Goal " + QString::number(flag_nodes_.size()));
         current_flag_property_->setReadOnly(true);
-        current_flag_angles_.clear();
+        flag_angles_.clear();
         group_robot_goals_->addChild(current_flag_property_);
     }
 }
@@ -167,7 +168,7 @@ void MultiRobotGoalSelector::deactivate()
         state_ = state::Position;
         delete current_flag_property_;
         current_flag_property_ = NULL;
-        current_flag_angles_.clear();
+        flag_angles_.clear();
     }
 }
 
@@ -222,7 +223,7 @@ int MultiRobotGoalSelector::processMouseEvent(rviz::ViewportMouseEvent &event)
               moving_flag_node_->setPosition(intersection);
               current_flag_property_->setVector(intersection);
 
-              vector_properties_.push_back(current_flag_property_);
+              flag_positions_.push_back(intersection);
 
               arrow_->setPosition(intersection);
               arrow_->getSceneNode()->setVisible(true);
@@ -270,8 +271,12 @@ int MultiRobotGoalSelector::processMouseEvent(rviz::ViewportMouseEvent &event)
                  Ogre::Quaternion q_from_angle;
                  make_quaternion(q_from_angle, 0,0, angle);
                  makeFlag(current_flag_property_->getVector(), q_from_angle);
+                 //current_flag_property_ = new rviz::VectorProperty("Goal " + QString::number(flag_nodes_.size()));
 
-                 current_flag_angles_.push_back(angle);
+                 //cool stuff here, since unique_ptr only allows 1 ptr count arrow_robot2flag_ will be automatically nullptr after this call
+                 arrows_robot2flag_.push_back(std::move(arrow_robot2flag_));
+
+                 flag_angles_.push_back(angle);
 
                  maxRobots_ = nr_robots_->getInt();
                  robotCount_++;
@@ -283,14 +288,14 @@ int MultiRobotGoalSelector::processMouseEvent(rviz::ViewportMouseEvent &event)
                    tuw_multi_robot_msgs::RobotGoalsArray array;
                    for (int i = 0; i < maxRobots_; i++)
                    {
-                     Ogre::Vector3 position = vector_properties_[i]->getVector();
+                     Ogre::Vector3 position = flag_positions_[i];
                      tuw_multi_robot_msgs::RobotGoals goals;
 
                      geometry_msgs::Pose pose;
                      pose.position.x = position.x;
                      pose.position.y = position.y;
                      pose.position.z = 0.0;
-                     make_quaternion(pose.orientation, 0, 0, current_flag_angles_[i]);
+                     make_quaternion(pose.orientation, 0, 0, flag_angles_[i]);
                      goals.path_points.push_back(pose);
                      goals.robot_name = robot_names_[i]->getStdString();
 
@@ -317,6 +322,24 @@ int MultiRobotGoalSelector::processMouseEvent(rviz::ViewportMouseEvent &event)
           moving_flag_node_->setVisible(true);
           moving_flag_node_->setPosition(intersection);
           current_flag_property_->setVector(intersection);
+          double length = Ogre::Vector3(0,0,0).distance(intersection);
+
+          if (!arrow_robot2flag_)
+          {
+
+            arrow_robot2flag_.reset(new rviz::Arrow(scene_manager_, NULL, length - 0.5f, 0.2f, 0.5f, 0.35f));
+            arrow_robot2flag_->setColor(1.0f, 0.0f, 0.0f, 1.0f);
+            //TODO: replace position (0,0,0) with correct robot position and set visibility to true
+            arrow_robot2flag_->getSceneNode()->setVisible(false);
+            arrow_robot2flag_->setPosition(Ogre::Vector3(0,0,0));
+
+          }
+
+          arrow_robot2flag_->set(length - 0.5f, 0.2f, 0.5f, 0.35f);
+          double angle = atan2( intersection.y - arrow_robot2flag_->getPosition().y, intersection.x - arrow_robot2flag_->getPosition().x );
+          Ogre::Quaternion orient_x = Ogre::Quaternion( Ogre::Radian(-Ogre::Math::HALF_PI), Ogre::Vector3::UNIT_Y );
+          arrow_robot2flag_->setOrientation( Ogre::Quaternion( Ogre::Radian(angle), Ogre::Vector3::UNIT_Z ) * orient_x );
+
        } else {
           moving_flag_node_->setVisible(false);
        }
@@ -336,9 +359,10 @@ void MultiRobotGoalSelector::makeFlag(const Ogre::Vector3 &position, const Ogre:
     TextVisual *tw = new TextVisual(scene_manager_, node, Ogre::Vector3(0,
                                                                         0,
                                                                         node->getAttachedObject(0)->getBoundingBox().getSize().z + 0.15));
-    tw->setCaption("Goal #" + std::to_string(flag_nodes_.size()));
+    tw->setCaption(std::to_string(flag_nodes_.size()));
     tw->setCharacterHeight(0.25);
     flag_nodes_.push_back(node);
+
 }
 
 } // namespace tuw_multi_robot_rviz

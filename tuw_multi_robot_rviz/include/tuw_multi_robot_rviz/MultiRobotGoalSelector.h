@@ -95,7 +95,6 @@ private:
   ros::NodeHandle nh_;
   ros::Publisher pubGoals_;
   std::vector<Ogre::SceneNode*> flag_nodes_;
-  std::vector<rviz::VectorProperty*> vector_properties_;
   Ogre::SceneNode* moving_flag_node_;
   std::string flag_resource_;
   rviz::VectorProperty* current_flag_property_;
@@ -104,8 +103,11 @@ private:
   rviz::Property *group_robot_names_;
   rviz::Property *group_robot_goals_;
   std::unique_ptr<rviz::Arrow> arrow_;
+  std::unique_ptr<rviz::Arrow> arrow_robot2flag_;
   state state_;
-  std::vector<double> current_flag_angles_;
+  std::vector<double> flag_angles_;
+  std::vector<std::unique_ptr<rviz::Arrow>> arrows_robot2flag_;
+  std::vector<Ogre::Vector3> flag_positions_;
   
   uint32_t currentRobotNr_;
   uint32_t maxRobots_; 
