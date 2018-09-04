@@ -41,7 +41,6 @@
 #include <tuw_multi_robot_rviz/MultiRobotGoalSelector.h>
 #include <tuw_multi_robot_msgs/RobotGoals.h>
 #include <tuw_multi_robot_msgs/RobotGoalsArray.h>
-#include <tuw_multi_robot_rviz/TextVisual.h>
 
 #include <string>
 
@@ -141,6 +140,7 @@ void MultiRobotGoalSelector::activate()
         for (auto &fn : flag_nodes_)
         {
             fn->detachAllObjects();
+            fn->removeAndDestroyAllChildren();
             group_robot_goals_->removeChildren(0, -1);
         }
         flag_nodes_.clear();

@@ -37,6 +37,7 @@
 #include <rviz/properties/float_property.h>
 #include <rviz/ogre_helpers/arrow.h>
 #include <memory>
+#include "TextVisual.h"
 
 #include <geometry_msgs/Pose.h>
 
