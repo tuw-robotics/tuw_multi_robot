@@ -41,6 +41,7 @@
 #include <tuw_multi_robot_rviz/MultiRobotGoalSelector.h>
 #include <tuw_multi_robot_msgs/RobotGoals.h>
 #include <tuw_multi_robot_msgs/RobotGoalsArray.h>
+#include <tuw_multi_robot_rviz/TextVisual.h>
 
 #include <string>
 
@@ -332,6 +333,11 @@ void MultiRobotGoalSelector::makeFlag(const Ogre::Vector3 &position, const Ogre:
     node->setVisible(true);
     node->setPosition(position);
     node->setOrientation(orientation);
+    TextVisual *tw = new TextVisual(scene_manager_, node, Ogre::Vector3(0,
+                                                                        0,
+                                                                        node->getAttachedObject(0)->getBoundingBox().getSize().z + 0.15));
+    tw->setCaption("Goal #" + std::to_string(flag_nodes_.size()));
+    tw->setCharacterHeight(0.25);
     flag_nodes_.push_back(node);
 }
 
