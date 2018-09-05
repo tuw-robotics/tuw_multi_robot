@@ -2,6 +2,7 @@
 
 <launch>
 
+
 <arg name="room"                     default="cave"            />
 <arg name="launch_rviz"              default="true"            />
 <arg name="launch_stage"             default="true"            />
@@ -16,11 +17,10 @@
 
 <!-- map server -->
 <group if="$(arg launch_map_server)">
-      <include file="$(find tuw_multi_robot_demo)/launch/map_server.launch">
-      <arg name="room" value="$(arg room)" />
-      </include>
+  <include file="$(find tuw_multi_robot_demo)/launch/map_server.launch">
+    <arg name="room" value="$(arg room)" />
+  </include>
 </group>
-
 
 <!-- start rviz -->
 <group if="$(arg launch_rviz)">
@@ -48,7 +48,6 @@
     <arg name="cfg" value="$(arg cfg)" />
   </include>
 </group>
-
 
 <group if="$(arg launch_graph_generator)">
   <group if="$(arg load_segments)">

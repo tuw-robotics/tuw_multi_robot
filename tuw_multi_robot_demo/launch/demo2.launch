@@ -2,14 +2,14 @@
 
 <launch>
 
-<arg name="room"                     default="cave"            />
 <arg name="nr_of_robots"             default="2"               />
+<arg name="room"                     default="cave"            />
 <arg name="launch_rviz"              default="true"            />
 <arg name="launch_stage"             default="true"            />
 <arg name="launch_map_server"        default="true"            />
 <arg name="launch_planner"           default="true"            />
-<arg name="launch_graph_generator"   default="true"            />
 <arg name="launch_controller"        default="true"            />
+<arg name="launch_graph_generator"   default="true"            />
 <arg name="cfg"                      default="default"         />
 <arg name="load_segments"            default="false"           />
 <arg name="map_name"                 default=""                />
@@ -62,5 +62,4 @@
     <arg name="robot_name_prefix" default="robot_"/>
   </include>
 </group>
-
 </launch>
