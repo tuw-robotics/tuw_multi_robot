@@ -38,13 +38,13 @@
 
   
 <group if="$(arg launch_planner)">
-  <include file="$(find tuw_multi_robot_demo)/launch/multi_robot.launch">
+  <include file="$(find tuw_multi_robot_demo)/launch/multi_robot_route_planner.launch">
     <arg name="cfg" value="$(arg cfg)" />
   </include>
 </group>
 
 <group if="$(arg launch_controller)">
-  <include file="$(find tuw_multi_robot_demo)/launch/controller.launch">
+  <include file="$(find tuw_multi_robot_demo)/launch/local_multi_robot_controller.launch">
     <arg name="cfg" value="$(arg cfg)" />
   </include>
 </group>

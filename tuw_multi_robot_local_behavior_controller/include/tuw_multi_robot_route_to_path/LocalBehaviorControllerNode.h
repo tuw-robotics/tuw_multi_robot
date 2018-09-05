@@ -67,8 +67,8 @@ private:
   std::string topic_pose_;
   std::string topic_robot_info_;
   std::string robot_name_;
-  float robot_radius_;
-  float robotDefaultRadius_ = 0.6;
+  double robot_radius_;
+  double robotDefaultRadius_ = 0.6;
   
   geometry_msgs::PoseWithCovariance robot_pose_;
   tuw_multi_robot_msgs::Route robot_route_;

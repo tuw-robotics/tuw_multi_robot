@@ -9,6 +9,7 @@ public:
   
 private:
   ros::NodeHandle nh_;
+  ros::NodeHandle n_param_;
   ros::Publisher pose_pub_;
   ros::Subscriber odom_sub_;
   

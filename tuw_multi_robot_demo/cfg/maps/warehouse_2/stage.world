@@ -63,11 +63,9 @@ interval_sim 100  # simulation timestep in milliseconds
 
 window
 ( 
-  size [ 1500.000 1500.000 ] 
-
+  size [ 635.000 666.000 ] # in pixels
   rotate [ 0.000 0 ]
-  scale 50 
-
+  scale 10 
   show_data 1              # 1=on 0=off
 )
 

@@ -24,6 +24,7 @@ private:
     tuw::GridMap<int8_t> map_goals_;
     int max_resample_;                     /// retries/max_resample steps to find a free spot for a goal  [m]
     double distance_boundary_;             /// parameter  [m]
+    double distance_between_robots_;       /// parameter  [m]
     std::string robot_name_prefix_;        /// parameter
     std::string frame_id_;                 /// parameter
     tuw_multi_robot_msgs::RobotGoalsArray robot_goals_array_;

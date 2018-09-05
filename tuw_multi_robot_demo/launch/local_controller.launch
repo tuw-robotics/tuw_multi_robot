@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+
+<launch>
+<arg name="robot_name" default="robot_0"/>
+      
+<group ns="$(arg robot_name)">
+  
+  <node pkg="tuw_multi_robot_ctrl" type="tuw_velocity_controller" name="controller_$(arg robot_name)" output="screen" >
+    <param name="pose_topic" value="pose"/>
+    <param name="cmd_vel_topic" value="cmd_vel"/>
+    <param name="path_topic" value="path"/>
+    <param name="topic_control" value="ctrl"/>
+  </node>
+  
+  <node pkg="tuw_multi_robot_local_behavior_controller" type="tuw_local_behavior_controller_node" name="behavior_$(arg robot_name)" output="screen">
+    <param name="robot_name" value="$(arg robot_name)" />
+    <param name="robot_radius" value="0.3" />
+  </node>
+  
+  <node pkg="nodelet" type="nodelet" name="self_localization" args="standalone FakePoseEstimationNodelet"/>
+  
+</group>
+  
+</launch>

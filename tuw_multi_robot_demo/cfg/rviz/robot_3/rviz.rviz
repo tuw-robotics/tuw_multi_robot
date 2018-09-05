@@ -5,10 +5,7 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /Map1
-        - /Path2
-        - /Path3
-        - /VoronoiGraph1
+        - /RobotGoalArray1
       Splitter Ratio: 0.5
     Tree Height: 709
   - Class: rviz/Selection
@@ -140,6 +137,14 @@ Visualization Manager:
       Path Color: 50; 51; 204
       Path Points Scale: 0.10000000149011612
       Topic: /segments
+      Unreliable: false
+      Value: true
+    - Class: RobotGoalArray
+      Color Pose: 204; 51; 0
+      Enabled: true
+      Name: RobotGoalArray
+      Scale Pose: 0.4000000059604645
+      Topic: /goals
       Unreliable: false
       Value: true
   Enabled: true

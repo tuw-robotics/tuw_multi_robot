@@ -48,40 +48,36 @@ int main(int argc, char **argv)
 namespace tuw_multi_robot_route_to_path
 {
 LocalBehaviorControllerNode::LocalBehaviorControllerNode(ros::NodeHandle &n)
-  : n_(n), n_param_("~"), robot_name_(std::string("robot_0"))
+  : n_(n), n_param_("~")
 {
   observer_ = RobotStateObserver();
   robot_step_ = -1;
   robot_route_ = tuw_multi_robot_msgs::Route();
   
-  n_param_.param("robot_name", robot_name_, robot_name_);
+  n_param_.param<std::string>("robot_name", robot_name_, "r0");
   ROS_INFO("robot name = %s", robot_name_.c_str());
 
-  n_param_.param("robot_radius", robot_radius_, robot_radius_);
-  robotDefaultRadius_ = 0.3;
-  n_param_.param("robot_default_radius", robotDefaultRadius_, robotDefaultRadius_);
-
-  topic_path_ = "path";
-  n_param_.param("path_topic", topic_path_, topic_path_);
-
-  topic_route_ = "route";
-  n_param_.param("route_topic", topic_route_, topic_route_);
-
-  topic_robot_info_ = "/robot_info";
-  n_param_.param("robotInfo_topic", topic_robot_info_, topic_robot_info_);
+  n_param_.param<double>("robot_radius", robot_radius_, robot_radius_);
   
-  topic_pose_ = "/pose";
-  n_param_.param("pose_topic", topic_pose_, topic_pose_);
+  n_param_.param<double>("robot_default_radius", robotDefaultRadius_, 0.3);
 
-  subPose_ = n.subscribe<geometry_msgs::PoseWithCovarianceStamped>(robot_name_ + "/" + topic_pose_, 1,
+  n_param_.param<std::string>("path_topic", topic_path_, "path");
+
+  n_param_.param<std::string>("route_topic", topic_route_, "route");
+
+  n_param_.param<std::string>("robotInfo_topic", topic_robot_info_, "/robot_info");
+  
+  n_param_.param<std::string>("pose_topic", topic_pose_, "pose");
+
+  subPose_ = n.subscribe<geometry_msgs::PoseWithCovarianceStamped>(topic_pose_, 1,
                                                                    &LocalBehaviorControllerNode::subPoseCb, this);
   subRobotInfo_ = n.subscribe<tuw_multi_robot_msgs::RobotInfo>(topic_robot_info_, 10000, &LocalBehaviorControllerNode::subRobotInfoCb, this);
 
-  subRoute_ = n.subscribe<tuw_multi_robot_msgs::Route>(robot_name_ + "/" + topic_route_, 1,
+  subRoute_ = n.subscribe<tuw_multi_robot_msgs::Route>(topic_route_, 1,
                                                        &LocalBehaviorControllerNode::subRouteCb, this);
   
   pubRobotInfo_ = n.advertise<tuw_multi_robot_msgs::RobotInfo>(topic_robot_info_, 10000);
-  pubPath_ = n.advertise<nav_msgs::Path>(robot_name_ + "/" + topic_path_, 1);
+  pubPath_ = n.advertise<nav_msgs::Path>(topic_path_, 1);
 }
 
 void LocalBehaviorControllerNode::publishPath(std::vector<Eigen::Vector3d> _p)

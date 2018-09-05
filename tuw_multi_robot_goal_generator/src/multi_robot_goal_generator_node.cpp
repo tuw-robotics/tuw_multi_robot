@@ -17,6 +17,7 @@ RadomGoalGeneratorNode::RadomGoalGeneratorNode ( ros::NodeHandle & n )
     n_param_.param<std::string> ( "frame_id", frame_id_, "map" );
     n_param_.param<std::string> ( "robot_name_prefix", robot_name_prefix_, "robot_" );
     n_param_.param<double> ( "distance_boundary", distance_boundary_, 0.5 );
+    n_param_.param<double> ( "distance_between_robots", distance_between_robots_, 2. );
     n_param_.param<int> ( "max_resample", max_resample_, 1000 );
 
     updateNrOfRobots ( nr_of_robots );
@@ -68,7 +69,7 @@ void RadomGoalGeneratorNode::callback ( const nav_msgs::OccupancyGrid::ConstPtr&
             pw.theta() = dis_alpha(gen);
             //std::cout << pw << std::endl; //Each call to dis(gen) generates a new random double
             robot.path_points.resize ( 1 );
-            map_goals_.circle(pw.position(), distance_boundary_, map_goals_.SPACE_OCCUPIED, -1 );
+            map_goals_.circle(pw.position(), distance_between_robots_, map_goals_.SPACE_OCCUPIED, -1 );
             geometry_msgs::Pose &p = robot.path_points[0];
             pw.copyToROSPose(p);
         } else {
