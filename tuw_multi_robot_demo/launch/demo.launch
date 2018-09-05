@@ -39,12 +39,6 @@
   </include>
 </group>
 
-  
-<group if="$(arg launch_planner)">
-  <include file="$(find tuw_multi_robot_demo)/launch/multi_robot_route_planner.launch">
-    <arg name="cfg" value="$(arg cfg)" />
-  </include>
-</group>
 
 <group if="$(arg launch_graph_generator)">
   <group if="$(arg load_segments)">
@@ -78,6 +72,13 @@
       <arg name="cfg" value="$(arg cfg)" />
     </include>
   </group>
+</group>
+
+  
+<group if="$(arg launch_planner)">
+  <include file="$(find tuw_multi_robot_demo)/launch/multi_robot_route_planner.launch">
+    <arg name="cfg" value="$(arg cfg)" />
+  </include>
 </group>
 
 </launch>
