@@ -3,17 +3,20 @@
 <launch>
 
 
-<arg name="room"                     default="cave"            />
-<arg name="launch_rviz"              default="true"            />
-<arg name="launch_stage"             default="true"            />
-<arg name="launch_map_server"        default="true"            />
-<arg name="launch_planner"           default="true"            />
-<arg name="launch_controller"        default="true"            />
-<arg name="launch_graph_generator"   default="true"            />
-<arg name="cfg"                      default="default"         />
-<arg name="launch_path_synchronizer" default="false"           />
-<arg name="load_segments"            default="false"           />
-<arg name="map_name"                 default=""                />
+<arg name="room"                              default="cave"      />
+<arg name="launch_rviz"                       default="true"      />
+<arg name="launch_stage"                      default="true"      />
+<arg name="launch_map_server"                 default="true"      />
+<arg name="launch_planner"                    default="true"      />
+<arg name="launch_local_controller"           default="true"      />
+<arg name="launch_multiple_local_controller"  default="false"     />
+<arg name="nr_of_robots"                      default="3"         />  <!-- only needed with launch_multiple_local_controller -->
+
+<arg name="launch_graph_generator"            default="true"      />
+<arg name="cfg"                               default="default"   />
+<arg name="launch_path_synchronizer"          default="false"     />
+<arg name="load_segments"                     default="false"     />
+<arg name="map_name"                          default=""          />
 
 <!-- map server -->
 <group if="$(arg launch_map_server)">
@@ -43,12 +46,6 @@
   </include>
 </group>
 
-<group if="$(arg launch_controller)">
-  <include file="$(find tuw_multi_robot_demo)/launch/local_multi_robot_controller.launch">
-    <arg name="cfg" value="$(arg cfg)" />
-  </include>
-</group>
-
 <group if="$(arg launch_graph_generator)">
   <group if="$(arg load_segments)">
   <include file="$(find tuw_multi_robot_demo)/launch/graph_generator.launch">
@@ -68,4 +65,19 @@
     <arg name="cfg" value="$(arg cfg)" />
   </include>
 </group>
+
+<group if="$(arg launch_local_controller)">
+  <group if="$(arg launch_multiple_local_controller)">  
+    <include file="$(find tuw_multi_robot_demo)/launch/local_controller_recursive.launch">
+      <arg name="nr_of_robots" default="$(arg nr_of_robots)"/> 
+      <arg name="robot_name_prefix" default="robot_"/>
+    </include>
+  </group>
+  <group unless="$(arg launch_multiple_local_controller)">
+    <include file="$(find tuw_multi_robot_demo)/launch/local_multi_robot_controller.launch">
+      <arg name="cfg" value="$(arg cfg)" />
+    </include>
+  </group>
+</group>
+
 </launch>
