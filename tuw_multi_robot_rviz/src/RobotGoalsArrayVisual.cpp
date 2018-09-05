@@ -59,16 +59,15 @@ RobotGoalsArrayVisual::~RobotGoalsArrayVisual() {
 
 void RobotGoalsArrayVisual::setMessage ( const tuw_multi_robot_msgs::RobotGoalsArray::ConstPtr& msg ) {
     
-    if(goals_.size() != msg->goals.size()){
-        goals_.resize(msg->goals.size());
-        for (size_t i = 0; i < msg->goals.size(); i++){
-            goals_[i].reset ( new rviz::Arrow( scene_manager_, frame_node_ ) );
-        }
-    }
+    goals_.resize(msg->goals.size());
+    
     for (size_t i = 0; i < msg->goals.size(); i++){
+        goals_[i].reset ( new rviz::Arrow( scene_manager_, frame_node_ ) );
         boost::shared_ptr<rviz::Arrow> arrow = goals_[i];
         /// @ToDo generate an error message
-        if(msg->goals[i].path_points.size() == 0) continue;  
+        if(msg->goals[i].path_points.size() == 0) {
+            continue;  
+        }
         
         /// @Info # if there are more than one points the first one is the start pose  else the current pose of the robot is used as start
         const geometry_msgs::Pose &pose = msg->goals[i].path_points.back();  

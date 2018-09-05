@@ -3,6 +3,7 @@
 
 #include <ros/ros.h>
 #include "nav_msgs/OccupancyGrid.h"
+#include "tuw_multi_robot_msgs/RobotGoalsArray.h"
 #include "tuw_geometry/grid_map.h"
 
 /**
@@ -18,7 +19,17 @@ private:
     ros::NodeHandle n_param_;  
     ros::Subscriber sub_map_; 
     ros::Publisher pub_goals_;
+    ros::Publisher pub_map_goals_;
     tuw::GridMap<int8_t> map_;
+    tuw::GridMap<int8_t> map_goals_;
+    int max_resample_;                     /// retries/max_resample steps to find a free spot for a goal  [m]
+    double distance_boundary_;             /// parameter  [m]
+    std::string robot_name_prefix_;        /// parameter
+    std::string frame_id_;                 /// parameter
+    tuw_multi_robot_msgs::RobotGoalsArray robot_goals_array_;
+    nav_msgs::OccupancyGrid msg_map_goals_;
+    
+    void updateNrOfRobots(size_t nr_of_robots);
     
 };
 
