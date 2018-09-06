@@ -15,7 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 ## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED COMPONENTS system)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -134,8 +134,9 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(${PROJECT_NAME}_node src/multi_robot_goal_generator_node.cpp)
-add_executable(multi_robot_goal_saver_node src/multi_robot_goal_saver_node.cpp)
+add_executable(goals_random src/multi_robot_goal_generator_node.cpp)
+add_executable(goals_saver src/multi_robot_goal_saver_node.cpp src/multi_robot_goal_handler.cpp)
+add_executable(goals_server src/multi_robot_goal_server_node.cpp src/multi_robot_goal_handler.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -148,8 +149,9 @@ add_executable(multi_robot_goal_saver_node src/multi_robot_goal_saver_node.cpp)
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(${PROJECT_NAME}_node  ${catkin_LIBRARIES} )
-target_link_libraries(multi_robot_goal_saver_node  ${catkin_LIBRARIES} )
+target_link_libraries(goals_random  ${catkin_LIBRARIES} )
+target_link_libraries(goals_saver  ${catkin_LIBRARIES} )
+target_link_libraries(goals_server  ${catkin_LIBRARIES} )
 
 #############
 ## Install ##

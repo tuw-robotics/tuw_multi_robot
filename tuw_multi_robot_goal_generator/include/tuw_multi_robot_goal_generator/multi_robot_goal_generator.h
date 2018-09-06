@@ -29,6 +29,7 @@ private:
     std::string frame_id_;                 /// parameter
     tuw_multi_robot_msgs::RobotGoalsArray robot_goals_array_;
     nav_msgs::OccupancyGrid msg_map_goals_;
+    nav_msgs::OccupancyGrid::ConstPtr msg_map_;
     
     void updateNrOfRobots(size_t nr_of_robots);
     

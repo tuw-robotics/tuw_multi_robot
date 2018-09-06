@@ -3,9 +3,9 @@
 
 
 int main ( int argc, char **argv ) {
-    ros::init ( argc, argv, "GoalSaver" );
+    ros::init ( argc, argv, "GoalServer" );
     ros::NodeHandle n;
-    GoalHandlerNode node ( n , GoalHandlerNode::WRITE);
-    ros::spin();
+    GoalHandlerNode node ( n, GoalHandlerNode::READ);
+    node.publish();
     return 0;
 }

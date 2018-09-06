@@ -38,13 +38,18 @@ void RadomGoalGeneratorNode::updateNrOfRobots ( size_t nr_of_robots ) {
 
 
 void RadomGoalGeneratorNode::callback ( const nav_msgs::OccupancyGrid::ConstPtr& msg ) {
+    msg_map_ = msg;
+    publish () ;
+    ros::shutdown();
+}
 
-    map_.init ( msg->info, &msg->data[0] );
-    msg_map_goals_.header = msg->header;
-    msg_map_goals_.info = msg->info;
-    msg_map_goals_.data.resize ( msg->data.size() );
-    map_goals_.init ( msg_map_goals_.info, &msg_map_goals_.data[0] );
-    std::copy(msg->data.begin(), msg->data.end(), msg_map_goals_.data.begin());
+void RadomGoalGeneratorNode::publish () {
+    map_.init ( msg_map_->info, msg_map_->data );
+    msg_map_goals_.header = msg_map_->header;
+    msg_map_goals_.info = msg_map_->info;
+    msg_map_goals_.data.resize ( msg_map_->data.size() );
+    map_goals_.init ( msg_map_goals_.info, msg_map_goals_.data );
+    std::copy(msg_map_->data.begin(), msg_map_->data.end(), msg_map_goals_.data.begin());
     map_goals_.erode(distance_boundary_);
     //std::cout << map_.infoHeader() << std::endl;
     //std::cout << tuw::format(map_.Mw2m()) << std::endl;
@@ -85,13 +90,6 @@ void RadomGoalGeneratorNode::callback ( const nav_msgs::OccupancyGrid::ConstPtr&
 
     pub_map_goals_.publish ( msg_map_goals_ );
     ROS_INFO ( "Goal msg published: %i max retries and %i total retries on finding free space ", max_retries,  total_retries);
-
-
-
-
-}
-
-void RadomGoalGeneratorNode::publish () {
 }
 
 
@@ -102,3 +100,4 @@ int main ( int argc, char **argv ) {
     ros::spin();
     return 0;
 }
+

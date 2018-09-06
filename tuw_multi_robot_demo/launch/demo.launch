@@ -7,7 +7,7 @@
 <arg name="launch_rviz"                       default="true"      />
 <arg name="launch_stage"                      default="true"      />
 <arg name="launch_map_server"                 default="true"      />
-<arg name="launch_planner"                    default="true"      />
+<arg name="launch_multi_robot_route_planner"  default="true"      />
 <arg name="launch_local_controller"           default="true"      />
 <arg name="launch_multiple_local_controller"  default="false"     />
 <arg name="nr_of_robots"                      default="3"         />  <!-- only needed with launch_multiple_local_controller -->
@@ -75,7 +75,7 @@
 </group>
 
   
-<group if="$(arg launch_planner)">
+<group if="$(arg launch_multi_robot_route_planner)">
   <include file="$(find tuw_multi_robot_demo)/launch/multi_robot_route_planner.launch">
     <arg name="cfg" value="$(arg cfg)" />
   </include>
