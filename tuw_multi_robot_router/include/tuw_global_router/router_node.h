@@ -50,106 +50,162 @@
 
 namespace multi_robot_router
 {
+class RobotInfo : public tuw_multi_robot_msgs::RobotInfo
+{
+public:
+    RobotInfo ()
+    : tuw_multi_robot_msgs::RobotInfo()
+    , status_(status::inactive)
+    , activeTime_(1.0)
+    {
+    }
+    RobotInfo (const tuw_multi_robot_msgs::RobotInfo& o)
+    : tuw_multi_robot_msgs::RobotInfo(o)
+    , status_(status::inactive)
+    , activeTime_(1.0)
+    {
+    }
+    RobotInfo (const std::string &name)
+    : tuw_multi_robot_msgs::RobotInfo()
+    , status_(status::inactive)
+    , activeTime_(1.0)
+    {
+            robot_name = name;
+    }
+        enum class status
+        {
+            inactive,
+            active,
+            fixed
+        };
+        void setStatus ( status _status, const float _activeTime = 1.0 );
+        status getStatus() const;
+        void updateStatus ( const float _updateTime );
+        
+        /**
+         * returns vehilce radius based on the robots shape
+         * @ToDo a caching must be implemented for non circular shapes
+         * @return radius
+         **/
+        float radius() const;
+        
+        Eigen::Vector3d getPose() const;
+        /**
+         * returns the indes of the robot with a name
+         * @return index or data.size() if no matching element was found
+         **/
+        static size_t findIdx(const std::vector<RobotInfo> &data, const std::string &name);
+        /**
+         * returns a reference to the robot with a name
+         * @return ref or data.end() if no matching element was found
+         **/
+        static std::vector<RobotInfo>::iterator findObj(std::vector<RobotInfo> &data, const std::string &name);
+    private:
+        status status_;
+        float activeTime_;
+};
+
 class Router_Node : Router
 {
 public:
-  /**
-   * @brief Construct a new Router_Node object
-   * @param n the nodehandle to register publishers and subscribers
-   */
-  Router_Node(ros::NodeHandle &n);
-  /**
-   * @brief publishes an empty RoutingTable 
-   */
-  void publishEmpty();
-  /**
-   * @brief publishes a RoutingTable 
-   */
-  void publish();
-  /**
-   * @brief used to update the nodes timeout to latch topics
-   * @param secs the seconds passed since the last update
-   */
-  void updateTimeout(const float _secs);
-  ros::NodeHandle n_;       ///< Node handler to the root node
-  ros::NodeHandle n_param_; ///< Node handler to the current node
+    /**
+     * @brief Construct a new Router_Node object
+     * @param n the nodehandle to register publishers and subscribers
+     */
+    Router_Node ( ros::NodeHandle &n );
+    /**
+     * @brief publishes an empty RoutingTable
+     */
+    void publishEmpty();
+    /**
+     * @brief publishes a RoutingTable
+     */
+    void publish();
+    /**
+     * @brief used to update the nodes timeout to latch topics
+     * @param secs the seconds passed since the last update
+     */
+    void updateTimeout ( const float _secs );
+    ros::NodeHandle n_;       ///< Node handler to the root node
+    ros::NodeHandle n_param_; ///< Node handler to the current node
 
 private:
-  class TopicStatus
-  {
-  public:
-    enum class status
+    class TopicStatus
     {
-      inactive,
-      active,
-      fixed
+    public:
+        enum class status
+        {
+            inactive,
+            active,
+            fixed
+        };
+        TopicStatus();
+        TopicStatus ( status _status, const float _activeTime = 1.0 );
+        void setStatus ( status _status, const float _activeTime = 1.0 );
+        status getStatus() const;
+        void updateStatus ( const float _updateTime );
+
+    private:
+        status status_;
+        float activeTime_;
     };
-    TopicStatus();
-    TopicStatus(status _status, const float _activeTime = 1.0);
-    void setStatus(status _status, const float _activeTime = 1.0);
-    status getStatus() const;
-    void updateStatus(const float _updateTime);
 
-  private:
-    status status_;
-    float activeTime_;
-  };
+    dynamic_reconfigure::Server<tuw_multi_robot_router::routerConfig> param_server;
+    dynamic_reconfigure::Server<tuw_multi_robot_router::routerConfig>::CallbackType call_type;
+    std::vector<ros::Publisher> pubPaths_;
+    std::vector<ros::Publisher> pubSegPaths_;
+    ros::Publisher pubPlannerStatus_;
 
-  dynamic_reconfigure::Server<tuw_multi_robot_router::routerConfig> param_server;
-  dynamic_reconfigure::Server<tuw_multi_robot_router::routerConfig>::CallbackType call_type;
-  std::vector<ros::Publisher> pubPaths_;
-  std::vector<ros::Publisher> pubSegPaths_;
-  ros::Publisher pubPlannerStatus_;
+    std::vector<ros::Subscriber> subOdom_;
+    ros::Subscriber subGoalSet_;
+    ros::Subscriber subMap_;
+    ros::Subscriber subSingleRobotGoal_;
+    ros::Subscriber subVoronoiGraph_;
+    ros::Subscriber subRobotInfo_;
 
-  std::vector<ros::Subscriber> subOdom_;
-  ros::Subscriber subGoalSet_;
-  ros::Subscriber subMap_;
-  ros::Subscriber subSingleRobotGoal_;
-  ros::Subscriber subVoronoiGraph_;
-  ros::Subscriber subRobotInfo_;
+    std::vector<RobotInfo> subscribed_robots_;
+    std::vector<std::string> missing_robots_;
+    std::map<std::string, std::pair<TopicStatus, Eigen::Vector3d>> robot_starts_;
+    float robot_radius_max_;
+    cv::Mat distMap_;
+    Eigen::Vector2d mapOrigin_;
+    float mapResolution_;
+    std::string route_topic_;
+    std::string odom_topic_;
+    std::string path_topic_;
+    std::string goal_topic_;
+    std::string map_topic_;
+    std::string robot_info_topic_;
+    std::string voronoi_topic_;
+    std::string planner_status_topic_;
+    std::string singleRobotGoalTopic_;
+    bool got_map_ = false;
+    bool got_graph_ = false;
+    std::vector<Segment> graph_;
+    size_t current_map_hash_;
+    size_t current_graph_hash_;
+    int id_;
+    float topic_timeout_s_ = 10;
+    bool freshPlan_ = false;
+    std::string singleRobotName_ = "";
 
-  std::vector<std::string> subscribed_robot_names_;
-  std::map<std::string, bool> robot_active_status_;
-  std::vector<std::string> missing_robots_;
-  std::map<std::string, std::pair<TopicStatus, Eigen::Vector3d>> robot_starts_;
-  std::map<std::string, std::pair<TopicStatus, float>> robot_radius_;
-  float robot_radius_max_;
-  cv::Mat distMap_;
-  Eigen::Vector2d mapOrigin_;
-  float mapResolution_;
-  std::string route_topic_;
-  std::string odom_topic_;
-  std::string path_topic_;
-  std::string goal_topic_;
-  std::string map_topic_;
-  std::string robot_info_topic_;
-  std::string voronoi_topic_;
-  std::string planner_status_topic_;
-  std::string singleRobotGoalTopic_;
-  bool got_map_ = false;
-  bool got_graph_ = false;
-  std::vector<Segment> graph_;
-  size_t current_map_hash_;
-  size_t current_graph_hash_;
-  int id_;
-  float topic_timeout_s_ = 10;
-  bool freshPlan_ = false;
-  std::string singleRobotName_ = "";
-
-  void parametersCallback(tuw_multi_robot_router::routerConfig &config, uint32_t level);
-  void odomCallback(const ros::MessageEvent<nav_msgs::Odometry const> &_event, int _topic);
-  void graphCallback(const tuw_multi_robot_msgs::Graph &msg);
-  void goalsCallback(const tuw_multi_robot_msgs::RobotGoalsArray &_goals);
-  void mapCallback(const nav_msgs::OccupancyGrid &_map);
-  void robotInfoCallback(const tuw_multi_robot_msgs::RobotInfo &_robotInfo);
-  void goalCallback(const geometry_msgs::PoseStamped &_goal);
-  size_t getHash(const std::vector<signed char> &_map, const Eigen::Vector2d &_origin, const float &_resolution);
-  size_t getHash(const std::vector<Segment> &_graph);
-  static bool sortSegments(const Segment &i, const Segment &j) { return i.getSegmentId() < j.getSegmentId(); }
-  void unsubscribeTopic(std::string _robot_name);
-  float getYaw(const geometry_msgs::Quaternion &_rot);
-  float calcRadius(const int shape, const std::vector<float> &shape_variables) const;
-  bool preparePlanning(std::vector<float> &_radius, std::vector<Eigen::Vector3d> &_starts, std::vector<Eigen::Vector3d> &_goals, const tuw_multi_robot_msgs::RobotGoalsArray &_ros_goals);
+    void parametersCallback ( tuw_multi_robot_router::routerConfig &config, uint32_t level );
+    void odomCallback ( const ros::MessageEvent<nav_msgs::Odometry const> &_event, int _topic );
+    void graphCallback ( const tuw_multi_robot_msgs::Graph &msg );
+    void goalsCallback ( const tuw_multi_robot_msgs::RobotGoalsArray &_goals );
+    void mapCallback ( const nav_msgs::OccupancyGrid &_map );
+    void robotInfoCallback ( const tuw_multi_robot_msgs::RobotInfo &_robotInfo );
+    void goalCallback ( const geometry_msgs::PoseStamped &_goal );
+    size_t getHash ( const std::vector<signed char> &_map, const Eigen::Vector2d &_origin, const float &_resolution );
+    size_t getHash ( const std::vector<Segment> &_graph );
+    static bool sortSegments ( const Segment &i, const Segment &j )
+    {
+        return i.getSegmentId() < j.getSegmentId();
+    }
+    void unsubscribeTopic ( std::string _robot_name );
+    float getYaw ( const geometry_msgs::Quaternion &_rot );
+    float calcRadius ( const int shape, const std::vector<float> &shape_variables ) const;
+    bool preparePlanning ( std::vector<float> &_radius, std::vector<Eigen::Vector3d> &_starts, std::vector<Eigen::Vector3d> &_goals, const tuw_multi_robot_msgs::RobotGoalsArray &_ros_goals );
 };
 } // namespace multi_robot_router
 #endif // Router_Node_H

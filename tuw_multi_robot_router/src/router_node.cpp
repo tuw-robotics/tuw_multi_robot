@@ -128,14 +128,14 @@ void Router_Node::goalCallback(const geometry_msgs::PoseStamped &_goal)
 void Router_Node::updateTimeout(const float _secs)
 {
     //Todo update timeouts and clear old messages
-    for (auto it = robot_starts_.begin(); it != robot_starts_.end(); it++)
+    for (auto it = subscribed_robots_.begin(); it != subscribed_robots_.end(); it++)
     {
-        (*it).second.first.updateStatus(_secs);
+        (*it).updateStatus(_secs);
     }
 
-    for (auto it = robot_radius_.begin(); it != robot_radius_.end(); it++)
+    for (auto it = subscribed_robots_.begin(); it != subscribed_robots_.end(); it++)
     {
-        (*it).second.first.updateStatus(_secs);
+        (*it).updateStatus(_secs);
     }
 }
 void Router_Node::parametersCallback(tuw_multi_robot_router::routerConfig &config, uint32_t level)
@@ -209,7 +209,7 @@ void Router_Node::mapCallback(const nav_msgs::OccupancyGrid &_map)
 
 void Router_Node::odomCallback(const ros::MessageEvent<nav_msgs::Odometry const> &_event, int _robot_nr)
 {
-    if (robot_starts_[subscribed_robot_names_[_robot_nr]].first.getStatus() == TopicStatus::status::fixed) //Don't update fixed poses
+    if (robot_starts_[subscribed_robots_[_robot_nr].robot_name].first.getStatus() == TopicStatus::status::fixed) //Don't update fixed poses
         return;
 
     const nav_msgs::Odometry_<std::allocator<void>>::ConstPtr &nav_msg = _event.getMessage();
@@ -217,13 +217,13 @@ void Router_Node::odomCallback(const ros::MessageEvent<nav_msgs::Odometry const>
     TopicStatus s(TopicStatus::status::active, topic_timeout_s_);
     std::pair<TopicStatus, Eigen::Vector3d> start_pair(s, start);
 
-    if (robot_starts_.find(subscribed_robot_names_[_robot_nr]) == robot_starts_.end())
+    if (robot_starts_.find( subscribed_robots_[_robot_nr].robot_name) == robot_starts_.end())
     {
-        robot_starts_.emplace(subscribed_robot_names_[_robot_nr], start_pair);
+        robot_starts_.emplace( subscribed_robots_[_robot_nr].robot_name, start_pair);
     }
     else
     {
-        robot_starts_[subscribed_robot_names_[_robot_nr]] = start_pair;
+        robot_starts_[subscribed_robots_[_robot_nr].robot_name] = start_pair;
     }
 }
 
@@ -241,15 +241,14 @@ float Router_Node::calcRadius(const int shape, const std::vector<float> &shape_v
 void Router_Node::robotInfoCallback(const tuw_multi_robot_msgs::RobotInfo &_robotInfo)
 {
     TopicStatus s(TopicStatus::status::active, topic_timeout_s_);
-    std::pair<TopicStatus, float> radius_pair(s, calcRadius(_robotInfo.shape, _robotInfo.shape_variables));
     
-    if (std::find(subscribed_robot_names_.begin(), subscribed_robot_names_.end(), _robotInfo.robot_name) == subscribed_robot_names_.end())
-    {
-        subscribed_robot_names_.push_back(_robotInfo.robot_name);
-        robot_radius_.emplace(_robotInfo.robot_name, radius_pair);
+    auto robot = RobotInfo::findObj(subscribed_robots_, _robotInfo.robot_name);
+    if (robot == subscribed_robots_.end())
+    {   // create new entry 
+        subscribed_robots_.push_back(_robotInfo);
         //Not existant subscribe robots
         ROS_INFO("Multi Robot Router: subscribing to %s", (_robotInfo.robot_name + "/" + odom_topic_).c_str());
-        subOdom_.emplace_back(n_.subscribe<nav_msgs::Odometry>(_robotInfo.robot_name + "/" + odom_topic_, 1, boost::bind(&Router_Node::odomCallback, this, _1, subscribed_robot_names_.size() - 1)));
+        subOdom_.emplace_back(n_.subscribe<nav_msgs::Odometry>(_robotInfo.robot_name + "/" + odom_topic_, 1, boost::bind(&Router_Node::odomCallback, this, _1, subscribed_robots_.size() - 1)));
 
         ROS_INFO("Multi Robot Router: advertising on %s", (_robotInfo.robot_name + "/" + path_topic_).c_str());
         pubPaths_.emplace_back(n_.advertise<nav_msgs::Path>(_robotInfo.robot_name + "/" + path_topic_, 1, true));
@@ -258,14 +257,15 @@ void Router_Node::robotInfoCallback(const tuw_multi_robot_msgs::RobotInfo &_robo
     }
     else
     {
-        robot_radius_[_robotInfo.robot_name] = radius_pair;
+        (*robot) = _robotInfo;
     }
     
     robot_radius_max_ = 0;
-    for(auto&& it = robot_radius_.begin(); it != robot_radius_.end(); it++)
+    for(auto&& it = subscribed_robots_.begin(); it != subscribed_robots_.end(); it++)
     {
-      if(it->second.second > robot_radius_max_)
-        robot_radius_max_ = it->second.second;
+    
+      if(it->radius() > robot_radius_max_)
+        robot_radius_max_ = it->radius();
     }
 }
 
@@ -331,7 +331,12 @@ bool Router_Node::preparePlanning(std::vector<float> &_radius, std::vector<Eigen
     
     for(int k = 0; k < _rosGoals.goals.size(); k++)
     {
-      goals_tmp.goals[k] = _rosGoals.goals[std::distance(subscribed_robot_names_.begin(), std::find(subscribed_robot_names_.begin(), subscribed_robot_names_.end(), _rosGoals.goals[k].robot_name))];
+        for (size_t i = 0; i < subscribed_robots_.size(); i++)
+        {
+            if(_rosGoals.goals[k].robot_name == subscribed_robots_[i].robot_name){
+                goals_tmp.goals[k] = _rosGoals.goals[i];
+            }
+        }
     }
     
     for (int i = 0; i < goals_tmp.goals.size(); i++)
@@ -453,7 +458,7 @@ float Router_Node::getYaw(const geometry_msgs::Quaternion &_rot)
 
 void Router_Node::publishEmpty()
 {
-    for (int i = 0; i < subscribed_robot_names_.size(); i++)
+    for (int i = 0; i < subscribed_robots_.size(); i++)
     {
         nav_msgs::Path ros_path;
         ros_path.header.seq = 0;
@@ -463,7 +468,7 @@ void Router_Node::publishEmpty()
         pubPaths_[i].publish(ros_path);
     }
 
-    for (int i = 0; i < subscribed_robot_names_.size(); i++)
+    for (int i = 0; i < subscribed_robots_.size(); i++)
     {
         tuw_multi_robot_msgs::Route ros_path;
         ros_path.header.seq = 0;
@@ -487,7 +492,7 @@ void Router_Node::publishEmpty()
 
 void Router_Node::publish()
 {
-    for (int i = 0; i < subscribed_robot_names_.size(); i++)
+    for (int i = 0; i < subscribed_robots_.size(); i++)
     {
         nav_msgs::Path ros_path;
         ros_path.header.seq = 0;
@@ -533,7 +538,7 @@ void Router_Node::publish()
         pubPaths_[i].publish(ros_path);
     }
 
-    for (int i = 0; i < subscribed_robot_names_.size(); i++)
+    for (int i = 0; i < subscribed_robots_.size(); i++)
     {
         tuw_multi_robot_msgs::Route ros_path;
         ros_path.header.seq = 0;
@@ -573,7 +578,7 @@ void Router_Node::publish()
             for (int j = 0; j < cp.preconditions.size(); j++)
             {
                 tuw_multi_robot_msgs::RoutePrecondition pc;
-                pc.robot_id = subscribed_robot_names_[cp.preconditions[j].robotId];
+                pc.robot_id = subscribed_robots_[cp.preconditions[j].robotId].robot_name;
                 pc.current_route_segment = cp.preconditions[j].stepCondition;
                 seg.preconditions.push_back(pc);
             }
@@ -640,6 +645,53 @@ std::size_t Router_Node::getHash(const std::vector<Segment> &_graph)
     }
 
     return seed;
+}
+
+
+size_t RobotInfo::findIdx(const std::vector<RobotInfo> &data, const std::string &name){
+    for(size_t i = 0; i < data.size(); i++){
+        if(data[i].robot_name == name) return i;
+    }
+    return data.size();
+}
+
+std::vector<RobotInfo>::iterator RobotInfo::findObj(std::vector<RobotInfo> &data, const std::string &name){
+    return std::find_if(data.begin(), data.end(),  [&] (auto & r) { return r.robot_name == name;});
+}
+        
+Eigen::Vector3d RobotInfo::getPose() const {
+    double roll, pitch, yaw;
+    tf::Quaternion q(pose.pose.orientation.x, pose.pose.orientation.y, pose.pose.orientation.z, pose.pose.orientation.w);
+    tf::Matrix3x3(q).getRPY(roll, pitch, yaw);    
+    Eigen::Vector3d p(pose.pose.position.x, pose.pose.position.y, yaw);
+    return p;    
+}
+        
+float RobotInfo::radius() const
+{
+            if (shape == SHAPE_CIRCLE)
+            {
+                return shape_variables[0];
+            }
+
+            return -1;
+}
+
+RobotInfo::status RobotInfo::getStatus() const
+{
+    return status_;
+}
+
+void RobotInfo::updateStatus(const float _updateTime)
+{
+    if (activeTime_ > 0)
+        activeTime_ -= _updateTime;
+
+    if (activeTime_ < 0)
+        activeTime_ = 0;
+
+    if (activeTime_ == 0 && status_ != status::fixed)
+        status_ = status::inactive;
 }
 
 Router_Node::TopicStatus::TopicStatus(const status _status, const float _activeTime)
