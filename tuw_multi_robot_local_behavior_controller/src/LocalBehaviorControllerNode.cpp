@@ -68,6 +68,8 @@ LocalBehaviorControllerNode::LocalBehaviorControllerNode(ros::NodeHandle &n)
   n_param_.param<std::string>("robotInfo_topic", topic_robot_info_, "/robot_info");
   
   n_param_.param<std::string>("pose_topic", topic_pose_, "pose");
+  
+  n_param_.param<std::string>("frame_map", frame_map_, "map");
 
   subPose_ = n.subscribe<geometry_msgs::PoseWithCovarianceStamped>(topic_pose_, 1,
                                                                    &LocalBehaviorControllerNode::subPoseCb, this);
@@ -85,13 +87,13 @@ void LocalBehaviorControllerNode::publishPath(std::vector<Eigen::Vector3d> _p)
   nav_msgs::Path path;
   ros::Time now = ros::Time::now();
   path.header.stamp = now;
-  path.header.frame_id = "map";
+  path.header.frame_id = frame_map_;
   
   for(auto&& p : _p)
   {
     geometry_msgs::PoseStamped ps;
     ps.header.stamp = now;
-    ps.header.frame_id = "map";
+    ps.header.frame_id = frame_map_;
      
     ps.pose.position.x = p[0];
     ps.pose.position.y = p[1];
@@ -204,6 +206,7 @@ void LocalBehaviorControllerNode::publishRobotInfo()
 {
   tuw_multi_robot_msgs::RobotInfo ri;
   ri.header.stamp = ros::Time::now();
+  ri.header.frame_id = frame_map_;
   ri.robot_name = robot_name_;
   ri.pose = robot_pose_;
   ri.shape = ri.SHAPE_CIRCLE;

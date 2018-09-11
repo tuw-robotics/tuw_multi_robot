@@ -90,20 +90,15 @@ MultiRobotLocalBehaviorController::MultiRobotLocalBehaviorController(ros::NodeHa
     subOdometry_.resize(no_robots_);
     robot_radius_.resize(no_robots_, robotDefaultRadius_);
 
-    topic_path_ = "path_synced";
-    n_param_.param("path_topic", topic_path_, topic_path_);
+    n_param_.param<std::string>("path_topic", topic_path_, "path_synced");
 
-    topic_route_ = "route";
-    n_param_.param("route_topic", topic_route_, topic_route_);
+    n_param_.param<std::string>("route_topic", topic_route_, "route");
 
-    topic_odom_ = "odom";
-    n_param_.param("odom_topic", topic_odom_, topic_odom_);
+    n_param_.param<std::string>("odom_topic", topic_odom_, "odom");
 
-    topic_robot_info_ = "/robot_info";
-    n_param_.param("robotInfo_topic", topic_robot_info_, topic_robot_info_);
+    n_param_.param<std::string>("robotInfo_topic", topic_robot_info_, "/robot_info");
 
-    frame_map_ = "map";
-    n_param_.param("frame_map", frame_map_, frame_map_);
+    n_param_.param<std::string>("frame_map", frame_map_, "map");
     
     for (int i = 0; i < no_robots_; i++)
     {
