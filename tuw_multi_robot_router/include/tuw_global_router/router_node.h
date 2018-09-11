@@ -33,7 +33,7 @@
 #include <ros/ros.h>
 #include <tuw_multi_robot_msgs/RobotGoalsArray.h>
 #include <tuw_multi_robot_msgs/RobotGoals.h>
-#include <tuw_multi_robot_msgs/RobotInfo.h>
+#include <tuw_global_router/robot_info.h>
 #include <nav_msgs/Odometry.h>
 #include <tuw_multi_robot_msgs/Graph.h>
 #include <nav_msgs/Path.h>
@@ -50,75 +50,6 @@
 
 namespace multi_robot_router
 {
-class RobotInfo : public tuw_multi_robot_msgs::RobotInfo
-{
-public:
-    RobotInfo ()
-    : tuw_multi_robot_msgs::RobotInfo()
-    , status_(status::inactive)
-    , activeTime_(1.0)
-    {
-    }
-    RobotInfo (const tuw_multi_robot_msgs::RobotInfo& o)
-    : tuw_multi_robot_msgs::RobotInfo(o)
-    , status_(status::inactive)
-    , activeTime_(1.0)
-    {
-    }
-    RobotInfo (const std::string &name)
-    : tuw_multi_robot_msgs::RobotInfo()
-    , status_(status::inactive)
-    , activeTime_(1.0)
-    {
-            robot_name = name;
-    }
-        enum class status
-        {
-            inactive,
-            active,
-            fixed
-        };
-        
-        void updateInfo(const tuw_multi_robot_msgs::RobotInfo &info);
-        void initTopics(ros::NodeHandle &n);
-        
-        void setStatus ( status _status, const float _activeTime = 1.0 );
-        status getStatus() const;
-        void updateStatus ( const float _updateTime );
-        
-        /**
-         * returns vehilce radius based on the robots shape
-         * @ToDo a caching must be implemented for non circular shapes
-         * @return radius
-         **/
-        float radius() const;
-        
-        Eigen::Vector3d getPose() const;
-        /**
-         * returns the indes of the robot with a name
-         * @return index or data.size() if no matching element was found
-         **/
-        static size_t findIdx(const std::vector<std::shared_ptr<RobotInfo> > &data, const std::string &name);
-        /**
-         * returns a reference to the robot with a name
-         * @return ref or data.end() if no matching element was found
-         **/
-        static std::vector<std::shared_ptr<RobotInfo> >::iterator findObj(std::vector<std::shared_ptr<RobotInfo> > &data, const std::string &name);
-        
-        bool compareName(const std::shared_ptr<RobotInfo> data) const;
-        
-        ros::Subscriber subOdom_;
-        ros::Publisher pubPaths_;
-        ros::Publisher pubRoute_;
-        void callback_odom ( const nav_msgs::Odometry &msg);
-    private:
-        status status_;
-        float activeTime_;
-};
-typedef std::shared_ptr<RobotInfo> RobotInfoPtr;
-typedef std::vector<std::shared_ptr<RobotInfo> >::iterator RobotInfoPtrIterator;
-
-
 class Router_Node : Router
 {
 public:
@@ -221,7 +152,7 @@ private:
     void unsubscribeTopic ( std::string _robot_name );
     float getYaw ( const geometry_msgs::Quaternion &_rot );
     float calcRadius ( const int shape, const std::vector<float> &shape_variables ) const;
-    bool preparePlanning ( std::vector<float> &_radius, std::vector<Eigen::Vector3d> &_starts, std::vector<Eigen::Vector3d> &_goals, const tuw_multi_robot_msgs::RobotGoalsArray &_ros_goals );
+    bool preparePlanning ( std::vector<float> &_radius, std::vector<Eigen::Vector3d> &_starts, std::vector<Eigen::Vector3d> &_goals, const tuw_multi_robot_msgs::RobotGoalsArray &_ros_goals, std::vector<std::string> &robot_names );
 };
 } // namespace multi_robot_router
 #endif // Router_Node_H

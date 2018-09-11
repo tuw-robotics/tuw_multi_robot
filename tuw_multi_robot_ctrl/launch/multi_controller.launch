@@ -3,6 +3,6 @@
 <launch>
     <arg name="cfg"  default="default" />
     <node pkg="tuw_multi_robot_ctrl" type="tuw_velocity_controller" name="controller" output="screen"> 
-		<rosparam command="load" file="$(find tuw_multi_robot_ctrl)/cfg/multi_robot_controller/$(arg cfg)/multi_robot.yaml" />
+		<rosparam command="load" file="$(find tuw_multi_robot_ctrl)/cfg/local_multi_robot_controller/$(arg cfg)/multi_robot.yaml" />
     </node>
 </launch>

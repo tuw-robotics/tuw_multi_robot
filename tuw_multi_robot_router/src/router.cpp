@@ -88,15 +88,18 @@ bool Router::preprocessEndpoints(const std::vector<float> &_radius, const float 
         realStart_[i] = {(starts_[i][0] - origin[0]) / resolution, (starts_[i][1] - origin[1]) / resolution};
         realGoals_[i] = {(goals_[i][0] - origin[0]) / resolution, (goals_[i][1] - origin[1]) / resolution};
 
-        if (pointExpander_.getDistanceToObstacle(realStart_[i]) < _radius[i] / 2)
+        float radius = _radius[i];
+        float d_start = pointExpander_.getDistanceToObstacle(realStart_[i]);
+        ROS_INFO("Multi Robot Router: robot %i \"%s\" @  <%f, %f >", i, robot_names_[i].c_str(), starts_[i][0], starts_[i][1]);
+        if ( d_start < radius / 2)
         {
-            ROS_INFO("Multi Robot Router: Start of robot %i is to close to an obstacle", i);
+            ROS_INFO("Multi Robot Router: Start of robot %i \"%s\" @  <%f, %f > is to close to an obstacle", i, robot_names_[i].c_str(), starts_[i][0], starts_[i][1]);
             return false;
         }
-
-        if (pointExpander_.getDistanceToObstacle(realGoals_[i]) < _radius[i] / 2)
+        float d_goal = pointExpander_.getDistanceToObstacle(realGoals_[i]);
+        if (d_goal < radius / 2)
         {
-            ROS_INFO("Multi Robot Router: Goal of robot %i is to close to an obstacle", i);
+            ROS_INFO("Multi Robot Router: Goal of robot%i \"%s\"  @  <%f, %f > is to close to an obstacle", i, robot_names_[i].c_str(), starts_[i][0], starts_[i][1]);
             return false;
         }
     }
@@ -157,13 +160,13 @@ bool Router::processEndpointsExpander(const cv::Mat &_map, const std::vector<Seg
 
     if (segIdStart == -1)
     {
-        ROS_INFO("Multi Robot Router: Start of robot %i was not found", _index);
+        ROS_INFO("Multi Robot Router: Start of robot %i \"%s\" was not found", _index, robot_names_[_index].c_str());
         return false;
     }
 
     if (segIdGoal == -1)
     {
-        ROS_INFO("Multi Robot Router: Goal of robot %i was not found", _index);
+        ROS_INFO("Multi Robot Router: Goal of robot %i \"%s\" was not found", _index, robot_names_[_index].c_str());
         return false;
     }
 
@@ -173,13 +176,13 @@ bool Router::processEndpointsExpander(const cv::Mat &_map, const std::vector<Seg
     //Optimize found segments for errors
     if (!resolveSegment(_graph, _segmentStart, _realStart, _diameter, _segmentStart))
     {
-        ROS_INFO("Multi Robot Router: Start of robot %i is not valid", _index);
+        ROS_INFO("Multi Robot Router: Start of robot %i \"%s\" is not valid",  _index, robot_names_[_index].c_str());
         return false;
     }
 
     if (!resolveSegment(_graph, _segmentGoal, _realGoal, _diameter, _segmentGoal))
     {
-        ROS_INFO("Multi Robot Router: Goal of robot %i is not valid", _index);
+        ROS_INFO("Multi Robot Router: Goal of robot %i \"%s\" is not valid",  _index, robot_names_[_index].c_str());
         return false;
     }
 
@@ -322,8 +325,9 @@ bool Router::resolveSegment(const std::vector<Segment> &_graph, const uint32_t &
     return false;
 }
 
-bool Router::makePlan(const std::vector<Eigen::Vector3d> &_starts, const std::vector<Eigen::Vector3d> &_goals, const std::vector<float> &_radius, const cv::Mat &_map, const float &_resolution, const Eigen::Vector2d &_origin, const std::vector<Segment> &_graph)
+bool Router::makePlan(const std::vector<Eigen::Vector3d> &_starts, const std::vector<Eigen::Vector3d> &_goals, const std::vector<float> &_radius, const cv::Mat &_map, const float &_resolution, const Eigen::Vector2d &_origin, const std::vector<Segment> &_graph, const std::vector<std::string> &_robot_names)
 {
+    robot_names_ = _robot_names;
     auto t1 = std::chrono::high_resolution_clock::now();
     std::clock_t startcputime = std::clock();
 

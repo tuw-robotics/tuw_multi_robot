@@ -3,10 +3,41 @@
 
 #include <eigen3/Eigen/Dense>
 #include <tuw_global_router/srr_utils.h>
+#include <geometry_msgs/Pose.h>
 #include <ros/ros.h>
 
 namespace multi_robot_router
 {
+    
+    
+inline geometry_msgs::Pose& copy(const Eigen::Vector3d &src, geometry_msgs::Pose &des){
+    double cy = cos ( src[2] * 0.5 );
+    double sy = sin ( src[2] * 0.5 );
+
+    des.position.x = src[0], des.position.y = src[1], des.position.z = 0; 
+    des.orientation.w = cy;
+    des.orientation.x = 0.;
+    des.orientation.y = 0.;
+    des.orientation.z = sy;
+    return des;
+}
+inline  geometry_msgs::Pose copy(const Eigen::Vector3d &src){
+    geometry_msgs::Pose des;
+    return copy(src,des);
+}
+
+inline  Eigen::Vector3d& copy(const geometry_msgs::Pose &src, Eigen::Vector3d &des){
+    double siny = +2.0 * ( src.orientation.w * src.orientation.z + src.orientation.x * src.orientation.y );
+    double cosy = +1.0 - 2.0 * ( src.orientation.y * src.orientation.y + src.orientation.z * src.orientation.z );
+    double yaw = atan2 ( siny, cosy );    
+    des = Eigen::Vector3d (src.position.x, src.position.y, yaw );
+    return des;
+}
+inline Eigen::Vector3d copy(const geometry_msgs::Pose &src){
+    Eigen::Vector3d des;
+    return copy(src,des);
+}
+
 //Checkpoint used in a Route
 class Checkpoint
 {

@@ -89,6 +89,7 @@ MultiRobotLocalBehaviorController::MultiRobotLocalBehaviorController(ros::NodeHa
     subSegPath_.resize(no_robots_);
     subOdometry_.resize(no_robots_);
     robot_radius_.resize(no_robots_, robotDefaultRadius_);
+    robot_pose_.resize(no_robots_);
 
     n_param_.param<std::string>("path_topic", topic_path_, "path_synced");
 
@@ -120,7 +121,7 @@ MultiRobotLocalBehaviorController::MultiRobotLocalBehaviorController(ros::NodeHa
 void MultiRobotLocalBehaviorController::subOdomCb(const ros::MessageEvent<const nav_msgs::Odometry> &_event, int _topic)
 {
     const nav_msgs::Odometry_<std::allocator<void>>::ConstPtr &odom = _event.getMessage();
-
+    robot_pose_[_topic] = odom->pose;
     Eigen::Vector2d pt(odom->pose.pose.position.x, odom->pose.pose.position.y);
 
     bool changed = false;
@@ -252,6 +253,7 @@ void MultiRobotLocalBehaviorController::publishRobotInfo()
         ri.header.stamp = ros::Time::now();
         ri.header.frame_id = frame_map_;
         ri.robot_name = robot_names_[i];
+        ri.pose = robot_pose_[i];
         ri.shape = ri.SHAPE_CIRCLE;
         ri.shape_variables.push_back(robot_radius_[i]);
         ri.sync.robot_id = robot_names_[i];
