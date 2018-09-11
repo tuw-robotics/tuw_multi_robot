@@ -78,6 +78,10 @@ public:
             active,
             fixed
         };
+        
+        void updateInfo(const tuw_multi_robot_msgs::RobotInfo &info);
+        void initTopics(ros::NodeHandle &n);
+        
         void setStatus ( status _status, const float _activeTime = 1.0 );
         status getStatus() const;
         void updateStatus ( const float _updateTime );
@@ -94,16 +98,26 @@ public:
          * returns the indes of the robot with a name
          * @return index or data.size() if no matching element was found
          **/
-        static size_t findIdx(const std::vector<RobotInfo> &data, const std::string &name);
+        static size_t findIdx(const std::vector<std::shared_ptr<RobotInfo> > &data, const std::string &name);
         /**
          * returns a reference to the robot with a name
          * @return ref or data.end() if no matching element was found
          **/
-        static std::vector<RobotInfo>::iterator findObj(std::vector<RobotInfo> &data, const std::string &name);
+        static std::vector<std::shared_ptr<RobotInfo> >::iterator findObj(std::vector<std::shared_ptr<RobotInfo> > &data, const std::string &name);
+        
+        bool compareName(const std::shared_ptr<RobotInfo> data) const;
+        
+        ros::Subscriber subOdom_;
+        ros::Publisher pubPaths_;
+        ros::Publisher pubRoute_;
+        void callback_odom ( const nav_msgs::Odometry &msg);
     private:
         status status_;
         float activeTime_;
 };
+typedef std::shared_ptr<RobotInfo> RobotInfoPtr;
+typedef std::vector<std::shared_ptr<RobotInfo> >::iterator RobotInfoPtrIterator;
+
 
 class Router_Node : Router
 {
@@ -149,11 +163,12 @@ private:
         status status_;
         float activeTime_;
     };
+    
+    
+    tuw_multi_robot_msgs::RouterStatus mrrp_status_;
 
     dynamic_reconfigure::Server<tuw_multi_robot_router::routerConfig> param_server;
     dynamic_reconfigure::Server<tuw_multi_robot_router::routerConfig>::CallbackType call_type;
-    std::vector<ros::Publisher> pubPaths_;
-    std::vector<ros::Publisher> pubSegPaths_;
     ros::Publisher pubPlannerStatus_;
 
     std::vector<ros::Subscriber> subOdom_;
@@ -163,7 +178,8 @@ private:
     ros::Subscriber subVoronoiGraph_;
     ros::Subscriber subRobotInfo_;
 
-    std::vector<RobotInfo> subscribed_robots_;
+    std::vector<RobotInfoPtr> subscribed_robots_;       /// robots avaliable
+    std::vector<RobotInfoPtr> active_robots_;           /// robots currently used by the planner
     std::vector<std::string> missing_robots_;
     std::map<std::string, std::pair<TopicStatus, Eigen::Vector3d>> robot_starts_;
     float robot_radius_max_;
