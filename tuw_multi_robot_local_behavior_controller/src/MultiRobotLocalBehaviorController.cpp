@@ -102,6 +102,9 @@ MultiRobotLocalBehaviorController::MultiRobotLocalBehaviorController(ros::NodeHa
     topic_robot_info_ = "/robot_info";
     n_param_.param("robotInfo_topic", topic_robot_info_, topic_robot_info_);
 
+    frame_map_ = "map";
+    n_param_.param("frame_map", frame_map_, frame_map_);
+    
     for (int i = 0; i < no_robots_; i++)
     {
         converter_.emplace_back(no_robots_, i);
@@ -148,14 +151,14 @@ void MultiRobotLocalBehaviorController::publishPath(std::vector<Eigen::Vector3d>
     nav_msgs::Path path;
     path.header.seq = 0;
     path.header.stamp = ros::Time::now();
-    path.header.frame_id = "map";
+    path.header.frame_id = frame_map_;
 
     for (const Eigen::Vector3d &p : _p)
     {
         geometry_msgs::PoseStamped ps;
         ps.header.seq = 0;
         ps.header.stamp = ros::Time::now();
-        ps.header.frame_id = "map";
+        ps.header.frame_id = frame_map_;
 
         ps.pose.position.x = p[0];
         ps.pose.position.y = p[1];
@@ -252,6 +255,7 @@ void MultiRobotLocalBehaviorController::publishRobotInfo()
     {
         tuw_multi_robot_msgs::RobotInfo ri;
         ri.header.stamp = ros::Time::now();
+        ri.header.frame_id = frame_map_;
         ri.robot_name = robot_names_[i];
         ri.shape = ri.SHAPE_CIRCLE;
         ri.shape_variables.push_back(robot_radius_[i]);
