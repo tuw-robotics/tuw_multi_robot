@@ -1,0 +1,80 @@
+#ifndef MULTI_ROBOT_INFO_VISUAL_HPP
+#define MULTI_ROBOT_INFO_VISUAL_HPP
+
+#include <rviz/tool.h>
+#include <ros/ros.h>
+#include <rviz/properties/vector_property.h>
+#include <rviz/properties/int_property.h>
+#include <rviz/properties/string_property.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/ogre_helpers/arrow.h>
+#include <memory>
+#include <map>
+#include <boost/circular_buffer.hpp>
+#include "TextVisual.h"
+
+#include <tuw_multi_robot_msgs/RobotInfo.h>
+#include <geometry_msgs/PoseWithCovariance.h>
+
+namespace tuw_multi_robot_rviz
+{
+
+class MultiRobotInfoVisual
+{
+public:
+
+  MultiRobotInfoVisual(Ogre::SceneManager *_scene_manager, Ogre::SceneNode *_parent_node);
+
+  virtual ~MultiRobotInfoVisual();
+
+  void setMessage( const tuw_multi_robot_msgs::RobotInfo::ConstPtr &_msg);
+
+  void setFramePosition( const Ogre::Vector3& _position);
+  void setFrameOrientation( const Ogre::Quaternion& orientation );
+
+  // Set the scale of the visual, which is an user-editable
+  // parameter and therefore don't come from the RobotGoalsArrayStamped message.
+  void setScalePose( float scale );
+
+  // Set the color of the visual's Pose, which is an user-editable
+  // parameter and therefore don't come from the RobotGoalsArrayStamped message.
+  void setColorPose( Ogre::ColourValue color );
+
+private:
+  using internal_map_type = std::pair<std::string,boost::circular_buffer<geometry_msgs::PoseWithCovariance>>;
+  using map_type = std::map<std::string,boost::circular_buffer<geometry_msgs::PoseWithCovariance>>;
+  using map_iterator = std::map<std::string,boost::circular_buffer<geometry_msgs::PoseWithCovariance>>::iterator;
+  using recycle_map_type = std::map<std::string,unsigned int>;
+
+  void recycle();
+
+  // The object implementing the actual pose shape
+  std::vector< std::shared_ptr<rviz::Arrow> > robot_poses_;
+
+  map_type robot2pose_map_;
+  recycle_map_type recycle_map_;
+
+  int default_size_ = {5};
+  int recycle_thresh_ = {5};
+  int recycle_count_ = {0};
+  // A SceneNode whose pose is set to match the coordinate frame of
+  // the Imu message header.
+  Ogre::SceneNode* frame_node_;
+
+  // The SceneManager, kept here only so the destructor can ask it to
+  // destroy the ``frame_node_``.
+  Ogre::SceneManager* scene_manager_;
+
+  // The pose Shape object's scale
+  float scale_pose_;
+
+  // The pose Shape object's color
+  Ogre::ColourValue color_pose_;
+
+  // The variance Shape object's color
+  Ogre::ColourValue color_variance_;
+};
+
+}
+
+#endif

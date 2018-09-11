@@ -153,6 +153,10 @@ add_library(${PROJECT_NAME}
   include/tuw_multi_robot_rviz/TextVisual.h
   include/tuw_multi_robot_rviz/RobotGoalsArrayVisual.h
   include/tuw_multi_robot_rviz/RobotGoalsArrayDisplay.h
+  include/tuw_multi_robot_rviz/MultiRobotInfoVisual.h
+  include/tuw_multi_robot_rviz/MultiRobotInfoDisplay.h
+  src/MultiRobotInfoDisplay.cpp
+  src/MultiRobotInfoVisual.cpp
   src/RobotGoalsArrayVisual.cpp
   src/RobotGoalsArrayDisplay.cpp
   include/tuw_multi_robot_rviz/VoronoiGraphVisual.h
