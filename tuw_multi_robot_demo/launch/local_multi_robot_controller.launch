@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 
 <launch>
-    <arg name="cfg" default="default"/>
+    <arg name="nr_of_robots" default="3"/>
     
     <node pkg="tuw_multi_robot_ctrl" type="local_multi_robot_controller" name="controller" output="screen">
-        <rosparam command="load" file="$(find tuw_multi_robot_demo)/cfg/local_multi_robot_controller/$(arg cfg)/multi_robot.yaml"/>
+        <param name="nr_of_robots" value="$(arg nr_of_robots)"/>
     </node>
     
 </launch>

@@ -25,13 +25,6 @@
   </include>
 </group>
 
-<!-- start rviz -->
-<group if="$(arg launch_rviz)">
-  <include file="$(find tuw_multi_robot_demo)/launch/rviz.launch">
-  <arg name="cfg" value="$(arg cfg)"/> 
-  </include>
-</group>
-
 
 <group if="$(arg launch_stage)">
   <include file="$(find tuw_multi_robot_demo)/launch/stage.launch">
@@ -69,7 +62,7 @@
   </group>
   <group unless="$(arg launch_multiple_local_controller)">
     <include file="$(find tuw_multi_robot_demo)/launch/local_multi_robot_controller.launch">
-      <arg name="cfg" value="robot_$(arg nr_of_robots)" />
+      <arg name="nr_of_robots" value="$(arg nr_of_robots)" />
     </include>
   </group>
 </group>
@@ -78,6 +71,13 @@
 <group if="$(arg launch_multi_robot_route_planner)">
   <include file="$(find tuw_multi_robot_demo)/launch/multi_robot_route_planner.launch">
     <arg name="cfg" value="$(arg cfg)" />
+  </include>
+</group>
+
+<!-- start rviz -->
+<group if="$(arg launch_rviz)">
+  <include file="$(find tuw_multi_robot_demo)/launch/rviz.launch">
+  <arg name="cfg" value="$(arg room)"/> 
   </include>
 </group>
 

@@ -30,9 +30,9 @@ RadomGoalGeneratorNode::RadomGoalGeneratorNode ( ros::NodeHandle & n )
 void RadomGoalGeneratorNode::updateNrOfRobots ( size_t nr_of_robots ) {
     ROS_INFO ( "nr_of_robots: %i", ( int ) nr_of_robots );
     ROS_INFO ( "using prefix: %s", robot_name_prefix_.c_str() );
-    robot_goals_array_.goals.resize ( nr_of_robots );
+    robot_goals_array_.robots.resize ( nr_of_robots );
     for ( size_t i = 0; i < nr_of_robots; i++ ) {
-        tuw_multi_robot_msgs::RobotGoals &robot_check_points = robot_goals_array_.goals[i];
+        tuw_multi_robot_msgs::RobotGoals &robot_check_points = robot_goals_array_.robots[i];
         robot_check_points.robot_name = robot_name_prefix_ + std::to_string ( i );
     }
 }
@@ -63,7 +63,7 @@ void RadomGoalGeneratorNode::publish () {
 
     int total_retries = 0;
     int max_retries = 0;
-    for ( tuw_multi_robot_msgs::RobotGoals &robot: robot_goals_array_.goals ) {
+    for ( tuw_multi_robot_msgs::RobotGoals &robot: robot_goals_array_.robots ) {
         tuw::Pose2D pw;
         int retries = 0;
         bool valid_pose = false;
@@ -80,9 +80,9 @@ void RadomGoalGeneratorNode::publish () {
         if ( retries < max_resample_ ) {
             pw.theta() = dis_alpha ( gen );
             //std::cout << pw << std::endl; //Each call to dis(gen) generates a new random double
-            robot.path_points.resize ( 1 );
+            robot.destinations.resize ( 1 );
             map_goals_.circle ( pw.position(), distance_between_robots_, map_goals_.SPACE_OCCUPIED, -1 );
-            geometry_msgs::Pose &p = robot.path_points[0];
+            geometry_msgs::Pose &p = robot.destinations[0];
             pw.copyToROSPose ( p );
         } else {
             ROS_WARN ( "Max retries on finding new free space for goals for robot: %s", robot.robot_name.c_str() );

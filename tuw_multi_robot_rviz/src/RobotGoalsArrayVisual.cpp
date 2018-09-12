@@ -59,18 +59,18 @@ RobotGoalsArrayVisual::~RobotGoalsArrayVisual() {
 
 void RobotGoalsArrayVisual::setMessage ( const tuw_multi_robot_msgs::RobotGoalsArray::ConstPtr& msg ) {
     
-    goals_.resize(msg->goals.size());
+    goals_.resize(msg->robots.size());
     
-    for (size_t i = 0; i < msg->goals.size(); i++){
+    for (size_t i = 0; i < msg->robots.size(); i++){
         goals_[i].reset ( new rviz::Arrow( scene_manager_, frame_node_ ) );
         boost::shared_ptr<rviz::Arrow> arrow = goals_[i];
         /// @ToDo generate an error message
-        if(msg->goals[i].path_points.size() == 0) {
+        if(msg->robots[i].destinations.size() == 0) {
             continue;  
         }
         
         /// @Info # if there are more than one points the first one is the start pose  else the current pose of the robot is used as start
-        const geometry_msgs::Pose &pose = msg->goals[i].path_points.back();  
+        const geometry_msgs::Pose &pose = msg->robots[i].destinations.back();  
         
         Ogre::Vector3 position = Ogre::Vector3 ( pose.position.x, pose.position.y, pose.position.z );
         Ogre::Quaternion orientation = Ogre::Quaternion ( pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w );

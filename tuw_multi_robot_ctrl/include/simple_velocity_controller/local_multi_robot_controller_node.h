@@ -52,6 +52,8 @@ private:
   float Ki_val_;
   float Kd_val_;
   ros::Time last_update_;
+  int nr_of_robots_;
+  std::string robot_prefix_;
   std::vector<std::string> robot_names_;
   std::vector<float> robot_radius_;
   std::vector<geometry_msgs::PoseWithCovariance> robot_pose_;

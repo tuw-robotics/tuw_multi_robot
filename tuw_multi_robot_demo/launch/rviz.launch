@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="cfg" default="default"/>
-  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find tuw_multi_robot_demo)/cfg/rviz/$(arg cfg)/rviz.rviz" output="screen"/>
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find tuw_multi_robot_demo)/cfg/rviz/$(arg cfg).rviz" output="screen"/>
   <!--<node pkg="rviz" type="rviz" name="rviz" output="screen"/> -->
 </launch>

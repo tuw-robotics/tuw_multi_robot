@@ -105,10 +105,10 @@ Router_Node::Router_Node ( ros::NodeHandle &_n ) : Router(),
 void Router_Node::goalCallback ( const geometry_msgs::PoseStamped &_goal ) {
     tuw_multi_robot_msgs::RobotGoals goal;
     goal.robot_name = singleRobotName_;
-    goal.path_points.push_back ( _goal.pose );
+    goal.destinations.push_back ( _goal.pose );
 
     tuw_multi_robot_msgs::RobotGoalsArray goals;
-    goals.goals.push_back ( goal );
+    goals.robots.push_back ( goal );
 
     goalsCallback ( goals );
 }
@@ -267,13 +267,13 @@ bool Router_Node::preparePlanning ( std::vector<float> &_radius, std::vector<Eig
     _goals.clear();
     _radius.clear();
 
-    for ( int k = 0; k < goal_msg.goals.size(); k++ ) {
-        const tuw_multi_robot_msgs::RobotGoals &route_request = goal_msg.goals[k];
+    for ( int k = 0; k < goal_msg.robots.size(); k++ ) {
+        const tuw_multi_robot_msgs::RobotGoals &route_request = goal_msg.robots[k];
         RobotInfoPtrIterator active_robot = RobotInfo::findObj ( subscribed_robots_, route_request.robot_name );
         if ( active_robot == subscribed_robots_.end() ) {
             ROS_INFO ( "No robot subsribed with the name: %s", route_request.robot_name.c_str() );
         } else {
-            if ( route_request.path_points.empty() ) {
+            if ( route_request.destinations.empty() ) {
                 ROS_INFO ( "No robot: %s has not goal defined", route_request.robot_name.c_str() );
                 continue;
             } else {
@@ -281,14 +281,14 @@ bool Router_Node::preparePlanning ( std::vector<float> &_radius, std::vector<Eig
                 active_robots_.push_back ( *active_robot );
 
                 _radius.push_back ( ( *active_robot )->radius() );
-                if ( route_request.path_points.size() > 1 ) {
-                    geometry_msgs::Pose p = route_request.path_points[0];
+                if ( route_request.destinations.size() > 1 ) {
+                    geometry_msgs::Pose p = route_request.destinations[0];
                     _starts.push_back(Eigen::Vector3d ( p.position.x, p.position.y, getYaw ( p.orientation ) ));
                 } else {
                     _starts.push_back(( *active_robot )->getPose());
                 }
 
-                geometry_msgs::Pose p = route_request.path_points.back();
+                geometry_msgs::Pose p = route_request.destinations.back();
                 _goals.push_back(Eigen::Vector3d ( p.position.x, p.position.y, getYaw ( p.orientation ) ));
             }
 

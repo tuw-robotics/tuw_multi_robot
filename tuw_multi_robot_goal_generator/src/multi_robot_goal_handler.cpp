@@ -39,11 +39,11 @@ void GoalHandlerNode::callback ( const tuw_multi_robot_msgs::RobotGoalsArray& ms
     file << "frame_id: " << msg_.header.frame_id << std::endl;
     file << std::setprecision ( std::numeric_limits<float>::digits10 + 1 );
     file << std::setw ( 12 ) << msg_.header.stamp.sec << ", " << std::setw ( 12 ) << msg_.header.stamp.nsec << std::endl;
-    for ( size_t i = 0; i < msg_.goals.size(); i++ ) {
-        const tuw_multi_robot_msgs::RobotGoals &robot = msg_.goals[i];
+    for ( size_t i = 0; i < msg_.robots.size(); i++ ) {
+        const tuw_multi_robot_msgs::RobotGoals &robot = msg_.robots[i];
         file << robot.robot_name << std::endl;
-        for ( size_t j = 0; j < robot.path_points.size(); j++ ) {
-            const geometry_msgs::Pose p = robot.path_points[j];
+        for ( size_t j = 0; j < robot.destinations.size(); j++ ) {
+            const geometry_msgs::Pose p = robot.destinations[j];
             file << std::setw ( 12 ) << p.position.x << ", " << std::setw ( 12 ) << p.position.y << ", " << std::setw ( 12 ) << p.position.z << ", ";
             file << std::setw ( 12 ) << p.orientation.x << ", " << std::setw ( 12 ) << p.orientation.y << ", " << std::setw ( 12 ) << p.orientation.z << ", " << std::setw ( 12 ) << p.orientation.w << std::endl;
         }
@@ -116,7 +116,7 @@ void GoalHandlerNode::publishGoal ( const std::string &file_name ) {
         return;
     }
     // Goals
-    tuw_multi_robot_msgs::RobotGoals::_path_points_type *path_points = NULL;
+    tuw_multi_robot_msgs::RobotGoals::_destinations_type *destinations = NULL;
     while ( getline ( file,line ) ) {
         boost::erase_all ( line, " " );
         boost::split ( columns, line, boost::is_any_of ( "," ) );
@@ -125,14 +125,14 @@ void GoalHandlerNode::publishGoal ( const std::string &file_name ) {
             if ( columns[0].size() > 0 ) {
                 tuw_multi_robot_msgs::RobotGoals robot;
                 robot.robot_name = line;
-                msg_.goals.push_back ( robot );
-                path_points = &msg_.goals.back().path_points;
+                msg_.robots.push_back ( robot );
+                destinations = &msg_.robots.back().destinations;
             } else {
                 ROS_ERROR ( "robot name to short!" );
                 return;
             }
         }
-        if ( ( columns.size() == 7 ) && ( path_points != NULL ) ) {
+        if ( ( columns.size() == 7 ) && ( destinations != NULL ) ) {
             geometry_msgs::Pose p;
             p.position.x = std::stod ( columns[0] );
             p.position.y = std::stod ( columns[1] );
@@ -141,16 +141,16 @@ void GoalHandlerNode::publishGoal ( const std::string &file_name ) {
             p.orientation.y = std::stod ( columns[4] );
             p.orientation.z = std::stod ( columns[5] );
             p.orientation.w = std::stod ( columns[6] );
-            path_points->push_back ( p );
+            destinations->push_back ( p );
         }
-        if ( ( columns.size() == 4 ) && ( path_points != NULL ) ) {
+        if ( ( columns.size() == 4 ) && ( destinations != NULL ) ) {
             geometry_msgs::Pose p;
             p.position.x = std::stod ( columns[0] );
             p.position.y = std::stod ( columns[1] );
             p.position.z = std::stod ( columns[2] );
             double alpha  = std::stod ( columns[3] );
             tuw::EulerYawToQuaternion ( alpha, p.orientation );
-            path_points->push_back ( p );
+            destinations->push_back ( p );
         }
     }
     if(time_now_){

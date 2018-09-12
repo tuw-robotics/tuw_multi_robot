@@ -296,10 +296,10 @@ int MultiRobotGoalSelector::processMouseEvent(rviz::ViewportMouseEvent &event)
                      pose.position.y = position.y;
                      pose.position.z = 0.0;
                      make_quaternion(pose.orientation, 0, 0, flag_angles_[i]);
-                     goals.path_points.push_back(pose);
+                     goals.destinations.push_back(pose);
                      goals.robot_name = robot_names_[i]->getStdString();
 
-                     array.goals.push_back(goals);
+                     array.robots.push_back(goals);
                    }
 
                    array.header.stamp = ros::Time::now();
