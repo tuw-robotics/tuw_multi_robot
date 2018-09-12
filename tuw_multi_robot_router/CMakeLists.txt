@@ -165,6 +165,7 @@ add_library(${PROJECT_NAME}
     src/segment_expander.cpp
     src/route_coordinator_timed.cpp
     src/traceback.cpp
+    src/robot_info.cpp
     src/route_generator.cpp
     src/backtracking_resolution.cpp
     src/avoidance_resolution.cpp

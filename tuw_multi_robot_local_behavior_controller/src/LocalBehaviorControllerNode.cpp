@@ -33,14 +33,6 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
 
   tuw_multi_robot_route_to_path::LocalBehaviorControllerNode ctrl(n);
-  ros::Rate r(30);
-
-  while (ros::ok())
-  {
-    r.sleep();
-    ros::spinOnce();
-    ctrl.publishRobotInfo();
-  }
 
   return 0;
 }
@@ -70,6 +62,10 @@ LocalBehaviorControllerNode::LocalBehaviorControllerNode(ros::NodeHandle &n)
   n_param_.param<std::string>("pose_topic", topic_pose_, "pose");
   
   n_param_.param<std::string>("frame_map", frame_map_, "map");
+  
+  n_param_.param<std::string>("frame_map", frame_map_, "map");
+  
+  n_param_.param<double>("update_rate", update_rate_, 1.0);
 
   subPose_ = n.subscribe<geometry_msgs::PoseWithCovarianceStamped>(topic_pose_, 1,
                                                                    &LocalBehaviorControllerNode::subPoseCb, this);
@@ -80,6 +76,16 @@ LocalBehaviorControllerNode::LocalBehaviorControllerNode(ros::NodeHandle &n)
   
   pubRobotInfo_ = n.advertise<tuw_multi_robot_msgs::RobotInfo>(topic_robot_info_, 10000);
   pubPath_ = n.advertise<nav_msgs::Path>(topic_path_, 1);
+  
+  
+  ros::Rate r(update_rate_);
+
+  while (ros::ok())
+  {
+    r.sleep();
+    ros::spinOnce();
+    publishRobotInfo();
+  }
 }
 
 void LocalBehaviorControllerNode::publishPath(std::vector<Eigen::Vector3d> _p)

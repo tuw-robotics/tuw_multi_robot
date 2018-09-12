@@ -55,8 +55,9 @@ class Router
             * @param _radius a vector of the robots radius'
             * @param _map the grid_map used to find the start and goal segments of the path
             * @param _graph the full graph of the map used for planning the path
+            * @param _robot_names robot names
             */
-    bool makePlan(const std::vector<Eigen::Vector3d> &_starts, const std::vector<Eigen::Vector3d> &_goals, const std::vector<float> &_radius, const cv::Mat &_map, const float &_resolution, const Eigen::Vector2d &_origin, const std::vector<Segment> &_graph);
+    bool makePlan(const std::vector<Eigen::Vector3d> &_starts, const std::vector<Eigen::Vector3d> &_goals, const std::vector<float> &_radius, const cv::Mat &_map, const float &_resolution, const Eigen::Vector2d &_origin, const std::vector<Segment> &_graph, const std::vector<std::string> &_robot_names);
     /**
              * @brief sets the CollisionResolverType used 
              */
@@ -121,6 +122,7 @@ class Router
     std::vector<Eigen::Vector2d> voronoiStart_;
     std::vector<uint32_t> startSegments_;
     std::vector<uint32_t> goalSegments_;
+    std::vector<std::string> robot_names_;              /// with the robot id one can access the robot name
 
     PointExpander pointExpander_;
     MultiRobotRouter *multiRobotRouter_;

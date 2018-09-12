@@ -58,35 +58,6 @@ int main ( int argc, char **argv ) {
 
 namespace multi_robot_router {
 
-geometry_msgs::Pose& copy(const Eigen::Vector3d &src, geometry_msgs::Pose &des){
-    double cy = cos ( src[2] * 0.5 );
-    double sy = sin ( src[2] * 0.5 );
-
-    des.position.x = src[0], des.position.y = src[1], des.position.z = 0; 
-    des.orientation.w = cy;
-    des.orientation.x = 0.;
-    des.orientation.y = 0.;
-    des.orientation.z = sy;
-    return des;
-}
-geometry_msgs::Pose copy(const Eigen::Vector3d &src){
-    geometry_msgs::Pose des;
-    return copy(src,des);
-}
-
-Eigen::Vector3d& copy(const geometry_msgs::Pose &src, Eigen::Vector3d &des){
-    double siny = +2.0 * ( src.orientation.w * src.orientation.z + src.orientation.x * src.orientation.y );
-    double cosy = +1.0 - 2.0 * ( src.orientation.y * src.orientation.y + src.orientation.z * src.orientation.z );
-    double yaw = atan2 ( siny, cosy );    
-    des = Eigen::Vector3d (src.position.x, src.position.y, yaw );
-    return des;
-}
-Eigen::Vector3d copy(const geometry_msgs::Pose &src){
-    Eigen::Vector3d des;
-    return copy(src,des);
-}
-
-
 Router_Node::Router_Node ( ros::NodeHandle &_n ) : Router(),
     n_ ( _n ),
     n_param_ ( "~" ) {
@@ -218,9 +189,6 @@ void Router_Node::mapCallback ( const nav_msgs::OccupancyGrid &_map ) {
     }
 }
 
-void RobotInfo::callback_odom ( const nav_msgs::Odometry &msg ) {
-    // ToDo
-}
 
 float Router_Node::calcRadius ( const int shape, const std::vector<float> &shape_variables ) const {
     tuw_multi_robot_msgs::RobotInfo ri;
@@ -292,7 +260,7 @@ void Router_Node::graphCallback ( const tuw_multi_robot_msgs::Graph &msg ) {
     got_graph_ = true;
 }
 
-bool Router_Node::preparePlanning ( std::vector<float> &_radius, std::vector<Eigen::Vector3d> &_starts, std::vector<Eigen::Vector3d> &_goals, const tuw_multi_robot_msgs::RobotGoalsArray &goal_msg ) {
+bool Router_Node::preparePlanning ( std::vector<float> &_radius, std::vector<Eigen::Vector3d> &_starts, std::vector<Eigen::Vector3d> &_goals, const tuw_multi_robot_msgs::RobotGoalsArray &goal_msg, std::vector<std::string> &robot_names) {
     bool retval = true;
     active_robots_.clear();
     _starts.clear();
@@ -326,12 +294,10 @@ bool Router_Node::preparePlanning ( std::vector<float> &_radius, std::vector<Eig
 
         }
     }
-    for ( int i = 0; i < active_robots_.size(); i++ )  
-        ROS_INFO("%s", active_robots_[i]->robot_name.c_str()) ;    
-    std::sort( active_robots_.begin(), active_robots_.end(),  [](RobotInfoPtr a, RobotInfoPtr b) { return a->compareName(b); }); 
-    ROS_INFO("sorted") ;
-    for ( int i = 0; i < active_robots_.size(); i++ )  
-        ROS_INFO("%s", active_robots_[i]->robot_name.c_str()) ;
+    robot_names.resize(active_robots_.size());
+    for(size_t i=0; i < active_robots_.size(); i++){
+        robot_names[i] = active_robots_[i]->robot_name;
+    }
     return retval;
 }
 
@@ -340,14 +306,16 @@ void Router_Node::goalsCallback ( const tuw_multi_robot_msgs::RobotGoalsArray &_
     std::vector<Eigen::Vector3d> starts;
     std::vector<Eigen::Vector3d> goals;
     std::vector<float> radius;
+    std::vector<std::string> robot_names;
 
     
     
-    bool preparationSuccessful = preparePlanning ( radius, starts, goals, _goals );
+    bool preparationSuccessful = preparePlanning ( radius, starts, goals, _goals, robot_names );
 
     if ( preparationSuccessful && got_map_ && got_graph_ ) {
         auto t1 = std::chrono::high_resolution_clock::now();
-        preparationSuccessful &= makePlan ( starts, goals, radius, distMap_, mapResolution_, mapOrigin_, graph_ );
+        preparationSuccessful &= makePlan ( starts, goals, radius, distMap_, mapResolution_, mapOrigin_, graph_, robot_names );
+        
         if ( preparationSuccessful ) {
             int nx = distMap_.cols;
             int ny = distMap_.rows;
@@ -378,27 +346,6 @@ void Router_Node::goalsCallback ( const tuw_multi_robot_msgs::RobotGoalsArray &_
     }
 }
 
-bool RobotInfo::compareName(const std::shared_ptr<RobotInfo> robot) const{
-        std::string a = boost::regex_replace( this->robot_name,  boost::regex("[^0-9]*([0-9]+).*"), std::string("\\1"));
-        std::string b = boost::regex_replace( robot->robot_name, boost::regex("[^0-9]*([0-9]+).*"), std::string("\\1"));
-        return std::stoi ( a ) <  std::stoi ( b );    
-}
-void RobotInfo::initTopics ( ros::NodeHandle &n ) {
-
-    //Not existant subscribe robots
-    std::string topic_odom_name = robot_name + "/odom";
-    ROS_INFO ( "Multi Robot Router: subscribing to %s", topic_odom_name.c_str() );
-    subOdom_ = n.subscribe ( topic_odom_name, 1, &RobotInfo::callback_odom, this );
-
-    std::string topic_path_name = robot_name + "/path_unsynced";
-    ROS_INFO ( "Multi Robot Router: advertising on %s", topic_path_name.c_str() );
-    pubPaths_ = n.advertise<nav_msgs::Path> ( topic_path_name, 1, true );
-
-
-    std::string topic_route_name = robot_name + "/route";
-    ROS_INFO ( "Multi Robot Router: advertising on %s", topic_route_name.c_str() );
-    pubRoute_ = n.advertise<tuw_multi_robot_msgs::Route> ( topic_route_name, 1, true );
-}
 float Router_Node::getYaw ( const geometry_msgs::Quaternion &_rot ) {
     double roll, pitch, yaw;
 
@@ -571,54 +518,7 @@ std::size_t Router_Node::getHash ( const std::vector<Segment> &_graph ) {
 }
 
 
-void RobotInfo::updateInfo ( const tuw_multi_robot_msgs::RobotInfo &info ) {
-    tuw_multi_robot_msgs::RobotInfo &des = *this;
-    des = info;
-}
 
-size_t RobotInfo::findIdx ( const std::vector<std::shared_ptr<RobotInfo> > &data, const std::string &name ) {
-    for ( size_t i = 0; i < data.size(); i++ ) {
-        if ( data[i]->robot_name == name ) return i;
-    }
-    return data.size();
-}
-
-std::vector<std::shared_ptr<RobotInfo> >::iterator RobotInfo::findObj ( std::vector<std::shared_ptr<RobotInfo> > &data, const std::string &name ) {
-    return std::find_if ( data.begin(), data.end(),  [&] ( auto & r ) {
-        return r->robot_name == name;
-    } );
-}
-
-Eigen::Vector3d RobotInfo::getPose() const {
-    double roll, pitch, yaw;
-    tf::Quaternion q ( pose.pose.orientation.x, pose.pose.orientation.y, pose.pose.orientation.z, pose.pose.orientation.w );
-    tf::Matrix3x3 ( q ).getRPY ( roll, pitch, yaw );
-    Eigen::Vector3d p ( pose.pose.position.x, pose.pose.position.y, yaw );
-    return p;
-}
-
-float RobotInfo::radius() const {
-    if ( shape == SHAPE_CIRCLE ) {
-        return shape_variables[0];
-    }
-
-    return -1;
-}
-
-RobotInfo::status RobotInfo::getStatus() const {
-    return status_;
-}
-
-void RobotInfo::updateStatus ( const float _updateTime ) {
-    if ( activeTime_ > 0 )
-        activeTime_ -= _updateTime;
-
-    if ( activeTime_ < 0 )
-        activeTime_ = 0;
-
-    if ( activeTime_ == 0 && status_ != status::fixed )
-        status_ = status::inactive;
-}
 
 Router_Node::TopicStatus::TopicStatus ( const status _status, const float _activeTime ) {
     setStatus ( _status, _activeTime );

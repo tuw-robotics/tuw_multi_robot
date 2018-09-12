@@ -151,8 +151,8 @@ target_link_libraries(tuw_velocity_controller
   ${catkin_LIBRARIES}
   ${PROJECT_NAME}
 )
-add_executable(tuw_segment_controller src/multi_segment_controller_node.cpp)
-target_link_libraries(tuw_segment_controller
+add_executable(local_multi_robot_controller src/local_multi_robot_controller_node.cpp)
+target_link_libraries(local_multi_robot_controller
   ${catkin_LIBRARIES}
   ${PROJECT_NAME}
 )

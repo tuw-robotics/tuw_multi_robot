@@ -1,5 +1,5 @@
-#ifndef MULTI_SEGMENT_CONTROLLER_NODE_H
-#define MULTI_SEGMENT_CONTROLLER_NODE_H
+#ifndef TUW_MULTI_ROBOT_CTRL_LOCAL_MULTI_ROBOT_CONTROLLER_NODE_H
+#define TUW_MULTI_ROBOT_CTRL_LOCAL_MULTI_ROBOT_CONTROLLER_NODE_H
 
 // ROS
 #include <ros/ros.h>
@@ -15,7 +15,7 @@
 
 namespace velocity_controller
 {
-class MultiSegmentControllerNode
+class LocalMultiRobotControllerNode
 {
   //special class-member functions.
 public:
@@ -23,7 +23,7 @@ public:
    * @brief Construct a new Multi Segment Controller Node object
    * @param n the node handle to subscribe to topics
    */
-  MultiSegmentControllerNode(ros::NodeHandle &n);
+  LocalMultiRobotControllerNode(ros::NodeHandle &n);
   ros::NodeHandle n_;       ///< Node handler to the root node
   ros::NodeHandle n_param_; ///< Node handler to the current node
   std::unique_ptr<ros::Rate> rate_;
@@ -43,6 +43,8 @@ private:
   std::string topic_route_;
   std::string topic_ctrl_;
   std::string topic_robot_info_;
+  std::string frame_map_;
+  double update_rate_;
   float max_vel_v_;
   float max_vel_w_;
   float goal_r_;
@@ -52,6 +54,7 @@ private:
   ros::Time last_update_;
   std::vector<std::string> robot_names_;
   std::vector<float> robot_radius_;
+  std::vector<geometry_msgs::PoseWithCovariance> robot_pose_;
   void subOdomCb(const ros::MessageEvent<nav_msgs::Odometry const> &_event, int _topic);
   void subRouteCb(const ros::MessageEvent<tuw_multi_robot_msgs::Route const> &_event, int _topic);
   void subCtrlCb(const ros::MessageEvent<std_msgs::String const> &_event, int _topic);
@@ -61,4 +64,4 @@ private:
 
 } // namespace velocity_controller
 
-#endif // CONTROLLER_NODE_H
+#endif // TUW_MULTI_ROBOT_CTRL_LOCAL_MULTI_ROBOT_CONTROLLER_NODE_H

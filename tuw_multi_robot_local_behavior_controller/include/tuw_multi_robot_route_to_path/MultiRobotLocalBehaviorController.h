@@ -67,6 +67,7 @@ private:
   std::string frame_map_;
   std::vector<std::string> robot_names_;
   std::vector<float> robot_radius_;
+  std::vector<geometry_msgs::PoseWithCovariance> robot_pose_;
   float robotDefaultRadius_ = 0.6;
 
   void subOdomCb(const ros::MessageEvent<nav_msgs::Odometry const> &_event, int _topic);

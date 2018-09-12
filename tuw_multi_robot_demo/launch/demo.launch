@@ -69,7 +69,7 @@
   </group>
   <group unless="$(arg launch_multiple_local_controller)">
     <include file="$(find tuw_multi_robot_demo)/launch/local_multi_robot_controller.launch">
-      <arg name="cfg" value="$(arg cfg)" />
+      <arg name="cfg" value="robot_$(arg nr_of_robots)" />
     </include>
   </group>
 </group>

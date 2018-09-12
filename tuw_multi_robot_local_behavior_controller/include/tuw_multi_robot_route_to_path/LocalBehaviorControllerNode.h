@@ -62,6 +62,7 @@ private:
   ros::Subscriber subRobotInfo_;
 
   // ROS Topic names
+  double update_rate_;
   std::string topic_path_;
   std::string topic_route_;
   std::string topic_pose_;

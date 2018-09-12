@@ -1,5 +1,5 @@
 #include <ros/ros.h>
-#include <simple_velocity_controller/multi_segment_controller_node.h>
+#include <simple_velocity_controller/local_multi_robot_controller_node.h>
 #include <tf/transform_datatypes.h>
 #include <string>
 #include <algorithm>
@@ -13,16 +13,7 @@ int main(int argc, char **argv)
         ros::init(argc, argv, "controller"); /// initializes the ros node with default name
         ros::NodeHandle n;
 
-        velocity_controller::MultiSegmentControllerNode ctrl(n);
-        ros::Rate r(20);
-
-        while (ros::ok())
-        {
-            r.sleep();
-            ros::spinOnce();
-            ctrl.publishRobotInfo();
-        }
-
+        velocity_controller::LocalMultiRobotControllerNode ctrl(n);
         return 0;
     }
     else
@@ -33,7 +24,7 @@ int main(int argc, char **argv)
 
 namespace velocity_controller
 {
-MultiSegmentControllerNode::MultiSegmentControllerNode(ros::NodeHandle &n) : n_(n),
+LocalMultiRobotControllerNode::LocalMultiRobotControllerNode(ros::NodeHandle &n) : n_(n),
                                                                              n_param_("~"),
                                                                              robot_names_(std::vector<std::string>({"robot0"}))
 {
@@ -60,6 +51,7 @@ MultiSegmentControllerNode::MultiSegmentControllerNode(ros::NodeHandle &n) : n_(
     subCtrl_.resize(robot_names_.size());
     subOdom_.resize(robot_names_.size());
     subRoute_.resize(robot_names_.size());
+    robot_pose_.resize(robot_names_.size());
 
     n_param_.param("robot_radius", robot_radius_, robot_radius_);
 
@@ -101,6 +93,10 @@ MultiSegmentControllerNode::MultiSegmentControllerNode(ros::NodeHandle &n) : n_(
     topic_ctrl_ = "/ctrl";
     n.getParam("topic_control", topic_ctrl_);
 
+    n_param_.param<std::string>("frame_map", frame_map_, "map");
+    
+    n_param_.param<double>("update_rate", update_rate_, 20.0);
+    
     ROS_INFO("Multi Robot Controller:  %s", topic_cmdVel_.c_str());
 
     for (auto &ctrl : controller)
@@ -114,15 +110,30 @@ MultiSegmentControllerNode::MultiSegmentControllerNode(ros::NodeHandle &n) : n_(
     {
         pubCmdVel_[i] = n.advertise<geometry_msgs::Twist>(robot_names_[i] + "/" + topic_cmdVel_, 1);
         pubRobotInfo_ = n.advertise<tuw_multi_robot_msgs::RobotInfo>(topic_robot_info_, robot_names_.size() * 2);
-        subOdom_[i] = n.subscribe<nav_msgs::Odometry>(robot_names_[i] + "/" + topic_odom_, 1, boost::bind(&MultiSegmentControllerNode::subOdomCb, this, _1, i));
-        subRoute_[i] = n.subscribe<tuw_multi_robot_msgs::Route>(robot_names_[i] + "/" + topic_route_, 1, boost::bind(&MultiSegmentControllerNode::subRouteCb, this, _1, i));
-        subCtrl_[i] = n.subscribe<std_msgs::String>(robot_names_[i] + "/" + topic_ctrl_, 1, boost::bind(&MultiSegmentControllerNode::subCtrlCb, this, _1, i));
+        subOdom_[i] = n.subscribe<nav_msgs::Odometry>(robot_names_[i] + "/" + topic_odom_, 1, boost::bind(&LocalMultiRobotControllerNode::subOdomCb, this, _1, i));
+        subRoute_[i] = n.subscribe<tuw_multi_robot_msgs::Route>(robot_names_[i] + "/" + topic_route_, 1, boost::bind(&LocalMultiRobotControllerNode::subRouteCb, this, _1, i));
+        subCtrl_[i] = n.subscribe<std_msgs::String>(robot_names_[i] + "/" + topic_ctrl_, 1, boost::bind(&LocalMultiRobotControllerNode::subCtrlCb, this, _1, i));
     }
+        ros::Rate r(update_rate_);
+
+        int sleep_count_robot_info = 0;
+        while (ros::ok())
+        {
+            r.sleep();
+            ros::spinOnce();
+            sleep_count_robot_info++;
+            if(sleep_count_robot_info > update_rate_) {
+                publishRobotInfo();
+                sleep_count_robot_info = 0;
+            }
+        }
+
 }
 
-void velocity_controller::MultiSegmentControllerNode::subOdomCb(const ros::MessageEvent<const nav_msgs::Odometry> &_event, int _topic)
+void velocity_controller::LocalMultiRobotControllerNode::subOdomCb(const ros::MessageEvent<const nav_msgs::Odometry> &_event, int _topic)
 {
     const nav_msgs::Odometry_<std::allocator<void>>::ConstPtr &odom = _event.getMessage();
+    robot_pose_[_topic] = odom->pose;
 
     PathPoint pt;
     pt.x = odom->pose.pose.position.x;
@@ -159,7 +170,7 @@ void velocity_controller::MultiSegmentControllerNode::subOdomCb(const ros::Messa
     }
 }
 
-void velocity_controller::MultiSegmentControllerNode::subRouteCb(const ros::MessageEvent<const tuw_multi_robot_msgs::Route> &_event, int _topic)
+void velocity_controller::LocalMultiRobotControllerNode::subRouteCb(const ros::MessageEvent<const tuw_multi_robot_msgs::Route> &_event, int _topic)
 {
     const tuw_multi_robot_msgs::Route_<std::allocator<void>>::ConstPtr &path = _event.getMessage();
 
@@ -195,7 +206,7 @@ void velocity_controller::MultiSegmentControllerNode::subRouteCb(const ros::Mess
     ROS_INFO("Multi Robot Controller: Got Plan");
 }
 
-int velocity_controller::MultiSegmentControllerNode::findRobotId(std::string _name)
+int velocity_controller::LocalMultiRobotControllerNode::findRobotId(std::string _name)
 {
     for (uint32_t i = 0; i < robot_names_.size(); i++)
     {
@@ -206,7 +217,7 @@ int velocity_controller::MultiSegmentControllerNode::findRobotId(std::string _na
     return -1;
 }
 
-void velocity_controller::MultiSegmentControllerNode::subCtrlCb(const ros::MessageEvent<const std_msgs::String> &_event, int _topic)
+void velocity_controller::LocalMultiRobotControllerNode::subCtrlCb(const ros::MessageEvent<const std_msgs::String> &_event, int _topic)
 {
     const std_msgs::String_<std::allocator<void>>::ConstPtr &cmd = _event.getMessage();
     std::string s = cmd->data;
@@ -231,12 +242,15 @@ void velocity_controller::MultiSegmentControllerNode::subCtrlCb(const ros::Messa
     }
 }
 
-void MultiSegmentControllerNode::publishRobotInfo()
+void LocalMultiRobotControllerNode::publishRobotInfo()
 {
     for (uint32_t i = 0; i < robot_names_.size(); i++)
     {
         tuw_multi_robot_msgs::RobotInfo ri;
+        ri.header.stamp = ros::Time::now();
+        ri.header.frame_id = frame_map_;
         ri.robot_name = robot_names_[i];
+        ri.pose = robot_pose_[i];
         ri.shape = ri.SHAPE_CIRCLE;
         ri.shape_variables.push_back(robot_radius_[i]);
         ri.sync.robot_id = robot_names_[i];
