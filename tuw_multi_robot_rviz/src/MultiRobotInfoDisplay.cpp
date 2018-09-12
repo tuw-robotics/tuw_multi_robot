@@ -93,6 +93,19 @@ void MultiRobotInfoDisplay::updateColorPose() {
     visual_->setColorPose ( color );
 }
 
+void MultiRobotInfoDisplay::updateBoolProperty()
+{
+  for (const auto &it : bool_properties_)
+  {
+    if(!it.second->getBool())
+    {
+      visual_->disableRobot(it.first);
+    } else {
+      visual_->enableRobot(it.first);
+    }
+  }
+}
+
 // This is our callback to handle an incoming message.
 void MultiRobotInfoDisplay::processMessage (const tuw_multi_robot_msgs::RobotInfoConstPtr &msg ) {
     // Here we call the rviz::FrameManager to get the transform from the
@@ -113,6 +126,19 @@ void MultiRobotInfoDisplay::processMessage (const tuw_multi_robot_msgs::RobotInf
     visual_->setFrameOrientation ( orientation );
     visual_->setScalePose ( property_scale_pose_->getFloat() );
     visual_->setColorPose ( property_color_pose_->getOgreColor() );
+
+    auto it = bool_properties_.find(msg->robot_name);
+    if (it == bool_properties_.end())
+    {
+      std::unique_ptr<rviz::BoolProperty> bp;
+      bp.reset(new rviz::BoolProperty(QString(msg->robot_name.c_str()),
+                                true,
+                                QString("display this robot?"),
+                                this,
+                                SLOT(updateBoolProperty())));
+      bool_properties_.insert(std::pair<std::string,std::unique_ptr<rviz::BoolProperty>>(msg->robot_name, std::move(bp)));
+      it = bool_properties_.find(msg->robot_name);
+    }
 }
 
 } // end namespace tuw_geometry_rviz

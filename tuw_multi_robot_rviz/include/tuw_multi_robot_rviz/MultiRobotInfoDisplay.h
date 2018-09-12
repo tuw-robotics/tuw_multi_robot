@@ -9,6 +9,7 @@
 #include <rviz/message_filter_display.h>
 #endif
 
+#include <rviz/properties/bool_property.h>
 #include <geometry_msgs/PoseWithCovariance.h>
 #include <memory>
 #include <tuw_multi_robot_msgs/RobotInfo.h>
@@ -23,6 +24,8 @@ namespace rviz
 class ColorProperty;
 class FloatProperty;
 }
+
+class QString;
 
 // All the source in this plugin is in its own namespace.  This is not
 // required but is good practice.
@@ -58,6 +61,7 @@ protected:
 private Q_SLOTS:
   void updateScalePose();
   void updateColorPose();
+  void updateBoolProperty();
 
   // Function to handle an incoming ROS message.
 private:
@@ -69,6 +73,7 @@ private:
   // User-editable property variables.
   std::unique_ptr<rviz::FloatProperty> property_scale_pose_;
   std::unique_ptr<rviz::ColorProperty> property_color_pose_;
+  std::map<std::string, std::unique_ptr<rviz::BoolProperty>> bool_properties_;
 };
 
 } // end namespace tuw_pose_rviz

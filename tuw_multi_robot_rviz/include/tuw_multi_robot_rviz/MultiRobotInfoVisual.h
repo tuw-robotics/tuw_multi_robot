@@ -40,23 +40,30 @@ public:
   // parameter and therefore don't come from the RobotGoalsArrayStamped message.
   void setColorPose( Ogre::ColourValue color );
 
+  void disableRobot( const std::string &rName );
+
+  void enableRobot( const std::string &rName );
+
 private:
   using internal_map_type = std::pair<std::string,boost::circular_buffer<geometry_msgs::PoseWithCovariance>>;
   using map_type = std::map<std::string,boost::circular_buffer<geometry_msgs::PoseWithCovariance>>;
   using map_iterator = std::map<std::string,boost::circular_buffer<geometry_msgs::PoseWithCovariance>>::iterator;
-  using recycle_map_type = std::map<std::string,unsigned int>;
+  using recycle_map_type = std::map<std::string, ros::Time>;
 
-  void recycle();
+  std::vector<std::string> recycle();
 
   // The object implementing the actual pose shape
-  std::vector< std::shared_ptr<rviz::Arrow> > robot_poses_;
+  std::map<std::string, std::shared_ptr<rviz::Arrow> > robot_arrows_map_;
+  std::set<std::string> disabled_robots_;
+
+  rviz::IntProperty keep_measurements_;
+  rviz::IntProperty keep_alive_;
 
   map_type robot2pose_map_;
   recycle_map_type recycle_map_;
 
   int default_size_ = {5};
-  int recycle_thresh_ = {5};
-  int recycle_count_ = {0};
+  ros::Duration recycle_thresh_ = ros::Duration(5,0);
   // A SceneNode whose pose is set to match the coordinate frame of
   // the Imu message header.
   Ogre::SceneNode* frame_node_;

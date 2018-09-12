@@ -9,22 +9,60 @@ namespace tuw_multi_robot_rviz {
     scene_manager_->destroySceneNode(frame_node_);
   }
 
-  void MultiRobotInfoVisual::recycle()
+  std::vector<std::string> MultiRobotInfoVisual::recycle()
   {
     std::vector<std::string> mark_for_deletion;
+    auto ts_now = ros::Time::now();
     for (auto &elem : recycle_map_)
     {
-      if (elem.second >= recycle_thresh_)
+      auto dur = ts_now - elem.second;
+      if (dur > recycle_thresh_)
       {
         mark_for_deletion.push_back(elem.first);
-      } else {
-        elem.second++;
       }
     }
+
     for (const std::string &elem : mark_for_deletion)
     {
-      robot2pose_map_.erase(robot2pose_map_.find(elem));
-      recycle_map_.erase(recycle_map_.find(elem));
+      auto it_pose = robot2pose_map_.find(elem);
+      if (it_pose != robot2pose_map_.end())
+      {
+        robot2pose_map_.erase(it_pose);
+      }
+
+      auto it_arrows = robot_arrows_map_.find(elem);
+      if (it_arrows != robot_arrows_map_.end())
+      {
+        robot_arrows_map_.erase(it_arrows);
+      }
+
+      auto it_rcle = recycle_map_.find(elem);
+      if (it_rcle != recycle_map_.end())
+      {
+        recycle_map_.erase(it_rcle);
+      }
+    }
+
+    return std::move(mark_for_deletion);
+  }
+
+  void MultiRobotInfoVisual::enableRobot(const std::string &rName)
+  {
+    auto it = disabled_robots_.find(rName);
+    if (it != disabled_robots_.end())
+    {
+      disabled_robots_.erase(it);
+    }
+  }
+
+  void MultiRobotInfoVisual::disableRobot(const std::string &rName)
+  {
+    disabled_robots_.insert(rName);
+    auto it_arrow = robot_arrows_map_.find(rName);
+    if (robot_arrows_map_.end() != it_arrow)
+    {
+      //No need for detach objects call since this is handled in the SceneNode destructor
+      robot_arrows_map_.erase(it_arrow);
     }
   }
 
@@ -40,29 +78,48 @@ namespace tuw_multi_robot_rviz {
     }
 
     it->second.push_front(_msg->pose);
-    recycle_map_.find(_msg->robot_name)->second = 0;
-    recycle();
+    recycle_map_.find(_msg->robot_name)->second = ros::Time::now();
+    auto recycled_robots_ = recycle();
 
-    robot_poses_.resize(robot2pose_map_.size());
-    int i;
-    for (i=0, it=robot2pose_map_.begin(); it!=robot2pose_map_.end(); ++i, ++it)
+    //Just for testing, this should never be needed.
+    //auto rName = _msg->robot_name;
+    //auto it_r = std::find_if(recycled_robots_.begin(), recycled_robots_.end(),
+    //                         [&rName](const std::string &n)
+    //                            {
+    //                              if (n==rName) {
+    //                                return true;
+    //                              }});
+
+    //if (it_r != recycled_robots_.end())
+    //{
+    //  return;
+    //}
+
+    //Always store the current robot pose, even if the robot is not visualized currently therefore check below
+    if (disabled_robots_.find(_msg->robot_name) != disabled_robots_.end())
     {
-      //TODO: for now only the last pose is shown
-      if (!robot_poses_[i])
-      {
-        robot_poses_[i] = std::make_shared<rviz::Arrow>(this->scene_manager_, this->frame_node_, 1.5,0.2,0.2,0.25);
-      }
-
-      const auto pose = it->second[0].pose;
-      Ogre::Vector3 position(pose.position.x, pose.position.y, pose.position.z);
-      Ogre::Quaternion orientation(pose.orientation.w,pose.orientation.x,pose.orientation.y,pose.orientation.z);
-      Ogre::Quaternion orient_x = Ogre::Quaternion( Ogre::Radian(-Ogre::Math::HALF_PI), Ogre::Vector3::UNIT_Y );
-      orientation = orientation * orient_x;
-
-      robot_poses_[i]->setPosition(position);
-      robot_poses_[i]->setOrientation(orientation);
-
+      return;
     }
+
+    auto it_arrows = robot_arrows_map_.find(_msg->robot_name);
+    if (it_arrows == robot_arrows_map_.end())
+    {
+        robot_arrows_map_.insert(std::pair<std::string, std::shared_ptr<rviz::Arrow>>(_msg->robot_name,
+                                 std::make_shared<rviz::Arrow>(
+                                      this->scene_manager_,
+                                      this->frame_node_, 1.5,0.2,0.2,0.25)));
+        it_arrows = robot_arrows_map_.find(_msg->robot_name);
+    }
+
+    //TODO: for now only the last pose is shown
+    const auto pose = it->second[0].pose;
+    Ogre::Vector3 position(pose.position.x, pose.position.y, pose.position.z);
+    Ogre::Quaternion orientation(pose.orientation.w,pose.orientation.x,pose.orientation.y,pose.orientation.z);
+    Ogre::Quaternion orient_x = Ogre::Quaternion(Ogre::Radian(-Ogre::Math::HALF_PI), Ogre::Vector3::UNIT_Y);
+    orientation = orientation * orient_x;
+
+    it_arrows->second->setPosition(position);
+    it_arrows->second->setOrientation(orientation);
   }
 
   void MultiRobotInfoVisual::setFramePosition(const Ogre::Vector3& position)
@@ -77,17 +134,17 @@ namespace tuw_multi_robot_rviz {
 
   void MultiRobotInfoVisual::setScalePose(float scale)
   {
-    for (const auto &arrow : robot_poses_)
+    for (auto &it : robot_arrows_map_)
     {
-      arrow->setScale(Ogre::Vector3(scale,scale,scale));
+      it.second->setScale(Ogre::Vector3(scale,scale,scale));
     }
   }
 
   void MultiRobotInfoVisual::setColorPose(Ogre::ColourValue color)
   {
-    for (const auto &arrow : robot_poses_)
+    for (auto &it : robot_arrows_map_)
     {
-      arrow->setColor(color);
+      it.second->setColor(color);
     }
   }
 }
