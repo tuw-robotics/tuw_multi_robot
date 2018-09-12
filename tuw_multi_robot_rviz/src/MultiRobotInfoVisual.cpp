@@ -9,6 +9,20 @@ namespace tuw_multi_robot_rviz {
     scene_manager_->destroySceneNode(frame_node_);
   }
 
+  void MultiRobotInfoVisual::resetDuration(const ros::Duration &newDur)
+  {
+    recycle_thresh_ = newDur;
+  }
+
+  void MultiRobotInfoVisual::resetKeepMeasurementsCount(const unsigned int &c)
+  {
+    default_size_ = c;
+    for (auto &it : robot2pose_map_)
+    {
+      it.second.resize(default_size_);
+    }
+  }
+
   std::vector<std::string> MultiRobotInfoVisual::recycle()
   {
     std::vector<std::string> mark_for_deletion;

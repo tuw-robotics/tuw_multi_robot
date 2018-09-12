@@ -23,6 +23,7 @@ namespace rviz
 {
 class ColorProperty;
 class FloatProperty;
+class IntProperty;
 }
 
 class QString;
@@ -62,6 +63,8 @@ private Q_SLOTS:
   void updateScalePose();
   void updateColorPose();
   void updateBoolProperty();
+  void onKeepAliveChanged();
+  void onKeepMeasurementsChanged();
 
   // Function to handle an incoming ROS message.
 private:
@@ -71,9 +74,11 @@ private:
   std::shared_ptr<MultiRobotInfoVisual> visual_;
 
   // User-editable property variables.
-  std::unique_ptr<rviz::FloatProperty> property_scale_pose_;
-  std::unique_ptr<rviz::ColorProperty> property_color_pose_;
-  std::map<std::string, std::unique_ptr<rviz::BoolProperty>> bool_properties_;
+  std::shared_ptr<rviz::IntProperty> keep_measurements_;
+  std::shared_ptr<rviz::IntProperty> keep_alive_;
+  std::shared_ptr<rviz::FloatProperty> property_scale_pose_;
+  std::shared_ptr<rviz::ColorProperty> property_color_pose_;
+  std::map<std::string, std::shared_ptr<rviz::BoolProperty>> bool_properties_;
 };
 
 } // end namespace tuw_pose_rviz

@@ -44,6 +44,10 @@ public:
 
   void enableRobot( const std::string &rName );
 
+  void resetDuration( const ros::Duration &ts);
+
+  void resetKeepMeasurementsCount ( const unsigned int &c );
+
 private:
   using internal_map_type = std::pair<std::string,boost::circular_buffer<geometry_msgs::PoseWithCovariance>>;
   using map_type = std::map<std::string,boost::circular_buffer<geometry_msgs::PoseWithCovariance>>;
@@ -56,8 +60,6 @@ private:
   std::map<std::string, std::shared_ptr<rviz::Arrow> > robot_arrows_map_;
   std::set<std::string> disabled_robots_;
 
-  rviz::IntProperty keep_measurements_;
-  rviz::IntProperty keep_alive_;
 
   map_type robot2pose_map_;
   recycle_map_type recycle_map_;
