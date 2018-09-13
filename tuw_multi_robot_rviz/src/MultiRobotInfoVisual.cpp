@@ -2,7 +2,9 @@
 
 namespace tuw_multi_robot_rviz {
   MultiRobotInfoVisual::MultiRobotInfoVisual(Ogre::SceneManager* _scene_manager, Ogre::SceneNode* _parent_node) : scene_manager_(_scene_manager), frame_node_(_parent_node->createChildSceneNode())
-  {}
+  {
+    last_render_time_ = ros::Time::now();
+  }
 
   MultiRobotInfoVisual::~MultiRobotInfoVisual()
   {
@@ -44,10 +46,10 @@ namespace tuw_multi_robot_rviz {
         robot2pose_map_.erase(it_pose);
       }
 
-      auto it_arrows = robot_arrows_map_.find(elem);
-      if (it_arrows != robot_arrows_map_.end())
+      auto it_arrows = robot_renderings_map_.find(elem);
+      if (it_arrows != robot_renderings_map_.end())
       {
-        robot_arrows_map_.erase(it_arrows);
+        robot_renderings_map_.erase(it_arrows);
       }
 
       auto it_rcle = recycle_map_.find(elem);
@@ -72,15 +74,95 @@ namespace tuw_multi_robot_rviz {
   void MultiRobotInfoVisual::disableRobot(const std::string &rName)
   {
     disabled_robots_.insert(rName);
-    auto it_arrow = robot_arrows_map_.find(rName);
-    if (robot_arrows_map_.end() != it_arrow)
+    auto it_arrow = robot_renderings_map_.find(rName);
+    if (robot_renderings_map_.end() != it_arrow)
     {
       //No need for detach objects call since this is handled in the SceneNode destructor
-      robot_arrows_map_.erase(it_arrow);
+      robot_renderings_map_.erase(it_arrow);
     }
   }
 
-  void MultiRobotInfoVisual::setMessage(const tuw_multi_robot_msgs::RobotInfo::ConstPtr &_msg)
+  std::vector<rviz::Object*> MultiRobotInfoVisual::make_robot(Ogre::Vector3 &position, Ogre::Quaternion &orientation)
+  {
+    rviz::Object* arrow_ptr;
+    //std::shared_ptr<rviz::BillboardLine> billboard_ptr;
+
+    //Arrow
+    {
+      arrow_ptr = new rviz::Arrow(
+                                 this->scene_manager_,
+                                 this->frame_node_, 1.5,0.2,0.2,0.25);
+      arrow_ptr->setScale(Ogre::Vector3(1,1,1));
+    }
+
+    {
+      //billboard_ptr = std::make_shared<rviz::BillboardLine>(this->scene_manager_,
+      //                                                      this->frame_node_);
+      //billboard_ptr->setLineWidth(5.0);
+      //billboard_ptr->setMaxPointsPerLine(2);
+      //Ogre::Vector3 offset = Ogre::Vector3(1,0.0,0);
+      //double accuracy = 50;
+      //double factor = 2.0 * M_PI / accuracy;
+
+      //billboard_ptr->setNumLines(static_cast<int>(accuracy));
+      //double theta=0.0;
+      //for (; theta < 2.0*M_PI; theta += factor) {
+      //  double s_theta = sin(theta);
+      //  double c_theta = cos(theta);
+      //  billboard_ptr->addPoint(Ogre::Vector3(c_theta, 0, s_theta));
+      //  theta += factor;
+      //  s_theta = sin(theta);
+      //  c_theta = cos(theta);
+      //  billboard_ptr->addPoint(Ogre::Vector3(c_theta, 0, s_theta));
+      //  billboard_ptr->newLine();
+      //}
+    }
+
+    //billboard_ptr->setPosition(position);
+
+    Ogre::Quaternion orient_x = Ogre::Quaternion(Ogre::Radian(-Ogre::Math::HALF_PI), Ogre::Vector3::UNIT_Y);
+    arrow_ptr->setPosition(position);
+    arrow_ptr->setOrientation(orientation * orient_x);
+
+    return std::vector<rviz::Object*>{ arrow_ptr /*, billboard_ptr */};
+  }
+
+  void MultiRobotInfoVisual::doRender()
+  {
+    for (map_iterator it = robot2pose_map_.begin(); it != robot2pose_map_.end(); ++it)
+    {
+      if (disabled_robots_.find(it->first) != disabled_robots_.end())
+      {
+        return;
+      }
+
+      //TODO: for now only the last pose is shown
+      const auto pose = it->second.front().pose;
+      //TODO: this needs to be done otherwise rviz crashes when all arrows are painted at position zero (which is a bad indicator for rviz...)
+      if (pose.position.x == 0 && pose.position.y == 0 && pose.position.z == 0)
+        continue;
+      //std::cout << "x " << pose.position.x << " y " << pose.position.y << " z " << pose.position.y << std::endl;
+      Ogre::Vector3 position(pose.position.x, pose.position.y, pose.position.z);
+      Ogre::Quaternion orientation(pose.orientation.w,
+                                   pose.orientation.x,
+                                   pose.orientation.y,
+                                   pose.orientation.z);
+
+      auto it_arrows = robot_renderings_map_.find(it->first);
+      if (it_arrows == robot_renderings_map_.end())
+      {
+          robot_renderings_map_.insert(std::pair<std::string,
+                                       std::vector<rviz::Object*>>(
+                                         it->first,
+                                         make_robot(position, orientation)));
+          it_arrows = robot_renderings_map_.find(it->first);
+      }
+    }
+
+    last_render_time_ = ros::Time::now();
+  }
+
+  void MultiRobotInfoVisual::setMessage(const tuw_multi_robot_msgs::RobotInfoConstPtr _msg)
   {
     map_iterator it = robot2pose_map_.find(_msg->robot_name);
 
@@ -92,8 +174,15 @@ namespace tuw_multi_robot_rviz {
     }
 
     it->second.push_front(_msg->pose);
-    recycle_map_.find(_msg->robot_name)->second = ros::Time::now();
-    auto recycled_robots_ = recycle();
+    if ((ros::Time::now() - last_render_time_) > render_dur_thresh_)
+    {
+      //std::cout << "Rendering now " << std::endl;
+      doRender();
+      //std::cout << "Rendering finished " << std::endl;
+    }
+
+    //recycle_map_.find(_msg->robot_name)->second = ros::Time::now();
+    //auto recycled_robots_ = recycle();
 
     //Just for testing, this should never be needed.
     //auto rName = _msg->robot_name;
@@ -110,30 +199,12 @@ namespace tuw_multi_robot_rviz {
     //}
 
     //Always store the current robot pose, even if the robot is not visualized currently therefore check below
-    if (disabled_robots_.find(_msg->robot_name) != disabled_robots_.end())
-    {
-      return;
-    }
 
-    auto it_arrows = robot_arrows_map_.find(_msg->robot_name);
-    if (it_arrows == robot_arrows_map_.end())
-    {
-        robot_arrows_map_.insert(std::pair<std::string, std::shared_ptr<rviz::Arrow>>(_msg->robot_name,
-                                 std::make_shared<rviz::Arrow>(
-                                      this->scene_manager_,
-                                      this->frame_node_, 1.5,0.2,0.2,0.25)));
-        it_arrows = robot_arrows_map_.find(_msg->robot_name);
-    }
 
-    //TODO: for now only the last pose is shown
-    const auto pose = it->second[0].pose;
-    Ogre::Vector3 position(pose.position.x, pose.position.y, pose.position.z);
-    Ogre::Quaternion orientation(pose.orientation.w,pose.orientation.x,pose.orientation.y,pose.orientation.z);
-    Ogre::Quaternion orient_x = Ogre::Quaternion(Ogre::Radian(-Ogre::Math::HALF_PI), Ogre::Vector3::UNIT_Y);
-    orientation = orientation * orient_x;
+    //ROS_INFO("Tracking: %d poses", robot2pose_map_.size());
+    //ROS_INFO("Rendering %d robots", robot_renderings_map_.size());
+    //ROS_INFO("Disabled robots %d", disabled_robots_.size());
 
-    it_arrows->second->setPosition(position);
-    it_arrows->second->setOrientation(orientation);
   }
 
   void MultiRobotInfoVisual::setFramePosition(const Ogre::Vector3& position)
@@ -148,17 +219,23 @@ namespace tuw_multi_robot_rviz {
 
   void MultiRobotInfoVisual::setScalePose(float scale)
   {
-    for (auto &it : robot_arrows_map_)
+    for (auto &it : robot_renderings_map_)
     {
-      it.second->setScale(Ogre::Vector3(scale,scale,scale));
+      for (auto &renderings : it.second)
+      {
+        renderings->setScale(Ogre::Vector3(scale,scale,scale));
+      }
     }
   }
 
   void MultiRobotInfoVisual::setColorPose(Ogre::ColourValue color)
   {
-    for (auto &it : robot_arrows_map_)
+    for (auto &it : robot_renderings_map_)
     {
-      it.second->setColor(color);
+      for (auto &renderings : it.second)
+      {
+        renderings->setColor(color.r,color.g,color.b,color.a);
+      }
     }
   }
 }

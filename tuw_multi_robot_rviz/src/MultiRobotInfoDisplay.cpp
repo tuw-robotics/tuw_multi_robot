@@ -47,11 +47,14 @@ namespace tuw_multi_robot_rviz {
 // The constructor must have no arguments, so we can't give the
 // constructor the parameters it needs to fully initialize.
 MultiRobotInfoDisplay::MultiRobotInfoDisplay() {
+    nh_ = ros::NodeHandle("");
+    sub_robot_info_ = nh_.subscribe("robot_info", 10000, &MultiRobotInfoDisplay::callbackRobotInfo, this);
+
     property_scale_pose_.reset(new rviz::FloatProperty ( "Scale Pose", 0.4,
             "Scale of the pose's pose.",
             this, SLOT ( updateScalePose() ) ));
     property_scale_pose_->setMin ( 0 );
-    property_scale_pose_->setMax ( 1 );
+    property_scale_pose_->setMax ( 10 );
 
     property_color_pose_.reset(new rviz::ColorProperty ( "Color Pose", QColor ( 204, 51, 0 ),
             "Color to draw the pose's pose.",
@@ -80,6 +83,45 @@ MultiRobotInfoDisplay::MultiRobotInfoDisplay() {
                                                    this));
 }
 
+void MultiRobotInfoDisplay::callbackRobotInfo(const tuw_multi_robot_msgs::RobotInfoConstPtr &msg )
+{
+    if (!visual_) return;
+
+    ros::Time tic = ros::Time::now();
+    // Here we call the rviz::FrameManager to get the transform from the
+    // fixed frame to the frame in the header of this Imu message.  If
+    // it fails, we can't do anything else so we return.
+    Ogre::Quaternion orientation(1.0,0.0,0.0,0.0);
+    Ogre::Vector3 position(0,0,0);
+
+    if ( !context_->getFrameManager()->getTransform ( msg->header.frame_id, msg->header.stamp, position, orientation ) ) {
+        ROS_DEBUG ( "Error transforming from frame '%s' to frame '%s'",
+                    msg->header.frame_id.c_str(), qPrintable ( fixed_frame_ ) );
+        return;
+    }
+
+    // Now set or update the contents of the visual.
+    visual_->setMessage ( msg );
+    //visual_->setFramePosition ( position );
+    //visual_->setFrameOrientation ( orientation );
+    //visual_->setScalePose ( property_scale_pose_->getFloat() );
+    //visual_->setColorPose ( property_color_pose_->getOgreColor() );
+
+    //auto dur = ros::Time::now() - tic;
+    //std::cout << "process message call took " << dur << "sec" << std::endl;
+    auto it = bool_properties_.find(msg->robot_name);
+    if (it == bool_properties_.end())
+    {
+      std::unique_ptr<rviz::BoolProperty> bp;
+      bp.reset(new rviz::BoolProperty(QString(msg->robot_name.c_str()),
+                                true,
+                                QString("display this robot?"),
+                                robot_bool_properties_.get(),
+                                SLOT(updateBoolProperty()),
+                                this));
+      bool_properties_.insert(std::pair<std::string,std::unique_ptr<rviz::BoolProperty>>(msg->robot_name, std::move(bp)));
+    }
+}
 // After the top-level rviz::Display::initialize() does its own setup,
 // it calls the subclass's onInitialize() function.  This is where we
 // instantiate all the workings of the class.  We make sure to also
@@ -143,39 +185,6 @@ void MultiRobotInfoDisplay::onKeepMeasurementsChanged()
 
 // This is our callback to handle an incoming message.
 void MultiRobotInfoDisplay::processMessage (const tuw_multi_robot_msgs::RobotInfoConstPtr &msg ) {
-    if (!visual_) return;
-    // Here we call the rviz::FrameManager to get the transform from the
-    // fixed frame to the frame in the header of this Imu message.  If
-    // it fails, we can't do anything else so we return.
-    Ogre::Quaternion orientation(1.0,0.0,0.0,0.0);
-    Ogre::Vector3 position(0,0,0);
-
-    if ( !context_->getFrameManager()->getTransform ( msg->header.frame_id, msg->header.stamp, position, orientation ) ) {
-        ROS_DEBUG ( "Error transforming from frame '%s' to frame '%s'",
-                    msg->header.frame_id.c_str(), qPrintable ( fixed_frame_ ) );
-        return;
-    }
-
-    // Now set or update the contents of the visual.
-    visual_->setMessage ( msg );
-    visual_->setFramePosition ( position );
-    visual_->setFrameOrientation ( orientation );
-    visual_->setScalePose ( property_scale_pose_->getFloat() );
-    visual_->setColorPose ( property_color_pose_->getOgreColor() );
-
-    auto it = bool_properties_.find(msg->robot_name);
-    if (it == bool_properties_.end())
-    {
-      std::unique_ptr<rviz::BoolProperty> bp;
-      bp.reset(new rviz::BoolProperty(QString(msg->robot_name.c_str()),
-                                true,
-                                QString("display this robot?"),
-                                robot_bool_properties_.get(),
-                                SLOT(updateBoolProperty()),
-                                this));
-      bool_properties_.insert(std::pair<std::string,std::unique_ptr<rviz::BoolProperty>>(msg->robot_name, std::move(bp)));
-      it = bool_properties_.find(msg->robot_name);
-    }
 }
 
 } // end namespace tuw_geometry_rviz

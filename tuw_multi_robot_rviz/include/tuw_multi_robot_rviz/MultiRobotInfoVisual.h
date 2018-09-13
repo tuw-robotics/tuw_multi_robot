@@ -8,7 +8,10 @@
 #include <rviz/properties/string_property.h>
 #include <rviz/properties/float_property.h>
 #include <rviz/ogre_helpers/arrow.h>
+#include <rviz/ogre_helpers/billboard_line.h>
+#include <rviz/ogre_helpers/shape.h>
 #include <memory>
+#include <vector>
 #include <map>
 #include <boost/circular_buffer.hpp>
 #include "TextVisual.h"
@@ -27,7 +30,7 @@ public:
 
   virtual ~MultiRobotInfoVisual();
 
-  void setMessage( const tuw_multi_robot_msgs::RobotInfo::ConstPtr &_msg);
+  void setMessage(const tuw_multi_robot_msgs::RobotInfoConstPtr _msg);
 
   void setFramePosition( const Ogre::Vector3& _position);
   void setFrameOrientation( const Ogre::Quaternion& orientation );
@@ -48,6 +51,10 @@ public:
 
   void resetKeepMeasurementsCount ( const unsigned int c );
 
+  void doRender();
+
+  std::vector<rviz::Object *> make_robot(Ogre::Vector3 &position, Ogre::Quaternion &orientation);
+
 private:
   using internal_map_type = std::pair<std::string,boost::circular_buffer<geometry_msgs::PoseWithCovariance>>;
   using map_type = std::map<std::string,boost::circular_buffer<geometry_msgs::PoseWithCovariance>>;
@@ -57,15 +64,16 @@ private:
   std::vector<std::string> recycle();
 
   // The object implementing the actual pose shape
-  std::map<std::string, std::shared_ptr<rviz::Arrow> > robot_arrows_map_;
+  std::map<std::string, std::vector<rviz::Object*>> robot_renderings_map_;
   std::set<std::string> disabled_robots_;
-
 
   map_type robot2pose_map_;
   recycle_map_type recycle_map_;
 
   int default_size_ = {5};
   ros::Duration recycle_thresh_ = ros::Duration(5,0);
+  ros::Duration render_dur_thresh_ = ros::Duration(2,0);
+  ros::Time last_render_time_;
   // A SceneNode whose pose is set to match the coordinate frame of
   // the Imu message header.
   Ogre::SceneNode* frame_node_;

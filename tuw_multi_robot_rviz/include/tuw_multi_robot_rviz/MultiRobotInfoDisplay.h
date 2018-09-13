@@ -47,6 +47,7 @@ public:
   MultiRobotInfoDisplay();
   virtual ~MultiRobotInfoDisplay();
 
+  void callbackRobotInfo(const tuw_multi_robot_msgs::RobotInfoConstPtr &msg );
   // Overrides of protected virtual functions from Display.  As much
   // as possible, when Displays are not enabled, they should not be
   // subscribed to incoming data and should not show anything in the
@@ -57,6 +58,7 @@ protected:
 
   // A helper to clear this display back to the initial state.
   virtual void reset();
+
 
   // These Qt slots get connected to signals indicating changes in the user-editable properties.
 private Q_SLOTS:
@@ -80,6 +82,8 @@ private:
   std::shared_ptr<rviz::FloatProperty> property_scale_pose_;
   std::shared_ptr<rviz::ColorProperty> property_color_pose_;
   std::map<std::string, std::shared_ptr<rviz::BoolProperty>> bool_properties_;
+  ros::Subscriber sub_robot_info_;
+  ros::NodeHandle nh_;
 };
 
 } // end namespace tuw_pose_rviz
