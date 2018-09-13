@@ -5,7 +5,7 @@
     <description>
       Displays Voronoi Graphs in RVIZ
     </description>
-    <message_type>voronoi_segmentation/VoronoiGraph</message_type>
+    <message_type>tuw_multi_robot_msgs/Graph</message_type>
   </class>
   <class name="VoronoiSegment"
          type="tuw_multi_robot_rviz::VoronoiSegmentDisplay"
@@ -13,7 +13,7 @@
     <description>
       Displays Voronoi Segments in RVIZ
     </description>
-    <message_type>voronoi_segmentation/VoronoiGraph</message_type>
+    <message_type>tuw_multi_robot_msgs/Graph</message_type>
   </class>
   <class name="MultiRobotInfo"
          type="tuw_multi_robot_rviz::MultiRobotInfoDisplay"

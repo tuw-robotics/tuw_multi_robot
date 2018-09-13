@@ -36,13 +36,13 @@
 <group if="$(arg launch_graph_generator)">
   <group if="$(arg load_segments)">
   <include file="$(find tuw_multi_robot_demo)/launch/graph_generator.launch">
-    <arg name="room" value="$(arg room)" />
+    <arg name="cfg" value="$(arg room)" />
     <arg name="custom_graph_path" value="$(find tuw_multi_robot_demo)/cfg/graph/$(arg room)/cache/$(arg map_name)" />
   </include>
   </group>
   <group unless="$(arg load_segments)">
   <include file="$(find tuw_multi_robot_demo)/launch/graph_generator.launch">
-    <arg name="room" value="$(arg room)" />
+    <arg name="cfg" value="$(arg room)" />
   </include>
   </group>
 </group>
