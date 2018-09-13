@@ -46,7 +46,7 @@ public:
 
   void resetDuration( const ros::Duration &ts);
 
-  void resetKeepMeasurementsCount ( const unsigned int &c );
+  void resetKeepMeasurementsCount ( const unsigned int c );
 
 private:
   using internal_map_type = std::pair<std::string,boost::circular_buffer<geometry_msgs::PoseWithCovariance>>;

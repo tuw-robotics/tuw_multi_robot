@@ -64,7 +64,7 @@ MultiRobotInfoDisplay::MultiRobotInfoDisplay() {
                                             SLOT(onKeepAliveChanged()),
                                             this));
     keep_alive_->setMin(1);
-
+    keep_alive_->setMax(20);
     keep_measurements_.reset(new rviz::IntProperty("Keep Measurements",
                                                    5,
                                                    "The number of pose measurements that should be kept for each robot. Make sure that it is greater than 0.",
@@ -74,6 +74,10 @@ MultiRobotInfoDisplay::MultiRobotInfoDisplay() {
     keep_measurements_->setMin(1);
     keep_measurements_->setMax(10000);
 
+    robot_bool_properties_.reset(new rviz::Property("Robots",
+                                                   QVariant(),
+                                                   "A tree view of all the available robots",
+                                                   this));
 }
 
 // After the top-level rviz::Display::initialize() does its own setup,
@@ -113,6 +117,7 @@ void MultiRobotInfoDisplay::updateColorPose() {
 
 void MultiRobotInfoDisplay::updateBoolProperty()
 {
+  if (!visual_) return;
   for (const auto &it : bool_properties_)
   {
     if(!it.second->getBool())
@@ -126,16 +131,19 @@ void MultiRobotInfoDisplay::updateBoolProperty()
 
 void MultiRobotInfoDisplay::onKeepAliveChanged()
 {
+  if (!visual_) return;
   visual_->resetDuration(ros::Duration(keep_measurements_->getInt(),0));
 }
 
 void MultiRobotInfoDisplay::onKeepMeasurementsChanged()
 {
+  if (!visual_) return;
   visual_->resetKeepMeasurementsCount(keep_alive_->getInt());
 }
 
 // This is our callback to handle an incoming message.
 void MultiRobotInfoDisplay::processMessage (const tuw_multi_robot_msgs::RobotInfoConstPtr &msg ) {
+    if (!visual_) return;
     // Here we call the rviz::FrameManager to get the transform from the
     // fixed frame to the frame in the header of this Imu message.  If
     // it fails, we can't do anything else so we return.
@@ -162,7 +170,7 @@ void MultiRobotInfoDisplay::processMessage (const tuw_multi_robot_msgs::RobotInf
       bp.reset(new rviz::BoolProperty(QString(msg->robot_name.c_str()),
                                 true,
                                 QString("display this robot?"),
-                                this,
+                                robot_bool_properties_.get(),
                                 SLOT(updateBoolProperty()),
                                 this));
       bool_properties_.insert(std::pair<std::string,std::unique_ptr<rviz::BoolProperty>>(msg->robot_name, std::move(bp)));

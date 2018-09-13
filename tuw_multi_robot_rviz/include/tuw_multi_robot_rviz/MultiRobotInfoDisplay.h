@@ -71,9 +71,10 @@ private:
   void processMessage(const tuw_multi_robot_msgs::RobotInfoConstPtr &msg );
 
   // Storage of the visual
-  std::shared_ptr<MultiRobotInfoVisual> visual_;
+  std::shared_ptr<MultiRobotInfoVisual> visual_ = nullptr;
 
   // User-editable property variables.
+  std::shared_ptr<rviz::Property> robot_bool_properties_;
   std::shared_ptr<rviz::IntProperty> keep_measurements_;
   std::shared_ptr<rviz::IntProperty> keep_alive_;
   std::shared_ptr<rviz::FloatProperty> property_scale_pose_;

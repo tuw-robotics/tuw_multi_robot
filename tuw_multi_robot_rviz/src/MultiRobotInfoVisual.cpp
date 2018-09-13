@@ -14,7 +14,7 @@ namespace tuw_multi_robot_rviz {
     recycle_thresh_ = newDur;
   }
 
-  void MultiRobotInfoVisual::resetKeepMeasurementsCount(const unsigned int &c)
+  void MultiRobotInfoVisual::resetKeepMeasurementsCount(const unsigned int c)
   {
     default_size_ = c;
     for (auto &it : robot2pose_map_)
