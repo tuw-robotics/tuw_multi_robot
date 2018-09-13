@@ -43,7 +43,7 @@ namespace tuw_graph
             std::string                             topicGlobalMap_;
             std::string                             topicVoronoiMap_;
             std::string                             topicSegments_;
-            std::string                             graphPath_;
+            std::string                             graphCachePath_;
             std::string                             customGraphPath_;
     
             std::string                             frameGlobalMap_;

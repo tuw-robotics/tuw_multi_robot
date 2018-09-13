@@ -74,25 +74,16 @@ Visualization Manager:
       Value: true
     - Class: MultiRobotInfo
       Color Pose: 204; 51; 0
-      Enabled: false
+      Enabled: true
       Keep Alive (s): 5
       Keep Measurements: 5
       Name: MultiRobotInfo
       Robots:
-        robot_10: true
-        robot_11: true
-        robot_12: true
-        robot_13: true
-        robot_4: true
-        robot_5: true
-        robot_6: true
-        robot_7: true
-        robot_8: true
-        robot_9: true
+        {}
       Scale Pose: 1
       Topic: /robot_info
       Unreliable: false
-      Value: false
+      Value: true
     - Class: RobotGoalArray
       Color Pose: 78; 154; 6
       Enabled: true
@@ -165,5 +156,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1200
-  X: 599
-  Y: 83
+  X: 600
+  Y: 107

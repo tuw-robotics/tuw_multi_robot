@@ -44,39 +44,32 @@ namespace tuw_graph
 VoronoiGeneratorNode::VoronoiGeneratorNode(ros::NodeHandle &n) : voronoi_map::VoronoiPathGenerator(), VoronoiGraphGenerator(), Serializer(), n_(n), n_param_("~")
 {
 
-    topicGlobalMap_ = "/map";
-    n_param_.param("map_topic", topicGlobalMap_, topicGlobalMap_);
+    n_param_.param<std::string>("map_topic", topicGlobalMap_, "/map");
 
-    smoothing_ = 0;
-    n_param_.param("map_smoothing", smoothing_, smoothing_);
+    n_param_.param<int>("map_smoothing", smoothing_, 0);
 
-    topicVoronoiMap_ = "voronoi_map";
-    n_param_.param("voronoi_topic", topicVoronoiMap_, topicVoronoiMap_);
+    n_param_.param<std::string>("voronoi_topic", topicVoronoiMap_, "voronoi_map");
 
-    topicSegments_ = "/segments";
-    n_param_.param("segments_topic", topicSegments_, topicSegments_);
+    n_param_.param<std::string>("segments_topic", topicSegments_, "/segments");
 
-    path_length_ = 1.0; //meter
-    n_param_.param("segment_length", path_length_, path_length_);
+    n_param_.param<float>("segment_length", path_length_, 1.0);
 
     crossingOptimization_ = 0.2;
-    n_param_.param("opt_crossings", crossingOptimization_, crossingOptimization_);
+    n_param_.param<float>("opt_crossings", crossingOptimization_, 0.2);
 
-    endSegmentOptimization_ = 0.2;
-    n_param_.param("opt_end_segments", endSegmentOptimization_, endSegmentOptimization_);
+    n_param_.param<float>("opt_end_segments", endSegmentOptimization_, 0.2);
     //endSegmentOptimization_ = std::min<float>(endSegmentOptimization_, 0.7 * path_length_);
 
-    graphPath_ = "/home/benjamin/temp/cache";
-    n_param_.param("graph_path", graphPath_, graphPath_);
+    n_param_.param<std::string>("graph_cache_path", graphCachePath_, "/tmp");
 
-    if (graphPath_.back() != '/')
-        graphPath_ += "/";
+    if (graphCachePath_.back() != '/'){
+        graphCachePath_ += "/";
+    }
+    n_param_.param<std::string>("custom_graph_path", customGraphPath_, "");
 
-    customGraphPath_ = "";
-    n_param_.param("custom_graph_path", customGraphPath_, customGraphPath_);
-
-    if (customGraphPath_.back() != '/' && customGraphPath_.size() != 0)
+    if (customGraphPath_.back() != '/' && customGraphPath_.size() != 0){
         customGraphPath_ += "/";
+    }
 
     subMap_ = n.subscribe(topicGlobalMap_, 1, &VoronoiGeneratorNode::globalMapCallback, this);
     //pubVoronoiMap_    = n.advertise<nav_msgs::OccupancyGrid>(topicVoronoiMap_, 1);                        //DEBUG
@@ -150,7 +143,7 @@ void VoronoiGeneratorNode::createGraph(const nav_msgs::OccupancyGrid::ConstPtr &
     segments_ = calcSegments(m, distField_, voronoiMap_, potential.get(), pixel_path_length, crossingOptimization_ / resolution_, endSegmentOptimization_ / resolution_);
 
     //Check Directroy
-    save(graphPath_ + std::to_string(_map_hash) + "/", segments_, origin_, resolution_);
+    save(graphCachePath_ + std::to_string(_map_hash) + "/", segments_, origin_, resolution_);
     ROS_INFO("Graph generator: Created new Graph %lu", _map_hash);
 }
 
@@ -158,7 +151,7 @@ bool VoronoiGeneratorNode::loadGraph(std::size_t _hash)
 {
     segments_.clear();
     Segment::resetId();
-    return load(graphPath_ + std::to_string(_hash) + "/", segments_, origin_, resolution_);
+    return load(graphCachePath_ + std::to_string(_hash) + "/", segments_, origin_, resolution_);
 }
 
 bool VoronoiGeneratorNode::loadCustomGraph(std::string _path)

@@ -5,7 +5,7 @@
     <arg name="custom_graph_path" default="" /> 
 
     <node pkg="tuw_voronoi_graph" type="tuw_voronoi_graph_node" name="graph_generator" output="screen">
-        <param name="graph_path" value="$(find tuw_voronoi_graph)/cfg/graph/$(arg room)/cache/" />
+        <param name="graph_cache_path" value="$(find tuw_voronoi_graph)/cfg/graph/$(arg room)/cache/" />
         <param name="custom_graph_path" value="$(arg custom_graph_path)" />
         <rosparam command="load" file="$(find tuw_voronoi_graph)/cfg/graph/$(arg room)/graph.yaml"/>
     </node>
