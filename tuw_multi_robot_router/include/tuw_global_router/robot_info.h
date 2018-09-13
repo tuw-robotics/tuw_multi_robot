@@ -80,6 +80,12 @@ public:
         };
         
         void updateInfo(const tuw_multi_robot_msgs::RobotInfo &info);
+        
+        /**
+         * crates subsribers and publisher based on the robot name
+         * @param n node handler
+         * @return index or data.size() if no matching element was found
+         **/
         void initTopics(ros::NodeHandle &n);
         
         void setStatus ( status _status, const float _activeTime = 1.0 );

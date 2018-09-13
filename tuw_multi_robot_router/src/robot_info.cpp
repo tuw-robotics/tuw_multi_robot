@@ -56,16 +56,16 @@ void RobotInfo::initTopics ( ros::NodeHandle &n ) {
 
     //Not existant subscribe robots
     std::string topic_odom_name = robot_name + "/odom";
-    ROS_INFO ( "Multi Robot Router: subscribing to %s", topic_odom_name.c_str() );
+    ROS_DEBUG ( "Multi Robot Router: subscribing to %s", topic_odom_name.c_str() );
     subOdom_ = n.subscribe ( topic_odom_name, 1, &RobotInfo::callback_odom, this );
 
     std::string topic_path_name = robot_name + "/path_unsynced";
-    ROS_INFO ( "Multi Robot Router: advertising on %s", topic_path_name.c_str() );
+    ROS_DEBUG ( "Multi Robot Router: advertising on %s", topic_path_name.c_str() );
     pubPaths_ = n.advertise<nav_msgs::Path> ( topic_path_name, 1, true );
 
 
     std::string topic_route_name = robot_name + "/route";
-    ROS_INFO ( "Multi Robot Router: advertising on %s", topic_route_name.c_str() );
+    ROS_DEBUG ( "Multi Robot Router: advertising on %s", topic_route_name.c_str() );
     pubRoute_ = n.advertise<tuw_multi_robot_msgs::Route> ( topic_route_name, 1, true );
 }
 

@@ -147,21 +147,21 @@ define pioneer2dx_no_sonar pioneer2dx_base_no_sonar
 pioneer2dx_no_sonar
 (
   name "robot_0"
-  color "blue"
+  color "red"
   pose [ 30 38 0 180 ]
 )
 
 pioneer2dx_no_sonar
 (
   name "robot_1"
-  color "cyan"
+  color "green"
   pose [ 30 34 0 180 ]
 )
 
 pioneer2dx_no_sonar
 (
   name "robot_2"
-  color "green"
+  color "blue"
   pose [ 30 30 0 180 ]
 )
 
@@ -175,7 +175,7 @@ pioneer2dx_no_sonar
 pioneer2dx_no_sonar
 (
   name "robot_4"
-  color "red"
+  color "cyan"
   pose [ 30 22 0 180 ]
 )
 

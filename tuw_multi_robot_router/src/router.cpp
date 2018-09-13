@@ -90,7 +90,7 @@ bool Router::preprocessEndpoints(const std::vector<float> &_radius, const float 
 
         float radius = _radius[i];
         float d_start = pointExpander_.getDistanceToObstacle(realStart_[i]);
-        ROS_INFO("Multi Robot Router: robot %i \"%s\" @  <%f, %f >", i, robot_names_[i].c_str(), starts_[i][0], starts_[i][1]);
+        ROS_DEBUG("Multi Robot Router: robot %i \"%s\" @  <%f, %f >", i, robot_names_[i].c_str(), starts_[i][0], starts_[i][1]);
         if ( d_start < radius / 2)
         {
             ROS_INFO("Multi Robot Router: Start of robot %i \"%s\" @  <%f, %f > is to close to an obstacle", i, robot_names_[i].c_str(), starts_[i][0], starts_[i][1]);

@@ -117,6 +117,9 @@ define pioneer2dx_base_no_sonar pioneer_base
 
   # estimated mass in KG
   mass 23.0 
+  
+  # laser scaner
+  hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
 )
 
 # as above, but with front sonar only
@@ -135,6 +138,13 @@ define pioneer2dx_no_sonar pioneer2dx_base_no_sonar
     point[7] [-0.12 0.2555]
     z [0 0.22]
   )
+  block( 
+    points 3
+    point[0] [  0.2  0.0]
+    point[1] [ -0.1 -0.15]
+    point[2] [ -0.1  0.15]
+    z [0 0.22]
+  )
 )
 
 
@@ -144,7 +154,6 @@ pioneer2dx_no_sonar
   name "robot_0"
   color "red" 
   pose [ -14 19 0 -90 ] 
-  hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
 )
 
 pioneer2dx_no_sonar 
@@ -153,7 +162,6 @@ pioneer2dx_no_sonar
   name "robot_1"
   color "green" 
   pose [ -10 19 0 -90 ] 
-  hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
 )
 
 pioneer2dx_no_sonar 
@@ -162,7 +170,6 @@ pioneer2dx_no_sonar
   name "robot_2"
   color "blue" 
   pose [ -6 19 0 -90 ] 
-  hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
 )
 
 pioneer2dx_no_sonar 
@@ -171,7 +178,6 @@ pioneer2dx_no_sonar
   name "robot_3"
   color "yellow" 
   pose [ -2 19 0 -90 ] 
-  hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
 )
 
 pioneer2dx_no_sonar 
@@ -180,7 +186,6 @@ pioneer2dx_no_sonar
   name "robot_4"
   color "magenta" 
   pose [ 2 19 0 -90 ] 
-  hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
 )
 
 pioneer2dx_no_sonar 
@@ -189,7 +194,6 @@ pioneer2dx_no_sonar
   name "robot_5"
   color "white" 
   pose [ 6 19 0 -90 ] 
-  hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
 )
 
 pioneer2dx_no_sonar 
@@ -198,7 +202,6 @@ pioneer2dx_no_sonar
   name "robot_6"
   color "black" 
   pose [ 10 19 0 -90 ] 
-  hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
 )
 
 pioneer2dx_no_sonar 
@@ -207,7 +210,6 @@ pioneer2dx_no_sonar
   name "robot_7"
   color "gray" 
   pose [ 14 19 0 -90 ] 
-  hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
 )
 
 pioneer2dx_no_sonar 
@@ -216,7 +218,6 @@ pioneer2dx_no_sonar
   name "robot_8"
   color "orange" 
   pose [ -19 14 0 0 ] 
-  hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
 )
 
 pioneer2dx_no_sonar 
@@ -225,7 +226,6 @@ pioneer2dx_no_sonar
   name "robot_9"
   color "brown" 
   pose [ -19 10 0 0 ] 
-  hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
 )
 
 pioneer2dx_no_sonar 
@@ -234,7 +234,6 @@ pioneer2dx_no_sonar
   name "robot_10"
   color "cyan" 
   pose [ -19 6 0 0 ] 
-  hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
 )
 
 pioneer2dx_no_sonar 
@@ -243,7 +242,6 @@ pioneer2dx_no_sonar
   name "robot_11"
   color "pink" 
   pose [ -19 2 0 0 ] 
-  hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
 )
 
 pioneer2dx_no_sonar 
@@ -252,7 +250,6 @@ pioneer2dx_no_sonar
   name "robot_12"
   color "purple" 
   pose [ -19 -2 0 0 ] 
-  hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
 )
 
 pioneer2dx_no_sonar 
@@ -261,7 +258,6 @@ pioneer2dx_no_sonar
   name "robot_13"
   color "khaki" 
   pose [ -19 -6 0 0 ] 
-  hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
 )
 
 

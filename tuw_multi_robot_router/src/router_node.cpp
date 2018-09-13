@@ -63,26 +63,19 @@ Router_Node::Router_Node ( ros::NodeHandle &_n ) : Router(),
     n_param_ ( "~" ) {
     id_ = 0;
 
-    planner_status_topic_ = "planner_status";
-    n_param_.param ( "planner_status_topic", planner_status_topic_, planner_status_topic_ );
+    n_param_.param<std::string> ( "planner_status_topic", planner_status_topic_, "planner_status" );
 
-    goal_topic_ = "goals";
-    n_param_.param ( "goal_topic", goal_topic_, goal_topic_ );
+    n_param_.param<std::string> ( "goal_topic", goal_topic_, "goals" );
 
-    map_topic_ = "/map";
-    n_param_.param ( "map_topic", map_topic_, map_topic_ );
+    n_param_.param<std::string> ( "map_topic", map_topic_, "/map" );
 
-    voronoi_topic_ = "segments";
-    n_param_.param ( "graph_topic", voronoi_topic_, voronoi_topic_ );
+    n_param_.param<std::string> ( "graph_topic", voronoi_topic_, "segments" );
 
-    robot_info_topic_ = "/robot_info";
-    n_param_.param ( "robot_info", robot_info_topic_, robot_info_topic_ );
+    n_param_.param<std::string> ( "robot_info", robot_info_topic_, "/robot_info" );
 
-    singleRobotName_ = "";
-    n_param_.param ( "robot_name", singleRobotName_, singleRobotName_ );
+    n_param_.param<std::string> ( "robot_name", singleRobotName_, "" );
 
-    singleRobotGoalTopic_ = "/goal";
-    n_param_.param ( "robot_goal", singleRobotGoalTopic_, singleRobotGoalTopic_ );
+    n_param_.param<std::string> ( "robot_goal", singleRobotGoalTopic_, "/goal" );
 
     // static subscriptions
     subGoalSet_ = n_.subscribe ( goal_topic_, 1, &Router_Node::goalsCallback, this );
@@ -185,7 +178,7 @@ void Router_Node::mapCallback ( const nav_msgs::OccupancyGrid &_map ) {
         current_map_hash_ = new_hash;
         got_map_ = true;
 
-        ROS_INFO ( "Multi Robot Router: New Map %i %i %lu", _map.info.width, _map.info.height, current_map_hash_ );
+        ROS_INFO ( "%s: New Map %i %i %lu", n_param_.getNamespace().c_str() , _map.info.width, _map.info.height, current_map_hash_ );
     }
 }
 
@@ -255,7 +248,7 @@ void Router_Node::graphCallback ( const tuw_multi_robot_msgs::Graph &msg ) {
     if ( current_graph_hash_ != hash ) {
         current_graph_hash_ = hash;
         graph_ = graph;
-        ROS_INFO ( "Multi Robot Router: Graph %lu", hash );
+        ROS_INFO ( "%s: Graph %lu", n_param_.getNamespace().c_str() , hash );
     }
     got_graph_ = true;
 }
@@ -311,6 +304,7 @@ void Router_Node::goalsCallback ( const tuw_multi_robot_msgs::RobotGoalsArray &_
     
     
     bool preparationSuccessful = preparePlanning ( radius, starts, goals, _goals, robot_names );
+    ROS_INFO ( "%s: Number of active robots %lu", n_param_.getNamespace().c_str(), active_robots_.size() );
 
     if ( preparationSuccessful && got_map_ && got_graph_ ) {
         auto t1 = std::chrono::high_resolution_clock::now();
@@ -325,22 +319,22 @@ void Router_Node::goalsCallback ( const tuw_multi_robot_msgs::RobotGoalsArray &_
             int cy = mapOrigin_[1];
 
             publish();
-            ROS_INFO ( "Multi Robot Router: Publishing Plan" );
+            ROS_INFO ( "%s: Publishing Plan", n_param_.getNamespace().c_str() );
             freshPlan_ = false;
         } else {
-            ROS_INFO ( "Multi Robot Router: No Plan found" );
+            ROS_INFO ( "%s: No Plan found", n_param_.getNamespace().c_str() );
 
             publishEmpty();
         }
 
         auto t2 = std::chrono::high_resolution_clock::now();
         int duration = std::chrono::duration_cast<std::chrono::milliseconds> ( t2 - t1 ).count();
-        ROS_INFO ( "Multi Robot Router: OverallTime %i ms", duration );
+        ROS_INFO ( "%s: Multi Robot Router: OverallTime %i ms", n_param_.getNamespace().c_str(), duration );
 
         id_++;
     } else if ( !got_map_ || !got_graph_ ) {
         publishEmpty();
-        ROS_INFO ( "Multi Robot Router: No Map or Graph received" );
+        ROS_INFO ( "%s: Multi Robot Router: No Map or Graph received", n_param_.getNamespace().c_str() );
     } else {
         publishEmpty();
     }
