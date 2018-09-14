@@ -14,6 +14,8 @@ RadomGoalGeneratorNode::RadomGoalGeneratorNode ( ros::NodeHandle & n )
         ROS_ERROR ( "nr_of_robots is not set" );
         return;
     }
+    
+    n_param_.param<int> ( "nr_of_avaliable_robots", nr_of_avaliable_robots_, -1 );
     n_param_.param<std::string> ( "frame_id", frame_id_, "map" );
     n_param_.param<std::string> ( "robot_name_prefix", robot_name_prefix_, "robot_" );
     n_param_.param<double> ( "distance_boundary", distance_boundary_, 0.5 );
@@ -30,10 +32,32 @@ RadomGoalGeneratorNode::RadomGoalGeneratorNode ( ros::NodeHandle & n )
 void RadomGoalGeneratorNode::updateNrOfRobots ( size_t nr_of_robots ) {
     ROS_INFO ( "nr_of_robots: %i", ( int ) nr_of_robots );
     ROS_INFO ( "using prefix: %s", robot_name_prefix_.c_str() );
+    robot_goals_array_.robots.clear();
+    if((nr_of_avaliable_robots_ > 0) && (nr_of_avaliable_robots_ < nr_of_robots)){
+        ROS_ERROR( "nr_of_robots must be equal or less then nr_of_avaliable_robots" );
+        return;
+    }    
     robot_goals_array_.robots.resize ( nr_of_robots );
-    for ( size_t i = 0; i < nr_of_robots; i++ ) {
-        tuw_multi_robot_msgs::RobotGoals &robot_check_points = robot_goals_array_.robots[i];
-        robot_check_points.robot_name = robot_name_prefix_ + std::to_string ( i );
+    if(nr_of_avaliable_robots_ < 0){
+        ROS_INFO( "nr_of_avaliable_robots < 0 and therefore ignored" );
+        for ( size_t i = 0; i < nr_of_robots; i++ ) {
+            tuw_multi_robot_msgs::RobotGoals &robot_check_points = robot_goals_array_.robots[i];
+            robot_check_points.robot_name = robot_name_prefix_ + std::to_string ( i );
+        }
+    } else {
+        std::set<std::string> avaliable_robots;        
+        for ( size_t i = 0; i < nr_of_avaliable_robots_; i++ ) {
+            avaliable_robots.insert(robot_name_prefix_ + std::to_string ( i ));
+        }
+        for ( size_t i = 0; i < nr_of_robots; i++ ) {
+            tuw_multi_robot_msgs::RobotGoals &robot_check_points = robot_goals_array_.robots[i];
+            int offset = rand() % avaliable_robots.size();
+            std::set<std::string>::iterator it = avaliable_robots.begin();
+            std::advance(it,offset);
+            robot_check_points.robot_name = *it;
+            avaliable_robots.erase(it);
+        }
+        
     }
 }
 
