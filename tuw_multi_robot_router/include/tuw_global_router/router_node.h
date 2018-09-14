@@ -66,6 +66,11 @@ public:
      * @brief publishes a RoutingTable
      */
     void publish();
+    
+    /**
+     * @brief monitors the execution
+     */
+    void monitorExecution();
     /**
      * @brief used to update the nodes timeout to latch topics
      * @param secs the seconds passed since the last update
@@ -96,9 +101,7 @@ private:
     };
     
     //these 3 members are for time logging
-    ros::Time tic_time_first_robot_started_;
-    std::set<std::string> stopped_robot_names_;
-    std::set<std::string> driving_robot_names_;
+    ros::Time time_first_robot_started_;
 
     tuw_multi_robot_msgs::RouterStatus mrrp_status_;
 
@@ -115,6 +118,7 @@ private:
 
     std::vector<RobotInfoPtr> subscribed_robots_;       /// robots avaliable
     std::vector<RobotInfoPtr> active_robots_;           /// robots currently used by the planner
+    std::set<std::string> finished_robots_;           /// robots currently moving
     std::vector<std::string> missing_robots_;
     std::map<std::string, std::pair<TopicStatus, Eigen::Vector3d>> robot_starts_;
     float robot_radius_max_;
@@ -130,6 +134,7 @@ private:
     std::string voronoi_topic_;
     std::string planner_status_topic_;
     std::string singleRobotGoalTopic_;
+    bool publish_routing_table_;
     bool got_map_ = false;
     bool got_graph_ = false;
     std::vector<Segment> graph_;
@@ -139,7 +144,8 @@ private:
     float topic_timeout_s_ = 10;
     bool freshPlan_ = false;
     std::string singleRobotName_ = "";
-
+    bool monitor_enabled_;
+    
     void parametersCallback ( tuw_multi_robot_router::routerConfig &config, uint32_t level );
     void odomCallback ( const ros::MessageEvent<nav_msgs::Odometry const> &_event, int _topic );
     void graphCallback ( const tuw_multi_robot_msgs::Graph &msg );

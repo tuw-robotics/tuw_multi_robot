@@ -103,19 +103,19 @@ float RobotInfo::radius() const {
     return -1;
 }
 
-RobotInfo::status RobotInfo::getStatus() const {
-    return status_;
+RobotInfo::Online RobotInfo::getOnlineStatus() const {
+    return online_;
 }
 
-void RobotInfo::updateStatus ( const float _updateTime ) {
+void RobotInfo::updateOnlineStatus ( const float _updateTime ) {
     if ( activeTime_ > 0 )
         activeTime_ -= _updateTime;
 
     if ( activeTime_ < 0 )
         activeTime_ = 0;
 
-    if ( activeTime_ == 0 && status_ != status::fixed )
-        status_ = status::inactive;
+    if ( activeTime_ == 0 && online_ != Online::fixed )
+        online_ = Online::inactive;
 }
 
 } // namespace multi_robot_router

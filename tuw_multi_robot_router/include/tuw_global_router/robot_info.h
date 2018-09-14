@@ -55,24 +55,24 @@ class RobotInfo : public tuw_multi_robot_msgs::RobotInfo
 public:
     RobotInfo ()
     : tuw_multi_robot_msgs::RobotInfo()
-    , status_(status::inactive)
+    , online_(Online::inactive)
     , activeTime_(1.0)
     {
     }
     RobotInfo (const tuw_multi_robot_msgs::RobotInfo& o)
     : tuw_multi_robot_msgs::RobotInfo(o)
-    , status_(status::inactive)
+    , online_(Online::inactive)
     , activeTime_(1.0)
     {
     }
     RobotInfo (const std::string &name)
     : tuw_multi_robot_msgs::RobotInfo()
-    , status_(status::inactive)
+    , online_(Online::inactive)
     , activeTime_(1.0)
     {
             robot_name = name;
     }
-        enum class status
+        enum class Online
         {
             inactive,
             active,
@@ -88,9 +88,8 @@ public:
          **/
         void initTopics(ros::NodeHandle &n);
         
-        void setStatus ( status _status, const float _activeTime = 1.0 );
-        status getStatus() const;
-        void updateStatus ( const float _updateTime );
+        Online getOnlineStatus() const;
+        void updateOnlineStatus ( const float updateTime );
         
         /**
          * returns vehilce radius based on the robots shape
@@ -118,7 +117,7 @@ public:
         ros::Publisher pubRoute_;
         void callback_odom ( const nav_msgs::Odometry &msg);
     private:
-        status status_;
+        Online online_;
         float activeTime_;
 };
 typedef std::shared_ptr<RobotInfo> RobotInfoPtr;

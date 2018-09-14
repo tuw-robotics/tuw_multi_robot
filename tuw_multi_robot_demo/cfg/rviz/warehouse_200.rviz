@@ -64,14 +64,14 @@ Visualization Manager:
       Use Timestamp: false
       Value: true
     - Class: VoronoiGraph
-      Enabled: true
+      Enabled: false
       History Length: 1
       Name: VoronoiGraph
       Path Color: 50; 51; 204
       Path Points Scale: 0.10000000149011612
       Topic: /segments
       Unreliable: false
-      Value: true
+      Value: false
     - Class: MultiRobotInfo
       Color Pose: 204; 51; 0
       Enabled: true
@@ -79,10 +79,10 @@ Visualization Manager:
       Keep Measurements: 5
       Name: MultiRobotInfo
       Robots:
-        robot_10: true
-        robot_11: true
-        robot_12: true
-        robot_13: true
+        robot_0: true
+        robot_1: true
+        robot_2: true
+        robot_3: true
         robot_4: true
         robot_5: true
         robot_6: true
@@ -143,7 +143,7 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 14.808070182800293
+      Scale: 7.702159404754639
       Target Frame: <Fixed Frame>
       Value: TopDownOrtho (rviz)
       X: 1.6745421886444092
@@ -165,5 +165,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1200
-  X: 602
-  Y: 155
+  X: 478
+  Y: 131
