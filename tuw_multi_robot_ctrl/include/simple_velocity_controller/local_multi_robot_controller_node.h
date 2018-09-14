@@ -53,6 +53,10 @@ private:
   float Kd_val_;
   ros::Time last_update_;
   int nr_of_robots_;
+  int nr_of_finished_ = {0};
+  std::vector<bool> active_robots = {false};
+  bool first_path_set_ = {false};
+  ros::Time global_tic;
   std::string robot_prefix_;
   std::vector<std::string> robot_names_;
   std::vector<float> robot_radius_;

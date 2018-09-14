@@ -58,6 +58,7 @@ LocalMultiRobotControllerNode::LocalMultiRobotControllerNode(ros::NodeHandle &n)
     }
 
     controller.resize(robot_names_.size());
+    active_robots.resize(robot_names_.size(),false);
     pubCmdVel_.resize(robot_names_.size());
     subCtrl_.resize(robot_names_.size());
     subOdom_.resize(robot_names_.size());
@@ -162,6 +163,25 @@ void velocity_controller::LocalMultiRobotControllerNode::subOdomCb(const ros::Me
 
     float delta_t = d.sec + NSEC_2_SECS(d.nsec);
     controller[_topic].update(pt, delta_t);
+    if (controller[_topic].getPlanActive())
+    {
+      active_robots[_topic] = true;
+    }
+    if (!controller[_topic].getPlanActive() && active_robots[_topic])
+    {
+      nr_of_finished_++;
+      if (nr_of_finished_ == controller.size())
+      {
+        ros::Duration dur = ros::Time::now() - global_tic;
+        float sec = dur.toSec();
+        ROS_INFO("all finished, driving took %lf sec",sec);
+        nr_of_finished_ = 0;
+      } else
+      {
+        ROS_INFO("waiting for %d to finish ", nr_of_robots_ - nr_of_finished_);
+      }
+      active_robots[_topic] = false;
+    }
 
     geometry_msgs::Twist msg;
 
@@ -213,6 +233,13 @@ void velocity_controller::LocalMultiRobotControllerNode::subRouteCb(const ros::M
         localPath.push_back(pt);
     }
 
+    if (!first_path_set_)
+    {
+      global_tic = ros::Time::now();
+      ROS_INFO("first got plan");
+      std::cout << global_tic << std::endl;
+    }
+    first_path_set_ = true;
     controller[_topic].setPath(std::make_shared<std::vector<PathPoint>>(localPath));
     ROS_INFO("Multi Robot Controller: Got Plan");
 }

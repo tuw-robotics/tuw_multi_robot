@@ -100,6 +100,8 @@ class SegmentController
      */
     int getCount();
 
+    bool getPlanActive() { return plan_active; }
+
   private:
     bool checkPrecondition(PathPoint p);
     float normalizeAngle(float _angle);
