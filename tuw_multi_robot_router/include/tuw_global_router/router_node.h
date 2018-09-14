@@ -95,7 +95,11 @@ private:
         float activeTime_;
     };
     
-    
+    //these 3 members are for time logging
+    ros::Time tic_time_first_robot_started_;
+    std::set<std::string> stopped_robot_names_;
+    std::set<std::string> driving_robot_names_;
+
     tuw_multi_robot_msgs::RouterStatus mrrp_status_;
 
     dynamic_reconfigure::Server<tuw_multi_robot_router::routerConfig> param_server;
