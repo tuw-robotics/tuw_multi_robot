@@ -354,7 +354,7 @@ void Router_Node::goalsCallback ( const tuw_multi_robot_msgs::RobotGoalsArray &_
 
             publish();
             attempts_successful_++
-            float rate = ((float) attempts_successful_) / (float) attempts_total_
+            float rate = ((float) attempts_successful_) / (float) attempts_total_;
             ROS_INFO ( "%s: Publishing Plan suggessrate %i, %i = %f", n_param_.getNamespace().c_str(),attempts_successful_, attempts_total_,  rate);
             freshPlan_ = false;
         } else {
