@@ -93,6 +93,7 @@ namespace tuw_multi_robot_rviz {
                                  this->scene_manager_,
                                  this->frame_node_, 1.5,0.2,0.2,0.25);
       arrow_ptr->setScale(Ogre::Vector3(1,1,1));
+      arrow_ptr->setColor(1,0,0,1);
     }
 
     {
