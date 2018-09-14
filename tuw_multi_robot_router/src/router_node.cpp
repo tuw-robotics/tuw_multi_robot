@@ -225,7 +225,6 @@ float Router_Node::calcRadius ( const int shape, const std::vector<float> &shape
 }
 
 void Router_Node::robotInfoCallback ( const tuw_multi_robot_msgs::RobotInfo &_robotInfo ) {
-    TopicStatus s ( TopicStatus::status::active, topic_timeout_s_ );
 
     auto robot = RobotInfo::findObj ( subscribed_robots_, _robotInfo.robot_name );
     if ( robot == subscribed_robots_.end() ) {
@@ -551,37 +550,6 @@ std::size_t Router_Node::getHash ( const std::vector<Segment> &_graph ) {
 
 
 
-
-Router_Node::TopicStatus::TopicStatus ( const status _status, const float _activeTime ) {
-    setStatus ( _status, _activeTime );
-}
-
-Router_Node::TopicStatus::TopicStatus() : TopicStatus ( status::inactive ) {
-}
-
-Router_Node::TopicStatus::status Router_Node::TopicStatus::getStatus() const {
-    return status_;
-}
-
-void Router_Node::TopicStatus::updateStatus ( const float _updateTime ) {
-    if ( activeTime_ > 0 )
-        activeTime_ -= _updateTime;
-
-    if ( activeTime_ < 0 )
-        activeTime_ = 0;
-
-    if ( activeTime_ == 0 && status_ != status::fixed )
-        status_ = status::inactive;
-}
-
-void Router_Node::TopicStatus::setStatus ( const status _status, const float _activeTime ) {
-    if ( _status != status::active )
-        activeTime_ = 0;
-    else
-        activeTime_ = _activeTime;
-
-    status_ = _status;
-}
 
 } // namespace multi_robot_router
 

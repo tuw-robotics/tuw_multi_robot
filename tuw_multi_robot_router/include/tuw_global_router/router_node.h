@@ -80,26 +80,6 @@ public:
     ros::NodeHandle n_param_; ///< Node handler to the current node
 
 private:
-    class TopicStatus
-    {
-    public:
-        enum class status
-        {
-            inactive,
-            active,
-            fixed
-        };
-        TopicStatus();
-        TopicStatus ( status _status, const float _activeTime = 1.0 );
-        void setStatus ( status _status, const float _activeTime = 1.0 );
-        status getStatus() const;
-        void updateStatus ( const float _updateTime );
-
-    private:
-        status status_;
-        float activeTime_;
-    };
-    
     //these 3 members are for time logging
     ros::Time time_first_robot_started_;
 
@@ -120,7 +100,6 @@ private:
     std::vector<RobotInfoPtr> active_robots_;           /// robots currently used by the planner
     std::set<std::string> finished_robots_;           /// robots currently moving
     std::vector<std::string> missing_robots_;
-    std::map<std::string, std::pair<TopicStatus, Eigen::Vector3d>> robot_starts_;
     float robot_radius_max_;
     cv::Mat distMap_;
     Eigen::Vector2d mapOrigin_;
