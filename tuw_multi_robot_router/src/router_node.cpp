@@ -205,6 +205,37 @@ void Router_Node::robotInfoCallback ( const tuw_multi_robot_msgs::RobotInfo &_ro
         ( *robot )->updateInfo ( _robotInfo );
     }
 
+    if (_robotInfo.status == tuw_multi_robot_msgs::RobotInfo::STATUS_STOPPED)
+    {
+      if (driving_robot_names_.size() && stopped_robot_names_.find(_robotInfo.robot_name) == stopped_robot_names_.end())
+      {
+        ROS_INFO("%s stopped driving, duration since start: %lf s",
+               _robotInfo.robot_name.c_str(),
+               (ros::Time::now() - tic_time_first_robot_started_).toSec());
+
+        auto it_driving = driving_robot_names_.find(_robotInfo.robot_name);
+        if (it_driving != driving_robot_names_.end())
+          driving_robot_names_.erase(it_driving);
+
+        ROS_INFO("nr of robots still driving %d", static_cast<int>(driving_robot_names_.size()));
+        stopped_robot_names_.insert(_robotInfo.robot_name);
+        if (driving_robot_names_.size() <= 10)
+        {
+          for (const std::string &s: driving_robot_names_)
+            ROS_INFO("still driving: %s",s.c_str());
+        }
+
+      }
+    }
+    else if (_robotInfo.status == tuw_multi_robot_msgs::RobotInfo::STATUS_DRIVING)
+    {
+      if (!driving_robot_names_.size())
+      {
+        tic_time_first_robot_started_ = ros::Time::now();
+      }
+      driving_robot_names_.insert(_robotInfo.robot_name);
+    }
+
     robot_radius_max_ = 0;
     for ( RobotInfoPtr &r: subscribed_robots_ ) {
         if ( r->radius() > robot_radius_max_ )

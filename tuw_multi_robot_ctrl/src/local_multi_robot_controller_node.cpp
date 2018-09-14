@@ -170,16 +170,6 @@ void velocity_controller::LocalMultiRobotControllerNode::subOdomCb(const ros::Me
     if (!controller[_topic].getPlanActive() && active_robots[_topic])
     {
       nr_of_finished_++;
-      if (nr_of_finished_ == controller.size())
-      {
-        ros::Duration dur = ros::Time::now() - global_tic;
-        float sec = dur.toSec();
-        ROS_INFO("all finished, driving took %lf sec",sec);
-        nr_of_finished_ = 0;
-      } else
-      {
-        ROS_INFO("waiting for %d to finish, driving takes %lf sec", nr_of_robots_ - nr_of_finished_, (ros::Time::now() - global_tic).toSec());
-      }
       active_robots[_topic] = false;
     }
 
@@ -233,13 +223,6 @@ void velocity_controller::LocalMultiRobotControllerNode::subRouteCb(const ros::M
         localPath.push_back(pt);
     }
 
-    if (!first_path_set_)
-    {
-      global_tic = ros::Time::now();
-      ROS_INFO("first got plan");
-      std::cout << global_tic << std::endl;
-    }
-    first_path_set_ = true;
     controller[_topic].setPath(std::make_shared<std::vector<PathPoint>>(localPath));
     ROS_INFO("Multi Robot Controller: Got Plan");
 }
@@ -294,7 +277,12 @@ void LocalMultiRobotControllerNode::publishRobotInfo()
         ri.sync.robot_id = robot_names_[i];
         ri.sync.current_route_segment = controller[i].getCount();
         ri.mode = ri.MODE_NA;
-        ri.status = ri.STATUS_STOPPED; //TODO
+        if (active_robots[i])
+        {
+          ri.status = ri.STATUS_DRIVING; //TODO other statuses
+        } else {
+          ri.status = ri.STATUS_STOPPED;
+        }
         ri.good_id = ri.GOOD_NA;
 
         pubRobotInfo_.publish(ri);
