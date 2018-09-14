@@ -72,7 +72,7 @@ private:
 
   int default_size_ = {5};
   ros::Duration recycle_thresh_ = ros::Duration(5,0);
-  ros::Duration render_dur_thresh_ = ros::Duration(2,0);
+  ros::Duration render_dur_thresh_ = ros::Duration(0.1);
   ros::Time last_render_time_;
   // A SceneNode whose pose is set to match the coordinate frame of
   // the Imu message header.

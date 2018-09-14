@@ -141,7 +141,6 @@ namespace tuw_multi_robot_rviz {
       //TODO: this needs to be done otherwise rviz crashes when all arrows are painted at position zero (which is a bad indicator for rviz...)
       if (pose.position.x == 0 && pose.position.y == 0 && pose.position.z == 0)
         continue;
-      //std::cout << "x " << pose.position.x << " y " << pose.position.y << " z " << pose.position.y << std::endl;
       Ogre::Vector3 position(pose.position.x, pose.position.y, pose.position.z);
       Ogre::Quaternion orientation(pose.orientation.w,
                                    pose.orientation.x,
@@ -155,7 +154,22 @@ namespace tuw_multi_robot_rviz {
                                        std::vector<rviz::Object*>>(
                                          it->first,
                                          make_robot(position, orientation)));
-          it_arrows = robot_renderings_map_.find(it->first);
+      } else {
+          for (int ii = 0; ii < it_arrows->second.size(); ++ii)
+          {
+            rviz::Object* r_obj = it_arrows->second[ii];
+            if (dynamic_cast<rviz::Arrow*>(r_obj))
+            {
+              Ogre::Quaternion orient_x = Ogre::Quaternion(Ogre::Radian(-Ogre::Math::HALF_PI), Ogre::Vector3::UNIT_Y);
+              r_obj->setPosition(position);
+              r_obj->setOrientation(orientation * orient_x);
+            }
+            else
+            {
+              r_obj->setPosition(position);
+              r_obj->setOrientation(orientation);
+            }
+          }
       }
     }
 
