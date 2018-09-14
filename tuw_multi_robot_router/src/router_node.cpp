@@ -354,14 +354,15 @@ void Router_Node::goalsCallback ( const tuw_multi_robot_msgs::RobotGoalsArray &_
 
             publish();
             attempts_successful_++;
-            float rate = ((float) attempts_successful_) / (float) attempts_total_;
-            ROS_INFO ( "%s: Publishing Plan suggessrate %i, %i = %f", n_param_.getNamespace().c_str(),attempts_successful_, attempts_total_,  rate);
+            ROS_INFO ( "%s: Publishing Plan", n_param_.getNamespace().c_str());
             freshPlan_ = false;
         } else {
-            ROS_INFO ( "%s: No Plan found", n_param_.getNamespace().c_str() );
+            ROS_INFO ( "%s: No Plan found", n_param_.getNamespace().c_str());
 
             publishEmpty();
         }
+        float rate = ((float) attempts_successful_) / (float) attempts_total_;
+        ROS_INFO ( "%s: success rate  %i, %i = %f", n_param_.getNamespace().c_str(),attempts_successful_, attempts_total_,  rate);
 
         auto t2 = std::chrono::high_resolution_clock::now();
         int duration = std::chrono::duration_cast<std::chrono::milliseconds> ( t2 - t1 ).count();
