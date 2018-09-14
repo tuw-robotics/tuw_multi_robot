@@ -62,7 +62,9 @@ namespace multi_robot_router {
 Router_Node::Router_Node ( ros::NodeHandle &_n ) : Router(),
     n_ ( _n ),
     n_param_ ( "~" ),
-    monitor_enabled_ ( false ) {
+    monitor_enabled_ ( false ),
+    attempts_total_(0),
+    attempts_successful_(0){
     id_ = 0;
 
     n_param_.param<std::string> ( "planner_status_topic", planner_status_topic_, "planner_status" );
@@ -338,6 +340,7 @@ void Router_Node::goalsCallback ( const tuw_multi_robot_msgs::RobotGoalsArray &_
     ROS_INFO ( "%s: Number of active robots %lu", n_param_.getNamespace().c_str(), active_robots_.size() );
 
     if ( preparationSuccessful && got_map_ && got_graph_ ) {
+        attempts_total_++;
         auto t1 = std::chrono::high_resolution_clock::now();
         preparationSuccessful &= makePlan ( starts, goals, radius, distMap_, mapResolution_, mapOrigin_, graph_, robot_names );
 
@@ -350,7 +353,9 @@ void Router_Node::goalsCallback ( const tuw_multi_robot_msgs::RobotGoalsArray &_
             int cy = mapOrigin_[1];
 
             publish();
-            ROS_INFO ( "%s: Publishing Plan", n_param_.getNamespace().c_str() );
+            attempts_successful_++
+            float rate = ((float) attempts_successful_) / (float) attempts_total_
+            ROS_INFO ( "%s: Publishing Plan suggessrate %i, %i = %f", n_param_.getNamespace().c_str(),attempts_successful_, attempts_total_,  rate);
             freshPlan_ = false;
         } else {
             ROS_INFO ( "%s: No Plan found", n_param_.getNamespace().c_str() );

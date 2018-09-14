@@ -81,6 +81,9 @@ public:
 
 private:
     //these 3 members are for time logging
+    int attempts_total_;
+    int attempts_successful_;
+    
     ros::Time time_first_robot_started_;
 
     tuw_multi_robot_msgs::RouterStatus mrrp_status_;
