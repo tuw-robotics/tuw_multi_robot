@@ -178,7 +178,7 @@ void velocity_controller::LocalMultiRobotControllerNode::subOdomCb(const ros::Me
         nr_of_finished_ = 0;
       } else
       {
-        ROS_INFO("waiting for %d to finish ", nr_of_robots_ - nr_of_finished_);
+        ROS_INFO("waiting for %d to finish, driving takes %lf sec", nr_of_robots_ - nr_of_finished_, (ros::Time::now() - global_tic).toSec());
       }
       active_robots[_topic] = false;
     }
