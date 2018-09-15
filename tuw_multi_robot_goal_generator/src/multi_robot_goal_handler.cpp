@@ -94,7 +94,7 @@ void GoalHandlerNode::publishGoal (  ) {
         boost::erase_all ( line, " " );
         boost::split ( columns, line, boost::is_any_of ( "@ " ) );
         if ( ( columns.size() > 0 ) && boost::iequals ( columns[0],"tuw_multi_robot_msgs::RobotGoalsArray" ) ) {
-            ROS_INFO ( "Start reading tuw_multi_robot_msgs::RobotGoalsArray" );
+            ROS_DEBUG ( "Start reading tuw_multi_robot_msgs::RobotGoalsArray" );
         } else {
             ROS_ERROR ( "Missing keyword tuw_multi_robot_msgs::RobotGoalsArray" );
             return;
