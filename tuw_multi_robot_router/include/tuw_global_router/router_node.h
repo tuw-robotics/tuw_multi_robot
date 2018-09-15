@@ -103,7 +103,7 @@ private:
 
     std::vector<RobotInfoPtr> subscribed_robots_;       /// robots avaliable
     std::vector<RobotInfoPtr> active_robots_;           /// robots currently used by the planner
-    std::set<std::string> finished_robots_;           /// robots currently moving
+    std::map<std::string, double> finished_robots_;     /// robots finished with execution time
     std::vector<std::string> missing_robots_;
     float robot_radius_max_;
     cv::Mat distMap_;

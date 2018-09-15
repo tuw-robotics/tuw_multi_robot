@@ -103,7 +103,7 @@ Router_Node::Router_Node ( ros::NodeHandle &_n ) : Router(),
 
 void Router_Node::monitorExecution() {
     for ( const RobotInfoPtr robot: active_robots_ ) {
-        std::set<std::string>::iterator it = finished_robots_.find ( robot->robot_name );
+        std::map<std::string, double>::iterator it = finished_robots_.find ( robot->robot_name );
         if ( robot->status == tuw_multi_robot_msgs::RobotInfo::STATUS_DRIVING ) {
             if ( it != finished_robots_.end() ) {
                 finished_robots_.erase ( it );
@@ -113,11 +113,11 @@ void Router_Node::monitorExecution() {
             }
         } else {
             if ( it == finished_robots_.end() ) {
-                finished_robots_.insert ( robot->robot_name );
-                ros::Duration duration = ros::Time::now() -  time_first_robot_started_;
+                double duration = (ros::Time::now() -  time_first_robot_started_).toSec();
+                finished_robots_[robot->robot_name] = duration;
                 int nr_of_driving_robots = active_robots_.size() - finished_robots_.size();
                 if ( monitor_enabled_ ) {
-                    ROS_INFO ( "%10s stopped @ %6.2lf sec, %3i robots left",  robot->robot_name.c_str(), duration.toSec(), nr_of_driving_robots );
+                    ROS_INFO ( "%10s stopped @ %6.2lf sec, %3i robots left",  robot->robot_name.c_str(), duration, nr_of_driving_robots );
                 }
             }
         }
@@ -126,6 +126,11 @@ void Router_Node::monitorExecution() {
         if ( monitor_enabled_ ) {
             ros::Duration duration = ros::Time::now() -  time_first_robot_started_;
             ROS_INFO ( "Execution finished after %lf sec!", duration.toSec() );
+            std::stringstream ss;
+            for(std::map<std::string, double>::iterator it = finished_robots_.begin(); it!=finished_robots_.end(); ++it){
+                ss << it->second << ", ";
+            }
+            ROS_INFO ( "Duration by robot: \n [%s]", ss.str().c_str() );
         }
         monitor_enabled_ = false;
     } else {
@@ -363,11 +368,8 @@ void Router_Node::goalsCallback ( const tuw_multi_robot_msgs::RobotGoalsArray &_
             publish();
             attempts_successful_++;
             sum_processing_time_successful_ += duration;
-            ROS_INFO ( "%s: Publishing Plan", n_param_.getNamespace().c_str());
             freshPlan_ = false;
         } else {
-            ROS_INFO ( "%s: No Plan found", n_param_.getNamespace().c_str());
-
             publishEmpty();
         }
         float rate_success = ((float) attempts_successful_) / (float) attempts_total_;
@@ -398,6 +400,7 @@ float Router_Node::getYaw ( const geometry_msgs::Quaternion &_rot ) {
 
 void Router_Node::publishEmpty() {
     if(publish_routing_table_ == false) return;
+    ROS_INFO ( "%s: No Plan found!!!!, publishing empty plan", n_param_.getNamespace().c_str());
     time_first_robot_started_ = ros::Time::now();
     finished_robots_.clear();
     nav_msgs::Path msg_path;
@@ -420,6 +423,7 @@ void Router_Node::publishEmpty() {
 
 void Router_Node::publish() {
     if(publish_routing_table_ == false) return;
+    ROS_INFO ( "%s: Plan found :-), publishing plan", n_param_.getNamespace().c_str());
     time_first_robot_started_ = ros::Time::now();
     finished_robots_.clear();
     nav_msgs::Path msg_path;
