@@ -64,7 +64,9 @@ Router_Node::Router_Node ( ros::NodeHandle &_n ) : Router(),
     n_param_ ( "~" ),
     monitor_enabled_ ( false ),
     attempts_total_(0),
-    attempts_successful_(0){
+    attempts_successful_(0),
+    sum_processing_time_total_(.0),
+    sum_processing_time_successful_(.0){
     id_ = 0;
 
     n_param_.param<std::string> ( "planner_status_topic", planner_status_topic_, "planner_status" );
@@ -343,7 +345,9 @@ void Router_Node::goalsCallback ( const tuw_multi_robot_msgs::RobotGoalsArray &_
         attempts_total_++;
         auto t1 = std::chrono::high_resolution_clock::now();
         preparationSuccessful &= makePlan ( starts, goals, radius, distMap_, mapResolution_, mapOrigin_, graph_, robot_names );
-
+        auto t2 = std::chrono::high_resolution_clock::now();
+        int duration = std::chrono::duration_cast<std::chrono::milliseconds> ( t2 - t1 ).count();
+        sum_processing_time_total_ += duration;
         if ( preparationSuccessful ) {
             int nx = distMap_.cols;
             int ny = distMap_.rows;
@@ -354,6 +358,7 @@ void Router_Node::goalsCallback ( const tuw_multi_robot_msgs::RobotGoalsArray &_
 
             publish();
             attempts_successful_++;
+            sum_processing_time_successful_ += duration;
             ROS_INFO ( "%s: Publishing Plan", n_param_.getNamespace().c_str());
             freshPlan_ = false;
         } else {
@@ -362,11 +367,13 @@ void Router_Node::goalsCallback ( const tuw_multi_robot_msgs::RobotGoalsArray &_
             publishEmpty();
         }
         float rate = ((float) attempts_successful_) / (float) attempts_total_;
-        ROS_INFO ( "%s: success rate  %i, %i = %f", n_param_.getNamespace().c_str(),attempts_successful_, attempts_total_,  rate);
+        float avr_duration_total = sum_processing_time_total_ / (float) attempts_total_;
+        float avr_duration_successful = sum_processing_time_successful_ / (float) attempts_total_;
+        ROS_INFO ( "success %i, %i = %4.3f, avr total: %4.0f ms, success: %4.0f ms", 
+              attempts_successful_, attempts_total_,  rate, avr_duration_total, avr_duration_successful);
 
-        auto t2 = std::chrono::high_resolution_clock::now();
-        int duration = std::chrono::duration_cast<std::chrono::milliseconds> ( t2 - t1 ).count();
-        ROS_INFO ( "%s: Multi Robot Router: OverallTime %i ms", n_param_.getNamespace().c_str(), duration );
+        ROS_INFO ( "%s: Multi Robot Router: duration %i ms", n_param_.getNamespace().c_str(), duration );
+
 
         id_++;
     } else if ( !got_map_ || !got_graph_ ) {

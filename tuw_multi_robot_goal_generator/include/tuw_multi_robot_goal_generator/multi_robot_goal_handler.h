@@ -27,8 +27,9 @@ private:
     std::string file_name_;                 /// parameter
     ros::Publisher pub_goals_;
     tuw_multi_robot_msgs::RobotGoalsArray msg_;
+    int counter_;
 
-    void publishGoal ( const std::string &file );
+    void publishGoal ( );
 
 };
 #endif // TUW_MULTI_ROBOT_GOAL_HANDLER

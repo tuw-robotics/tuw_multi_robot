@@ -83,6 +83,8 @@ private:
     //these 3 members are for time logging
     int attempts_total_;
     int attempts_successful_;
+    double sum_processing_time_total_;
+    double sum_processing_time_successful_;
     
     ros::Time time_first_robot_started_;
 

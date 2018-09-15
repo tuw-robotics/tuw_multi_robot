@@ -12,12 +12,12 @@
 
 
 GoalHandlerNode::GoalHandlerNode ( ros::NodeHandle & n, Mode mode )
-    : n_ ( n ),  n_param_ ( "~" ) {
+    : n_ ( n ),  n_param_ ( "~" ), counter_(0) {
     n_param_.param<std::string> ( "file_name", file_name_, "/tmp/goals.txt" );
     
     n_param_.param<bool> ( "run_once", run_once_, "false" );
     if (mode == READ) {
-        n_param_.param<double> ( "loop_rate", loop_rate_, 10.0 );
+        n_param_.param<double> ( "loop_rate", loop_rate_, 1.0 );
         n_param_.param<bool> ( "time_now", time_now_, "true" );
         pub_goals_ = n.advertise<tuw_multi_robot_msgs::RobotGoalsArray> ( "goals", 1 );
     }
@@ -33,8 +33,14 @@ void GoalHandlerNode::callback ( const tuw_multi_robot_msgs::RobotGoalsArray& ms
 
     std::string frame_id_;                 /// parameter
     std::ofstream file;
-    file.open ( file_name_ );
-    ROS_INFO ( "Write file %s", file_name_.c_str() );
+    char file_name[0x1FF];
+    if(run_once_){
+        sprintf(file_name, "%s", file_name_.c_str());
+    } else {
+        sprintf(file_name, "%s%03i", file_name_.c_str(), counter_);
+    }
+    file.open ( file_name );
+    ROS_INFO ( "Write file %s", file_name );
     file << "tuw_multi_robot_msgs::RobotGoalsArray @" << boost::posix_time::to_iso_extended_string ( ros::Time::now().toBoost() ) << std::endl;
     file << "frame_id: " << msg_.header.frame_id << std::endl;
     file << std::setprecision ( std::numeric_limits<float>::digits10 + 1 );
@@ -49,28 +55,37 @@ void GoalHandlerNode::callback ( const tuw_multi_robot_msgs::RobotGoalsArray& ms
         }
     }
     file.close();
+    counter_++;
     if(run_once_) ros::shutdown();
 }
 void  GoalHandlerNode::publish () {
     ros::Rate loop_rate(loop_rate_);
     do {
-        publishGoal(file_name_);
+        publishGoal();
         ros::spinOnce();
         loop_rate.sleep();
     } while ( ros::ok() && (run_once_ == false));
 }
 
-void GoalHandlerNode::publishGoal ( const std::string &file_name ) {
+void GoalHandlerNode::publishGoal (  ) {
+    char file_name[0x1FF];
+    if(run_once_){
+        sprintf(file_name, "%s", file_name_.c_str());
+    } else {
+        sprintf(file_name, "%s%03i", file_name_.c_str(), counter_);
+    }
+    
     std::ifstream file ( file_name );
     if ( !file.good() ) {
-        ROS_ERROR ( "File: %s does not exist!", file_name.c_str() );
+        ROS_ERROR ( "File: %s does not exist!", file_name );
+        run_once_ = true;
         return;
     }
     if ( !file.is_open() ) {
-        ROS_ERROR ( "Can't open file %s!", file_name.c_str() );
+        ROS_ERROR ( "Can't open file %s!", file_name );
         return;
     }
-    ROS_INFO ( "Reading file %s", file_name.c_str() );
+    ROS_INFO ( "Reading file %s", file_name );
 
     std::vector<std::string> columns;
     std::string line;
@@ -85,7 +100,7 @@ void GoalHandlerNode::publishGoal ( const std::string &file_name ) {
             return;
         }
     } else {
-        ROS_ERROR ( "No header in File: %s!", file_name.c_str() );
+        ROS_ERROR ( "No header in File: %s!", file_name );
         return;
     }
     // Header
@@ -98,7 +113,7 @@ void GoalHandlerNode::publishGoal ( const std::string &file_name ) {
             ROS_ERROR ( "Missing keyword frame_id or frame_id value" );
         }
     } else {
-        ROS_ERROR ( "No header in File: %s!", file_name.c_str() );
+        ROS_ERROR ( "No header in File: %s!", file_name );
         return;
     }
     // Timestamp
@@ -112,11 +127,12 @@ void GoalHandlerNode::publishGoal ( const std::string &file_name ) {
             ROS_INFO ( "Can't read timestamp" );
         }
     } else {
-        ROS_ERROR ( "No Timestamp in File: %s!", file_name.c_str() );
+        ROS_ERROR ( "No Timestamp in File: %s!", file_name );
         return;
     }
     // Goals
     tuw_multi_robot_msgs::RobotGoals::_destinations_type *destinations = NULL;
+    msg_.robots.clear();
     while ( getline ( file,line ) ) {
         boost::erase_all ( line, " " );
         boost::split ( columns, line, boost::is_any_of ( "," ) );
@@ -168,4 +184,5 @@ void GoalHandlerNode::publishGoal ( const std::string &file_name ) {
     pub_goals_.publish ( msg_ );
         
     file.close();
+    counter_++;
 }
