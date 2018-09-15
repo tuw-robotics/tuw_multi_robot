@@ -159,12 +159,16 @@ void Router_Node::parametersCallback ( tuw_multi_robot_router::routerConfig &con
     else
         setPlannerType ( routerType::singleThread, 1 );
 
-    if ( config.collision_resolver == 0 )
+    if ( config.collision_resolver == 0 ){
         setCollisionResolutionType ( SegmentExpander::CollisionResolverType::none );
-    else if ( config.collision_resolver == 1 )
+        collisionResolver_ = false;
+    } else if ( config.collision_resolver == 1 ) {
         setCollisionResolutionType ( SegmentExpander::CollisionResolverType::backtracking );
-    else
+        collisionResolver_ = true;
+    }else{
         setCollisionResolutionType ( SegmentExpander::CollisionResolverType::avoidance );
+        collisionResolver_ = true;
+    }
 
     if ( config.voronoi_graph )
         graphMode_ = graphType::voronoi;
@@ -366,13 +370,13 @@ void Router_Node::goalsCallback ( const tuw_multi_robot_msgs::RobotGoalsArray &_
 
             publishEmpty();
         }
-        float rate = ((float) attempts_successful_) / (float) attempts_total_;
+        float rate_success = ((float) attempts_successful_) / (float) attempts_total_;
         float avr_duration_total = sum_processing_time_total_ / (float) attempts_total_;
-        float avr_duration_successful = sum_processing_time_successful_ / (float) attempts_total_;
-        ROS_INFO ( "success %i, %i = %4.3f, avr total: %4.0f ms, success: %4.0f ms", 
-              attempts_successful_, attempts_total_,  rate, avr_duration_total, avr_duration_successful);
-
-        ROS_INFO ( "%s: Multi Robot Router: duration %i ms", n_param_.getNamespace().c_str(), duration );
+        float avr_duration_successful = sum_processing_time_successful_ / (float) attempts_successful_;
+        ROS_INFO ( "\nSuccess %i, %i = %4.3f, avr %4.0f ms, success: %4.0f ms, %s, %s, %s \n [%4.3f, %4.0f,  %4.0f]", 
+              attempts_successful_, attempts_total_,  rate_success, avr_duration_total, avr_duration_successful,
+              (priorityRescheduling_?"PR= on":"PR= off"), (speedRescheduling_?"SR= on":"SR= off"), (collisionResolver_?"CR= on":"CR= off"),
+              rate_success, avr_duration_total, avr_duration_successful);
 
 
         id_++;

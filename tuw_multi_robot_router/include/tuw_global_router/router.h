@@ -156,6 +156,7 @@ class Router
     bool segmentOptimizations_ = false;
     bool speedRescheduling_ = true;
     bool priorityRescheduling_ = true;
+    bool collisionResolver_ = true;
 
     void setPlannerType(routerType _type, uint32_t _nr_threads);
 };
