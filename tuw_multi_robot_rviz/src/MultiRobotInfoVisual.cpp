@@ -185,7 +185,7 @@ namespace tuw_multi_robot_rviz {
     {
       robot2pose_map_.insert(internal_map_type(_msg->robot_name, boost::circular_buffer<geometry_msgs::PoseWithCovariance>(default_size_)));
       it = robot2pose_map_.find(_msg->robot_name);
-      recycle_map_.insert(std::pair<std::string, unsigned int>(_msg->robot_name, 0));
+      recycle_map_.insert(std::pair<std::string, ros::Time>(_msg->robot_name, ros::Time(0)));
     }
 
     it->second.push_front(_msg->pose);
