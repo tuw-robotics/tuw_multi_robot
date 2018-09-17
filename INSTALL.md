@@ -1,4 +1,6 @@
 # INSTALL
+We stopped supporting ROS-Kinetic
+
 ## Requirments
 ### System packages
 ```
@@ -20,29 +22,11 @@ if you like to run also the demos/tutorials you also need some addinal packages 
 - a CAD program such as librecad (if you like to draw your own graph using dxf files) 
 
 Since there are not all programs and pkgs avaliabve for ubuntu 18.04 you have to comple some of them by your own.
-### for Ubuntu 16.04
+### for Ubuntu 16.04 /  18.04
 
 ```
-export ROS_VERSION=kinetic
+export ROS_VERSION=kinetic  # for Ubuntu 16.04
+export ROS_VERSION=melodic  # for Ubuntu 18.04
+
 sudo apt install ros-$ROS_VERSION-map-server
 sudo apt install ros-$ROS_VERSION-stage-ros
-```
-### for Ubuntu 18.04
-
-```
-export ROS_VERSION=melodic
-sudo apt install ros-$ROS_VERSION-stage-ros
-```
-#### map-server 
-since we only need the map server of the navigation stack we can to a space checkout
-```
-sudo apt install libsdl-image1.2-dev libsdl-dev libbullet-dev
-mkdir $MRRP_DIR/src/navigation
-cd $MRRP_DIR/src/navigation
-git init
-git remote add -f origin https://github.com/ros-planning/navigation.git
-git config core.sparseCheckout true
-echo "map_server" >> .git/info/sparse-checkout
-git pull origin melodic-devel
-
-```
