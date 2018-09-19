@@ -118,8 +118,6 @@ define pioneer2dx_base_no_sonar pioneer_base
   # estimated mass in KG
   mass 23.0 
   
-  # laser scaner
-  hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
 )
 
 # as above, but with front sonar only

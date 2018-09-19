@@ -45,6 +45,7 @@ private:
   std::string topic_robot_info_;
   std::string frame_map_;
   double update_rate_;
+  double update_rate_info_;
   float max_vel_v_;
   float max_vel_w_;
   float goal_r_;
