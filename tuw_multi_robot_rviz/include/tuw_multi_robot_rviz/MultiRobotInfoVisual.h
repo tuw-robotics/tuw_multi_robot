@@ -8,7 +8,7 @@
 #include <rviz/properties/string_property.h>
 #include <rviz/properties/float_property.h>
 #include <rviz/ogre_helpers/arrow.h>
-#include <rviz/ogre_helpers/billboard_line.h>
+#include <OgreManualObject.h>
 #include <rviz/ogre_helpers/shape.h>
 #include <memory>
 #include <vector>
@@ -25,6 +25,11 @@ namespace tuw_multi_robot_rviz
 class MultiRobotInfoVisual
 {
 public:
+  struct RobotAttributes {
+  public:
+    boost::circular_buffer<geometry_msgs::PoseWithCovariance> pose;
+    double robot_radius;
+  };
 
   MultiRobotInfoVisual(Ogre::SceneManager *_scene_manager, Ogre::SceneNode *_parent_node);
 
@@ -53,18 +58,18 @@ public:
 
   void doRender();
 
-  std::vector<rviz::Object *> make_robot(Ogre::Vector3 &position, Ogre::Quaternion &orientation);
+  std::vector<Ogre::ManualObject*> make_robot(Ogre::Vector3 &position, Ogre::Quaternion &orientation, double rad);
 
 private:
-  using internal_map_type = std::pair<std::string,boost::circular_buffer<geometry_msgs::PoseWithCovariance>>;
-  using map_type = std::map<std::string,boost::circular_buffer<geometry_msgs::PoseWithCovariance>>;
-  using map_iterator = std::map<std::string,boost::circular_buffer<geometry_msgs::PoseWithCovariance>>::iterator;
+  using internal_map_type = std::pair<std::string,RobotAttributes>;
+  using map_type = std::map<std::string,RobotAttributes>;
+  using map_iterator = std::map<std::string,RobotAttributes>::iterator;
   using recycle_map_type = std::map<std::string, ros::Time>;
 
   std::vector<std::string> recycle();
 
   // The object implementing the actual pose shape
-  std::map<std::string, std::vector<rviz::Object*>> robot_renderings_map_;
+  std::map<std::string, std::vector<Ogre::ManualObject*>> robot_renderings_map_;
   std::set<std::string> disabled_robots_;
 
   map_type robot2pose_map_;
@@ -86,10 +91,13 @@ private:
   float scale_pose_;
 
   // The pose Shape object's color
-  Ogre::ColourValue color_pose_;
+  Ogre::ColourValue color_pose_ = Ogre::ColourValue(1,0,0,1);
 
   // The variance Shape object's color
   Ogre::ColourValue color_variance_;
+
+  void updateCircle(Ogre::ManualObject *, Ogre::Vector3 &, double rad, bool first_time=false);
+  void updateArrow(Ogre::ManualObject *, Ogre::Vector3 &p, Ogre::Quaternion &q, double rad, bool first_time=false);
 };
 
 }

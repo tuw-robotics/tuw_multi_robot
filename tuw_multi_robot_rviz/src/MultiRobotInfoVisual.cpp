@@ -21,7 +21,7 @@ namespace tuw_multi_robot_rviz {
     default_size_ = c;
     for (auto &it : robot2pose_map_)
     {
-      it.second.resize(default_size_);
+      it.second.pose.resize(default_size_);
     }
   }
 
@@ -82,63 +82,101 @@ namespace tuw_multi_robot_rviz {
     }
   }
 
-  std::vector<rviz::Object*> MultiRobotInfoVisual::make_robot(Ogre::Vector3 &position, Ogre::Quaternion &orientation)
+  void MultiRobotInfoVisual::updateCircle(Ogre::ManualObject *circle, Ogre::Vector3 &position, double rad, bool first_time)
   {
-    rviz::Object* arrow_ptr;
-    //std::shared_ptr<rviz::BillboardLine> billboard_ptr;
+    if (first_time)
+      circle->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP);
+    else
+      circle->beginUpdate(0);
+
+    double accuracy = 20;
+    double factor = 2.0 * M_PI / accuracy;
+
+    double theta=0.0;
+    unsigned int point_index = 0;
+    for (; theta < 2.0*M_PI; theta += factor) {
+      double s_theta = rad * sin(theta);
+      double c_theta = rad * cos(theta);
+      circle->position(Ogre::Vector3(c_theta,s_theta,0) + position);
+      circle->colour(color_pose_);
+      circle->index(point_index++);
+    }
+
+    circle->index(0);
+    circle->end();
+  }
+
+  void MultiRobotInfoVisual::updateArrow(Ogre::ManualObject* arrow_ptr, Ogre::Vector3 &position, Ogre::Quaternion &orientation, double rad, bool first_time)
+  {
+    if (first_time)
+      arrow_ptr->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_TRIANGLE_LIST);
+    else
+      arrow_ptr->beginUpdate(0);
+
+    double accuracy = 3;
+    double factor = 2.0 * M_PI / accuracy;
+
+    double theta=0.0;
+    unsigned int point_index = 0;
+    for (; point_index < accuracy; theta += factor) {
+      double s_theta = rad * sin(theta);
+      double c_theta = rad * cos(theta);
+      Ogre::Vector3 local_pose = Ogre::Vector3(c_theta, s_theta, 0);
+      Ogre::Matrix3 r_orient;
+      orientation.ToRotationMatrix(r_orient);
+      local_pose = r_orient * local_pose;
+      if (point_index==0)
+      {
+        theta +=0.5;
+      } else if (point_index==1)
+      {
+        theta -=1.0;
+      }
+      arrow_ptr->position(local_pose + position);
+      arrow_ptr->colour(color_pose_);
+      arrow_ptr->index(point_index++);
+    }
+    arrow_ptr->triangle(0,1,2);
+
+    arrow_ptr->index(0);
+    arrow_ptr->end();
+  }
+
+  std::vector<Ogre::ManualObject*> MultiRobotInfoVisual::make_robot(Ogre::Vector3 &position, Ogre::Quaternion &orientation, double rad)
+  {
+    Ogre::ManualObject *arrow_ptr = scene_manager_->createManualObject("r_arrow_" + std::to_string(this->robot_renderings_map_.size()));
+    Ogre::ManualObject *circle = scene_manager_->createManualObject("r_circle_" + std::to_string(this->robot_renderings_map_.size()));
 
     //Arrow
     {
-      arrow_ptr = new rviz::Arrow(
-                                 this->scene_manager_,
-                                 this->frame_node_, 1.5,0.2,0.2,0.25);
-      arrow_ptr->setScale(Ogre::Vector3(1,1,1));
-      arrow_ptr->setColor(1,0,0,1);
+      updateArrow(arrow_ptr, position, orientation, rad, true);
+
+      frame_node_->createChildSceneNode()->attachObject(arrow_ptr);
     }
 
+    //Circle
     {
-      //billboard_ptr = std::make_shared<rviz::BillboardLine>(this->scene_manager_,
-      //                                                      this->frame_node_);
-      //billboard_ptr->setLineWidth(5.0);
-      //billboard_ptr->setMaxPointsPerLine(2);
-      //Ogre::Vector3 offset = Ogre::Vector3(1,0.0,0);
-      //double accuracy = 50;
-      //double factor = 2.0 * M_PI / accuracy;
+      updateCircle(circle, position, rad, true);
 
-      //billboard_ptr->setNumLines(static_cast<int>(accuracy));
-      //double theta=0.0;
-      //for (; theta < 2.0*M_PI; theta += factor) {
-      //  double s_theta = sin(theta);
-      //  double c_theta = cos(theta);
-      //  billboard_ptr->addPoint(Ogre::Vector3(c_theta, 0, s_theta));
-      //  theta += factor;
-      //  s_theta = sin(theta);
-      //  c_theta = cos(theta);
-      //  billboard_ptr->addPoint(Ogre::Vector3(c_theta, 0, s_theta));
-      //  billboard_ptr->newLine();
-      //}
+      frame_node_->createChildSceneNode()->attachObject(circle);
     }
 
-    //billboard_ptr->setPosition(position);
-
-    Ogre::Quaternion orient_x = Ogre::Quaternion(Ogre::Radian(-Ogre::Math::HALF_PI), Ogre::Vector3::UNIT_Y);
-    arrow_ptr->setPosition(position);
-    arrow_ptr->setOrientation(orientation * orient_x);
-
-    return std::vector<rviz::Object*>{ arrow_ptr /*, billboard_ptr */};
+    return std::vector<Ogre::ManualObject*>{ arrow_ptr, circle };
   }
 
   void MultiRobotInfoVisual::doRender()
   {
     for (map_iterator it = robot2pose_map_.begin(); it != robot2pose_map_.end(); ++it)
     {
+
       if (disabled_robots_.find(it->first) != disabled_robots_.end())
       {
         return;
       }
 
       //TODO: for now only the last pose is shown
-      const auto pose = it->second.front().pose;
+      const auto pose = it->second.pose.front().pose;
+      double robot_rad = it->second.robot_radius;
       //TODO: this needs to be done otherwise rviz crashes when all arrows are painted at position zero (which is a bad indicator for rviz...)
       if (pose.position.x == 0 && pose.position.y == 0 && pose.position.z == 0)
         continue;
@@ -152,27 +190,22 @@ namespace tuw_multi_robot_rviz {
       if (it_arrows == robot_renderings_map_.end())
       {
           robot_renderings_map_.insert(std::pair<std::string,
-                                       std::vector<rviz::Object*>>(
-                                         it->first,
-                                         make_robot(position, orientation)));
+                                       std::vector<Ogre::ManualObject*>>(
+                                       it->first,
+                                       make_robot(position, orientation,robot_rad)));
       } else {
-          for (int ii = 0; ii < it_arrows->second.size(); ++ii)
-          {
-            rviz::Object* r_obj = it_arrows->second[ii];
-            if (dynamic_cast<rviz::Arrow*>(r_obj))
-            {
-              Ogre::Quaternion orient_x = Ogre::Quaternion(Ogre::Radian(-Ogre::Math::HALF_PI), Ogre::Vector3::UNIT_Y);
-              r_obj->setPosition(position);
-              r_obj->setOrientation(orientation * orient_x);
-            }
-            else
-            {
-              r_obj->setPosition(position);
-              r_obj->setOrientation(orientation);
-            }
-          }
+         if (it_arrows->second.size())
+         {
+           Ogre::ManualObject *r_obj = it_arrows->second[0];
+           updateArrow(r_obj, position, orientation, robot_rad);
+
+           Ogre::ManualObject* circle = it_arrows->second[1];
+           updateCircle(circle, position, robot_rad);
+           //r_obj->setPosition(position);
+           //r_obj->setOrientation(orientation);
+         }
       }
-    }
+    } //end for
 
     last_render_time_ = ros::Time::now();
   }
@@ -183,42 +216,22 @@ namespace tuw_multi_robot_rviz {
 
     if (it == robot2pose_map_.end())
     {
-      robot2pose_map_.insert(internal_map_type(_msg->robot_name, boost::circular_buffer<geometry_msgs::PoseWithCovariance>(default_size_)));
+      RobotAttributes ra;
+      ra.pose = boost::circular_buffer<geometry_msgs::PoseWithCovariance>(default_size_);
+      ra.robot_radius = _msg->shape_variables.size() ? _msg->shape_variables[0] : 1.0;
+
+      robot2pose_map_.insert(internal_map_type(_msg->robot_name, ra));
       it = robot2pose_map_.find(_msg->robot_name);
       recycle_map_.insert(std::pair<std::string, ros::Time>(_msg->robot_name, ros::Time(0)));
     }
 
-    it->second.push_front(_msg->pose);
+    it->second.pose.push_front(_msg->pose);
+    it->second.robot_radius = _msg->shape_variables.size() ? _msg->shape_variables[0] : 1.0;
+
     if ((ros::Time::now() - last_render_time_) > render_dur_thresh_)
     {
-      //std::cout << "Rendering now " << std::endl;
       doRender();
-      //std::cout << "Rendering finished " << std::endl;
     }
-
-    //recycle_map_.find(_msg->robot_name)->second = ros::Time::now();
-    //auto recycled_robots_ = recycle();
-
-    //Just for testing, this should never be needed.
-    //auto rName = _msg->robot_name;
-    //auto it_r = std::find_if(recycled_robots_.begin(), recycled_robots_.end(),
-    //                         [&rName](const std::string &n)
-    //                            {
-    //                              if (n==rName) {
-    //                                return true;
-    //                              }});
-
-    //if (it_r != recycled_robots_.end())
-    //{
-    //  return;
-    //}
-
-    //Always store the current robot pose, even if the robot is not visualized currently therefore check below
-
-
-    //ROS_INFO("Tracking: %d poses", robot2pose_map_.size());
-    //ROS_INFO("Rendering %d robots", robot_renderings_map_.size());
-    //ROS_INFO("Disabled robots %d", disabled_robots_.size());
 
   }
 
@@ -234,23 +247,24 @@ namespace tuw_multi_robot_rviz {
 
   void MultiRobotInfoVisual::setScalePose(float scale)
   {
-    for (auto &it : robot_renderings_map_)
-    {
-      for (auto &renderings : it.second)
-      {
-        renderings->setScale(Ogre::Vector3(scale,scale,scale));
-      }
-    }
+    //for (auto &it : robot_renderings_map_)
+    //{
+    //  //for (auto &renderings : it.second)
+    //  //{
+    //  //  renderings->setScale(Ogre::Vector3(scale,scale,scale));
+    //  //}
+    //}
   }
 
   void MultiRobotInfoVisual::setColorPose(Ogre::ColourValue color)
   {
-    for (auto &it : robot_renderings_map_)
-    {
-      for (auto &renderings : it.second)
-      {
-        renderings->setColor(color.r,color.g,color.b,color.a);
-      }
-    }
+    color_pose_ = color;
+    //for (auto &it : robot_renderings_map_)
+    //{
+    //  for (auto &renderings : it.second)
+    //  {
+    //    renderings->setColor(color.r,color.g,color.b,color.a);
+    //  }
+    //}
   }
 }
