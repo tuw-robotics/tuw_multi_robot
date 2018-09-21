@@ -55,11 +55,9 @@
   <build_depend>rviz</build_depend>
   <build_depend>tuw_multi_robot_msgs</build_depend>
   <build_depend>nav_msgs</build_depend>
-  <build_depend>tuw_object_rviz</build_depend>
   <exec_depend>rviz</exec_depend>
   <exec_depend>tuw_multi_robot_msgs</exec_depend>
   <exec_depend>nav_msgs</exec_depend>
-  <exec_depend>tuw_object_rviz</exec_depend>
 
 
 
