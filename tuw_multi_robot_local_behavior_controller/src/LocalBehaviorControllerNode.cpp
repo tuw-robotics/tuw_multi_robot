@@ -66,6 +66,8 @@ LocalBehaviorControllerNode::LocalBehaviorControllerNode(ros::NodeHandle &n)
   n_param_.param<std::string>("frame_map", frame_map_, "map");
   
   n_param_.param<double>("update_rate", update_rate_, 1.0);
+  
+  n_param_.param<double>("update_rate_info", update_rate_info_, 5.0);
 
   subPose_ = n.subscribe<geometry_msgs::PoseWithCovarianceStamped>(topic_pose_, 1,
                                                                    &LocalBehaviorControllerNode::subPoseCb, this);
@@ -80,11 +82,16 @@ LocalBehaviorControllerNode::LocalBehaviorControllerNode(ros::NodeHandle &n)
   
   ros::Rate r(update_rate_);
 
+  int robot_info_trigger_ = 0;
   while (ros::ok())
   {
     r.sleep();
     ros::spinOnce();
-    publishRobotInfo();
+    if(robot_info_trigger_ >  update_rate_ / update_rate_info_) {
+        publishRobotInfo();
+        robot_info_trigger_ = 0;
+    }            
+    robot_info_trigger_++;
   }
 }
 

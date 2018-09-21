@@ -63,6 +63,7 @@ private:
 
   // ROS Topic names
   double update_rate_;
+  double update_rate_info_;
   std::string topic_path_;
   std::string topic_route_;
   std::string topic_pose_;

@@ -58,7 +58,7 @@ define background model
 # set the resolution of the underlying raytrace model in meters
 resolution 0.02
 
-interval_sim 100  # simulation timestep in milliseconds
+interval_sim 10  # simulation timestep in milliseconds
 
 
 window
@@ -168,14 +168,14 @@ pioneer2dx_no_sonar
 (
   # can refer to the robot by this name
   name "robot_1"
-  color "green" 
+  color "blue" 
   arrow(pose [ 0.0 0.000 0.01 0.000 ])
   pose [ 3 -6.20 0 180 ] 
 )
 pioneer2dx_no_sonar
 (
   name "robot_2"
-  color "blue"
+  color "red"
   arrow(pose [ 0.0 0.000 0.01 0.000 ])
   pose [ -3 -3.75 0 0 ]
 )
@@ -183,7 +183,7 @@ pioneer2dx_no_sonar
 pioneer2dx_no_sonar
 (
   name "robot_3"
-  color "yellow"
+  color "blue"
   arrow(pose [ 0.0 0.000 0.01 0.000 ])
   pose [  3 -3.75 0 180 ]
 )
@@ -191,7 +191,7 @@ pioneer2dx_no_sonar
 pioneer2dx_no_sonar
 (
   name "robot_4"
-  color "cyan"
+  color "red"
   arrow(pose [ 0.0 0.000 0.01 0.000 ])
   pose [ -3 -1.2 0 0 ] 
 )
@@ -199,7 +199,7 @@ pioneer2dx_no_sonar
 pioneer2dx_no_sonar
 (
   name "robot_5"
-  color "magenta"
+  color "blue"
   arrow(pose [ 0.0 0.000 0.01 0.000 ])
   pose [ -1 -1.2 0 180 ] 
 )
@@ -207,7 +207,7 @@ pioneer2dx_no_sonar
 pioneer2dx_no_sonar
 (
   name "robot_6"
-  color "NavyBlue"
+  color "red"
   arrow(pose [ 0.0 0.000 0.01 0.000 ])
   pose [-3 1.2 0 0 ]
 )
@@ -215,7 +215,7 @@ pioneer2dx_no_sonar
 pioneer2dx_no_sonar
 (
   name "robot_7"
-  color "DarkSeaGreen"
+  color "blue"
   arrow(pose [ 0.0 0.000 0.01 0.000 ])
   pose [ -1 1.2 0 0 ]
 )
@@ -223,7 +223,7 @@ pioneer2dx_no_sonar
 pioneer2dx_no_sonar
 (
   name "robot_8"
-  color "DarkKhaki"
+  color "red"
   arrow(pose [ 0.0 0.000 0.01 0.000 ])
   pose [ 0 3.75 0 0 ]
 )
@@ -231,7 +231,7 @@ pioneer2dx_no_sonar
 pioneer2dx_no_sonar
 (
   name "robot_9"
-  color "peru"
+  color "blue"
   arrow(pose [ 0.0 0.000 0.01 0.000 ])
   pose [ 2 3.75.2 0 180 ]
 )
@@ -239,7 +239,7 @@ pioneer2dx_no_sonar
 pioneer2dx_no_sonar
 (
   name "robot_10"
-  color "tomato"
+  color "red"
   arrow(pose [ 0.0 0.000 0.01 0.000 ])
   pose [ -3 6.2 0 0 ]
 )
@@ -247,7 +247,7 @@ pioneer2dx_no_sonar
 pioneer2dx_no_sonar
 (
   name "robot_11"
-  color "plum"
+  color "blue"
   arrow(pose [ 0.0 0.000 0.01 0.000 ])
   pose [ 3 6.2 0 180 ]
 )
