@@ -109,7 +109,7 @@ LocalMultiRobotControllerNode::LocalMultiRobotControllerNode(ros::NodeHandle &n)
     
     n_param_.param<double>("update_rate", update_rate_, 20.0);
     
-    n_param_.param<double>("update_rate_info", update_rate_info_, 5.0);
+    n_param_.param<double>("update_rate_info", update_rate_info_, 1.0);
     
     ROS_INFO("Multi Robot Controller:  %s", topic_cmdVel_.c_str());
 
@@ -135,11 +135,12 @@ LocalMultiRobotControllerNode::LocalMultiRobotControllerNode(ros::NodeHandle &n)
         {
             r.sleep();
             ros::spinOnce();
-                publishRobotInfo();
             if(robot_info_trigger_ >  (update_rate_ / update_rate_info_)) {
                 robot_info_trigger_ = 0;
-            }            
-            robot_info_trigger_++;
+                publishRobotInfo();
+            } else {           
+                robot_info_trigger_++;
+            }
         }
 
 }
