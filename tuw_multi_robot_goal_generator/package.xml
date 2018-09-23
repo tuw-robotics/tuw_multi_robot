@@ -2,18 +2,22 @@
 <package format="2">
   <name>tuw_multi_robot_goal_generator</name>
   <version>0.0.0</version>
-  <description>The tuw_multi_robot_goal_generator package</description>
+  <description>The tuw_multi_robot_goal_generator package was designed to generate, store, and read goal lists for the tuw_multi_robot_router.
+    The goal_saver is able to store publish goal msgs of type tuw_multi_robot_msgs::RobotGoalsArray in a human readable form. 
+    The goal_server is able to read and publish this msgs and to read patches of saved goals for testing.
+    The goals_random node subscribes to the occupancy grid and is able to auto generate valid goals for testing.
+      </description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
   <!-- <maintainer email="jane.doe@example.com">Jane Doe</maintainer> -->
-  <maintainer email="max@todo.todo">max</maintainer>
+  <maintainer email="markus.bader@tuwien.ac.at">Markus Bader</maintainer>
 
 
   <!-- One license tag required, multiple allowed, one license per tag -->
   <!-- Commonly used license strings: -->
   <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
-  <license>BST</license>
+  <license>BSD</license>
 
 
   <!-- Url tags are optional, but multiple are allowed, one per tag -->
@@ -25,7 +29,7 @@
   <!-- Author tags are optional, multiple are allowed, one per tag -->
   <!-- Authors do not have to be maintainers, but could be -->
   <!-- Example: -->
-  <!-- <author email="jane.doe@example.com">Jane Doe</author> -->
+  <author email="markus.bader@tuwien.ac.at">Markus Bader</author>
 
 
   <!-- The *depend tags are used to specify dependencies -->

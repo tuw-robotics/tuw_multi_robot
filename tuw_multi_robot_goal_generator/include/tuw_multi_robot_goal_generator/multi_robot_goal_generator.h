@@ -23,7 +23,7 @@ private:
     tuw::GridMap<int8_t> map_;
     tuw::GridMap<int8_t> map_goals_;
     int max_resample_;                     /// retries/max_resample steps to find a free spot for a goal  [m]
-    int nr_of_avaliable_robots_;           /// parameter  count
+    int nr_of_available_robots_;           /// parameter  count
     double distance_boundary_;             /// parameter  [m]
     double distance_between_robots_;       /// parameter  [m]
     double distance_to_map_border_;        /// parameter  [m]
