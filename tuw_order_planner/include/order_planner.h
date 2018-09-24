@@ -5,7 +5,7 @@
 
 #include <ros/ros.h>
 #include <tuw_multi_robot_msgs/OrderArray.h>
-#include <tuw_multi_robot_msgs/GoodPosition.h>
+#include <tuw_multi_robot_msgs/OrderPosition.h>
 #include <tuw_multi_robot_msgs/Pickup.h>
 #include <tuw_multi_robot_msgs/RobotInfo.h>
 #include <nav_msgs/Odometry.h>
@@ -39,16 +39,16 @@ private:
   void reset();
 
   tuw_multi_robot_msgs::Order* findOrderByRobotName(std::string robot_name);
-  tuw_multi_robot_msgs::Order* findOrderByGoodId(int id);
-  int findGoodIdByRobotName(std::string robot_name);
+  tuw_multi_robot_msgs::Order* findOrderByOrderId(int id);
+  int findOrderIdByRobotName(std::string robot_name);
 
-  void publishGoodPosition(int good_id, geometry_msgs::Pose pose);
-  void publishPickup(std::string robot_name, int good_id);
+  void publishOrderPosition(int order_id, geometry_msgs::Pose pose);
+  void publishPickup(std::string robot_name, int order_id);
 
 
   ros::Publisher pub_robot_goals_;
   ros::Publisher pub_pickup_;
-  ros::Publisher pub_good_position_;
+  ros::Publisher pub_order_position_;
   std::vector<ros::Subscriber> subscribers_;
   ros::NodeHandle* nodeHandle_;
 
@@ -56,7 +56,7 @@ private:
   std::map<std::string, int> robots_status_;
   std::map<std::string, int> robots_progress_;
   std::vector<TransportPair> transport_pairs_;
-  std::map<std::string, int> attached_goods_;
+  std::map<std::string, int> attached_orders_;
 
   std::vector<tuw_multi_robot_msgs::Order> orders_;
 

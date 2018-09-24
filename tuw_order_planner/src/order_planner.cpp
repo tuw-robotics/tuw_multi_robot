@@ -17,7 +17,7 @@ OrderPlanner::OrderPlanner(int argc, char** argv)
   subscribeRobotOdom();
   pub_robot_goals_ = nodeHandle_->advertise<tuw_multi_robot_msgs::RobotGoalsArray>("goals", 0);
   pub_pickup_ = nodeHandle_->advertise<tuw_multi_robot_msgs::Pickup>("pickup", 10);
-  pub_good_position_ = nodeHandle_->advertise<tuw_multi_robot_msgs::GoodPosition>("good_position", 10);
+  pub_order_position_ = nodeHandle_->advertise<tuw_multi_robot_msgs::OrderPosition>("order_position", 10);
 }
 
 void OrderPlanner::run()
@@ -53,8 +53,8 @@ void OrderPlanner::reset()
     ++search;
   }
 
-  search = attached_goods_.begin();
-  while (search != attached_goods_.end())
+  search = attached_orders_.begin();
+  while (search != attached_orders_.end())
   {
     search->second = tuw_multi_robot_msgs::RobotInfo::GOOD_EMPTY;
     ++search;
@@ -66,8 +66,8 @@ void OrderPlanner::robotInfoCallback(const tuw_multi_robot_msgs::RobotInfo::Cons
 {
   std::string robot_name = robotInfo->robot_name;
   int status = robotInfo->status;
-  int goodId = robotInfo->good_id;
-  // dont care about good id from robot_info here
+  int orderId = robotInfo->order_id;
+  // dont care about order id from robot_info here
 
   std::map<std::string, geometry_msgs::Pose*>::iterator active_robot = subscribed_robots_.find(robot_name);
   if (active_robot == subscribed_robots_.end())
@@ -83,8 +83,8 @@ void OrderPlanner::robotInfoCallback(const tuw_multi_robot_msgs::RobotInfo::Cons
       {
         mode_ = MODE_PROGRESS;
 
-        int good_id = findGoodIdByRobotName(robot_name);
-        tuw_multi_robot_msgs::Order* order = findOrderByGoodId(good_id);
+        int order_id = findOrderIdByRobotName(robot_name);
+        tuw_multi_robot_msgs::Order* order = findOrderByOrderId(order_id);
 
         if (order != nullptr)
         {
@@ -92,34 +92,34 @@ void OrderPlanner::robotInfoCallback(const tuw_multi_robot_msgs::RobotInfo::Cons
 
           if (progress == 1)
           {
-            // robot pick up good
+            // robot pick up order
 
-            publishPickup(robot_name, good_id);
+            publishPickup(robot_name, order_id);
 
-            std::map<std::string, int>::iterator at_search = attached_goods_.find(robot_name);
-            if (at_search != attached_goods_.end())
+            std::map<std::string, int>::iterator at_search = attached_orders_.find(robot_name);
+            if (at_search != attached_orders_.end())
             {
-              if (good_id != at_search->second)
-                at_search->second = good_id;
+              if (order_id != at_search->second)
+                at_search->second = order_id;
             }
             else
             {
-              attached_goods_.insert(std::map<std::string, int>::value_type(robot_name, good_id));
+              attached_orders_.insert(std::map<std::string, int>::value_type(robot_name, order_id));
             }
 
             route();
           }
-          else if (good_id >= 0 && order != nullptr && progress == order->positions.size())
+          else if (order_id >= 0 && order != nullptr && progress == order->positions.size())
           {
-            // robot drop good
+            // robot drop order
 
-            std::map<std::string, int>::iterator at_search = attached_goods_.find(robot_name);
+            std::map<std::string, int>::iterator at_search = attached_orders_.find(robot_name);
 
             publishPickup(robot_name, tuw_multi_robot_msgs::RobotInfo::GOOD_EMPTY);
             at_search->second = tuw_multi_robot_msgs::RobotInfo::GOOD_EMPTY;
 
             geometry_msgs::Pose pose = order->positions.at(order->positions.size() - 1);
-            publishGoodPosition(good_id, pose);
+            publishOrderPosition(order_id, pose);
           }
           else
           {
@@ -147,7 +147,7 @@ void OrderPlanner::ordersCallback(const tuw_multi_robot_msgs::OrderArray::ConstP
   {
     tuw_multi_robot_msgs::Order order = orders_.at(i);
     geometry_msgs::Pose pose = order.positions.at(0);
-    publishGoodPosition(order.good_id, order.positions.at(0));
+    publishOrderPosition(order.order_id, order.positions.at(0));
   }
 
   route();
@@ -167,7 +167,7 @@ void OrderPlanner::route()
     std::vector<std::string> consumed_robots;
     for (auto const& pair : transport_pairs_)
     {
-      tuw_multi_robot_msgs::Order* order = findOrderByGoodId(pair.good_id);
+      tuw_multi_robot_msgs::Order* order = findOrderByOrderId(pair.order_id);
 
       if (order == nullptr)
         continue;
@@ -319,61 +319,61 @@ void OrderPlanner::odomCallback(const nav_msgs::Odometry& odom)
 
   search->second = new_pose;
 
-  std::map<std::string, int>::iterator attached_good = attached_goods_.find(robot_name);
-  if (attached_good != attached_goods_.end())
+  std::map<std::string, int>::iterator attached_order = attached_orders_.find(robot_name);
+  if (attached_order != attached_orders_.end())
   {
-    int good_id = attached_good->second;
-    if (good_id >= 0)
+    int order_id = attached_order->second;
+    if (order_id >= 0)
     {
-      publishGoodPosition(good_id, odom.pose.pose);
+      publishOrderPosition(order_id, odom.pose.pose);
     }
   }
 }
 
 tuw_multi_robot_msgs::Order* OrderPlanner::findOrderByRobotName(std::string robot_name)
 {
-  return findOrderByGoodId(findGoodIdByRobotName(robot_name));
+  return findOrderByOrderId(findOrderIdByRobotName(robot_name));
 }
 
-tuw_multi_robot_msgs::Order* OrderPlanner::findOrderByGoodId(int id)
+tuw_multi_robot_msgs::Order* OrderPlanner::findOrderByOrderId(int id)
 {
   if (id < 0)
     return nullptr;
   for (int i = 0; i < orders_.size(); ++i)
   {
     tuw_multi_robot_msgs::Order* order = &(orders_.at(i));
-    if (order->good_id == id)
+    if (order->order_id == id)
       return order;
   }
   return nullptr;
 }
 
-int OrderPlanner::findGoodIdByRobotName(std::string robot_name)
+int OrderPlanner::findOrderIdByRobotName(std::string robot_name)
 {
-  int good_id;
+  int order_id;
   for (auto const& pair : transport_pairs_)
   {
     if (robot_name == pair.robot_name)
     {
-      return pair.good_id;
+      return pair.order_id;
     }
   }
   return -1;
 }
 
-void OrderPlanner::publishGoodPosition(int good_id, geometry_msgs::Pose pose)
+void OrderPlanner::publishOrderPosition(int order_id, geometry_msgs::Pose pose)
 {
-  tuw_multi_robot_msgs::GoodPosition goodPosition;
-  goodPosition.good_id = good_id;
-  goodPosition.position = pose;
-  pub_good_position_.publish(goodPosition);
+  tuw_multi_robot_msgs::OrderPosition orderPosition;
+  orderPosition.order_id = order_id;
+  orderPosition.position = pose;
+  pub_order_position_.publish(orderPosition);
 }
 
-void OrderPlanner::publishPickup(std::string robot_name, int good_id)
+void OrderPlanner::publishPickup(std::string robot_name, int order_id)
 {
   tuw_multi_robot_msgs::Pickup pickup;
   pickup.robot_name = robot_name;
-  pickup.good_id = good_id;
+  pickup.order_id = order_id;
   pub_pickup_.publish(pickup);
 }
 

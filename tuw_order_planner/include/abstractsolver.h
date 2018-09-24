@@ -13,7 +13,7 @@ namespace tuw_order_planner
 struct TransportPair
 {
   std::string robot_name;
-  int good_id;
+  int order_id;
 };
 
 class AbstractSolver

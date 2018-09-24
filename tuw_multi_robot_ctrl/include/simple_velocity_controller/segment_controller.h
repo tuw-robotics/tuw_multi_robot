@@ -104,6 +104,10 @@ class SegmentController
     int getStatus();
     void setGoodId(int);
     int getGoodId();
+    void setOrderId(int);
+    int getOrderId();
+    void setOrderStatus(int);
+    int getOrderStatus();
 
   private:
     bool checkPrecondition(PathPoint p);
@@ -124,6 +128,8 @@ class SegmentController
 
     int robot_status = tuw_multi_robot_msgs::RobotInfo::STATUS_STOPPED;
     int goodId;
+    int orderId;
+    int orderStatus;
 
     std::vector<int> actualPreconditions;
 

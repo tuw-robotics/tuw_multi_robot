@@ -119,6 +119,8 @@ MultiSegmentControllerNode::MultiSegmentControllerNode(ros::NodeHandle &n) : n_(
         subCtrl_[i] = n.subscribe<std_msgs::String>(robot_names_[i] + "/" + topic_ctrl_, 1, boost::bind(&MultiSegmentControllerNode::subCtrlCb, this, _1, i));
 
         controller[i].setGoodId(tuw_multi_robot_msgs::RobotInfo::GOOD_EMPTY);
+        controller[i].setOrderStatus(tuw_multi_robot_msgs::RobotInfo::ORDER_NONE);
+        controller[i].setOrderId(-1);
     }
 
     subPickup_ = n.subscribe("/pickup", 10, &velocity_controller::MultiSegmentControllerNode::subPickupCb, this);
@@ -241,7 +243,8 @@ void velocity_controller::MultiSegmentControllerNode::subPickupCb(const tuw_mult
     {
         if ( robot_names_[i] == pickup->robot_name )
         {
-            controller[i].setGoodId(pickup->good_id);
+            //controller[i].setGoodId(pickup->good_id);
+            controller[i].setOrderId(pickup->order_id);
             publishRobotInfo();
             break;
         }

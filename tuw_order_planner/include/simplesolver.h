@@ -9,7 +9,7 @@ struct dist_pair
 {
   float distance;
   std::string robot_name;
-  int good_id;
+  int order_id;
 };
 
 class SimpleSolver : public AbstractSolver

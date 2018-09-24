@@ -196,6 +196,10 @@ namespace velocity_controller
         return robot_status;
     }
 
+    void SegmentController::setOrderId(int orderId)
+    {
+        this->orderId = orderId;
+    }
     void SegmentController::setGoodId(int goodId)
     {
         this->goodId = goodId;
@@ -204,6 +208,14 @@ namespace velocity_controller
     int SegmentController::getGoodId()
     {
         return goodId;
+    }
+    void SegmentController::setOrderStatus(int orderStatus)
+    {
+        this->orderStatus = orderStatus;
+    }
+    int SegmentController::getOrderStatus()
+    {
+        return this->orderStatus;
     }
 
 }

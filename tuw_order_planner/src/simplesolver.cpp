@@ -42,7 +42,7 @@ std::vector<TransportPair> SimpleSolver::solve()
 
       dist_pair pair;
       pair.distance = dist;
-      pair.good_id = order.good_id;
+      pair.order_id = order.order_id;
       pair.robot_name = robot_name;
 
       distance_pairs.push_back(pair);
@@ -58,15 +58,15 @@ std::vector<TransportPair> SimpleSolver::solve()
   std::vector<TransportPair> plan;
   for (auto const& pair : distance_pairs)
   {
-    if (std::find(consumed_orders.begin(), consumed_orders.end(), pair.good_id) != consumed_orders.end())
+    if (std::find(consumed_orders.begin(), consumed_orders.end(), pair.order_id) != consumed_orders.end())
       continue;
     if (std::find(consumed_robots.begin(), consumed_robots.end(), pair.robot_name) != consumed_robots.end())
       continue;
-    consumed_orders.push_back(pair.good_id);
+    consumed_orders.push_back(pair.order_id);
     consumed_robots.push_back(pair.robot_name);
     TransportPair t_pair;
     t_pair.robot_name = pair.robot_name;
-    t_pair.good_id = pair.good_id;
+    t_pair.order_id = pair.order_id;
     plan.push_back(t_pair);
   }
 
