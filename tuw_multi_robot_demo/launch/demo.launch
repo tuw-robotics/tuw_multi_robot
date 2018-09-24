@@ -59,13 +59,13 @@
     <include file="$(find tuw_multi_robot_demo)/launch/local_multi_robot_controller.launch">
       <arg name="nr_of_robots" value="$(arg nr_of_robots)" />
       <arg name="update_rate_info" value="$(arg update_rate_info)" />
+      <arg name="node_name" value="local_controller_one_for_all" />
     </include>
   </group>
   <group unless="$(arg launch_local_controller_one_for_all)">
     <include file="$(find tuw_multi_robot_demo)/launch/local_controller_recursive.launch">
       <arg name="nr_of_robots" default="$(arg nr_of_robots)"/> 
       <arg name="robot_name_prefix" default="robot_"/>
-      <arg name="update_rate_info" value="$(arg update_rate_info)" />
     </include>
   </group>
 </group>

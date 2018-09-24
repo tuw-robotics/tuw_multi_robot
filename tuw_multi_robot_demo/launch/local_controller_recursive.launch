@@ -3,7 +3,6 @@
 <launch>
 <arg name="nr_of_robots" default="1"/> 
 <arg name="robot_name_prefix" default="robot_"/>
-<arg name="update_rate_info" value="1.0" />
       
 <!-- reduce the loop counter "nr_of_robots-1" = robot_id -->
 <arg name="robot_id" value="$(eval arg('nr_of_robots') - 1)"/>
@@ -11,7 +10,6 @@
 <!-- launch the controller -->
 <include file="$(find tuw_multi_robot_demo)/launch/local_controller.launch">
     <arg name="robot_name" value="$(arg robot_name_prefix)$(arg robot_id)" />
-    <arg name="update_rate_info" value="$(arg update_rate_info)" />
 </include>
 
 <!-- recursive call -->
