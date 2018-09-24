@@ -13,7 +13,7 @@
 
 GoalHandlerNode::GoalHandlerNode ( ros::NodeHandle & n, Mode mode )
     : n_ ( n ),  n_param_ ( "~" ), counter_(0) {
-    n_param_.param<std::string> ( "file_name", file_name_, "/tmp/goals.txt" );
+    n_param_.param<std::string> ( "file_name", file_name_, "/tmp/goals999.txt" );
     
     n_param_.param<bool> ( "run_once", run_once_, "false" );
     if (mode == READ) {
@@ -37,7 +37,7 @@ void GoalHandlerNode::callback ( const tuw_multi_robot_msgs::RobotGoalsArray& ms
     if(run_once_){
         sprintf(file_name, "%s", file_name_.c_str());
     } else {
-        sprintf(file_name, "%s%03i", file_name_.c_str(), counter_);
+        sprintf(file_name, "%s%03i.txt", file_name_.c_str(), counter_);
     }
     file.open ( file_name );
     ROS_INFO ( "Write file %s", file_name );
@@ -72,7 +72,7 @@ void GoalHandlerNode::publishGoal (  ) {
     if(run_once_){
         sprintf(file_name, "%s", file_name_.c_str());
     } else {
-        sprintf(file_name, "%s%03i", file_name_.c_str(), counter_);
+        sprintf(file_name, "%s%03i.txt", file_name_.c_str(), counter_);
     }
     
     std::ifstream file ( file_name );
