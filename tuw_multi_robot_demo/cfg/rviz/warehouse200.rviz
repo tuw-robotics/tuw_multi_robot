@@ -1,0 +1,359 @@
+Panels:
+  - Class: rviz/Displays
+    Help Height: 78
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Global Options1
+        - /Status1
+        - /MultiRobotInfo1
+        - /RobotGoalArray1
+      Splitter Ratio: 0.5
+    Tree Height: 363
+  - Class: rviz/Selection
+    Name: Selection
+  - Class: rviz/Tool Properties
+    Expanded:
+      - /2D Pose Estimate1
+      - /2D Nav Goal1
+      - /Publish Point1
+      - /Goal  Selector1
+    Name: Tool Properties
+    Splitter Ratio: 0.5886790156364441
+  - Class: rviz/Views
+    Expanded:
+      - /Current View1
+    Name: Views
+    Splitter Ratio: 0.5
+  - Class: rviz/Time
+    Experimental: false
+    Name: Time
+    SyncMode: 0
+    SyncSource: ""
+Preferences:
+  PromptSaveOnExit: true
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Alpha: 0.5
+      Cell Size: 1
+      Class: rviz/Grid
+      Color: 160; 160; 164
+      Enabled: true
+      Line Style:
+        Line Width: 0.029999999329447746
+        Value: Lines
+      Name: Grid
+      Normal Cell Count: 0
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Plane: XY
+      Plane Cell Count: 10
+      Reference Frame: <Fixed Frame>
+      Value: true
+    - Alpha: 0.699999988079071
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: true
+      Name: Map
+      Topic: /map
+      Unreliable: false
+      Use Timestamp: false
+      Value: true
+    - Class: VoronoiGraph
+      Enabled: false
+      History Length: 1
+      Name: VoronoiGraph
+      Path Color: 50; 51; 204
+      Path Points Scale: 0.10000000149011612
+      Topic: /segments
+      Unreliable: false
+      Value: false
+    - Class: MultiRobotInfo
+      Color Pose: 204; 51; 0
+      Enabled: true
+      Keep Alive (s): 5
+      Keep Measurements: 5
+      Name: MultiRobotInfo
+      Robots:
+        robot_0: true
+        robot_1: true
+        robot_10: true
+        robot_100: true
+        robot_101: true
+        robot_102: true
+        robot_103: true
+        robot_104: true
+        robot_105: true
+        robot_106: true
+        robot_107: true
+        robot_108: true
+        robot_109: true
+        robot_11: true
+        robot_110: true
+        robot_111: true
+        robot_112: true
+        robot_113: true
+        robot_114: true
+        robot_115: true
+        robot_116: true
+        robot_117: true
+        robot_118: true
+        robot_119: true
+        robot_12: true
+        robot_120: true
+        robot_121: true
+        robot_122: true
+        robot_123: true
+        robot_124: true
+        robot_125: true
+        robot_126: true
+        robot_127: true
+        robot_128: true
+        robot_129: true
+        robot_13: true
+        robot_130: true
+        robot_131: true
+        robot_132: true
+        robot_133: true
+        robot_134: true
+        robot_135: true
+        robot_136: true
+        robot_137: true
+        robot_138: true
+        robot_139: true
+        robot_14: true
+        robot_140: true
+        robot_141: true
+        robot_142: true
+        robot_143: true
+        robot_144: true
+        robot_145: true
+        robot_146: true
+        robot_147: true
+        robot_148: true
+        robot_149: true
+        robot_15: true
+        robot_150: true
+        robot_151: true
+        robot_152: true
+        robot_153: true
+        robot_154: true
+        robot_155: true
+        robot_156: true
+        robot_157: true
+        robot_158: true
+        robot_159: true
+        robot_16: true
+        robot_160: true
+        robot_161: true
+        robot_162: true
+        robot_163: true
+        robot_164: true
+        robot_165: true
+        robot_166: true
+        robot_167: true
+        robot_168: true
+        robot_169: true
+        robot_17: true
+        robot_170: true
+        robot_171: true
+        robot_172: true
+        robot_173: true
+        robot_174: true
+        robot_175: true
+        robot_176: true
+        robot_177: true
+        robot_178: true
+        robot_179: true
+        robot_18: true
+        robot_180: true
+        robot_181: true
+        robot_182: true
+        robot_183: true
+        robot_184: true
+        robot_185: true
+        robot_186: true
+        robot_187: true
+        robot_188: true
+        robot_189: true
+        robot_19: true
+        robot_190: true
+        robot_191: true
+        robot_192: true
+        robot_193: true
+        robot_194: true
+        robot_195: true
+        robot_196: true
+        robot_197: true
+        robot_198: true
+        robot_199: true
+        robot_2: true
+        robot_20: true
+        robot_21: true
+        robot_22: true
+        robot_23: true
+        robot_24: true
+        robot_25: true
+        robot_26: true
+        robot_27: true
+        robot_28: true
+        robot_29: true
+        robot_3: true
+        robot_30: true
+        robot_31: true
+        robot_32: true
+        robot_33: true
+        robot_34: true
+        robot_35: true
+        robot_36: true
+        robot_37: true
+        robot_38: true
+        robot_39: true
+        robot_4: true
+        robot_40: true
+        robot_41: true
+        robot_42: true
+        robot_43: true
+        robot_44: true
+        robot_45: true
+        robot_46: true
+        robot_47: true
+        robot_48: true
+        robot_49: true
+        robot_5: true
+        robot_50: true
+        robot_51: true
+        robot_52: true
+        robot_53: true
+        robot_54: true
+        robot_55: true
+        robot_56: true
+        robot_57: true
+        robot_58: true
+        robot_59: true
+        robot_6: true
+        robot_60: true
+        robot_61: true
+        robot_62: true
+        robot_63: true
+        robot_64: true
+        robot_65: true
+        robot_66: true
+        robot_67: true
+        robot_68: true
+        robot_69: true
+        robot_7: true
+        robot_70: true
+        robot_71: true
+        robot_72: true
+        robot_73: true
+        robot_74: true
+        robot_75: true
+        robot_76: true
+        robot_77: true
+        robot_78: true
+        robot_79: true
+        robot_8: true
+        robot_80: true
+        robot_81: true
+        robot_82: true
+        robot_83: true
+        robot_84: true
+        robot_85: true
+        robot_86: true
+        robot_87: true
+        robot_88: true
+        robot_89: true
+        robot_9: true
+        robot_90: true
+        robot_91: true
+        robot_92: true
+        robot_93: true
+        robot_94: true
+        robot_95: true
+        robot_96: true
+        robot_97: true
+        robot_98: true
+        robot_99: true
+      Scale Pose: 1
+      Topic: /robot_info
+      Unreliable: false
+      Value: true
+    - Class: RobotGoalArray
+      Color Pose: 78; 154; 6
+      Enabled: true
+      Name: RobotGoalArray
+      Scale Pose: 1
+      Topic: goals
+      Unreliable: false
+      Value: true
+  Enabled: true
+  Global Options:
+    Background Color: 48; 48; 48
+    Default Light: true
+    Fixed Frame: map
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz/Interact
+      Hide Inactive Objects: true
+    - Class: rviz/MoveCamera
+    - Class: rviz/Select
+    - Class: rviz/FocusCamera
+    - Class: rviz/Measure
+    - Class: rviz/SetInitialPose
+      Topic: /initialpose
+    - Class: rviz/SetGoal
+      Topic: /move_base_simple/goal
+    - Class: rviz/PublishPoint
+      Single click: true
+      Topic: /clicked_point
+    - Class: Goal Selector
+      No. robtos: 3
+      Robot Goals:
+        {}
+      Robot Names:
+        Robot 0: robot_0
+        Robot 1: robot_1
+        Robot 2: robot_2
+  Value: true
+  Views:
+    Current:
+      Angle: 0
+      Class: rviz/TopDownOrtho
+      Enable Stereo Rendering:
+        Stereo Eye Separation: 0.05999999865889549
+        Stereo Focal Distance: 1
+        Swap Stereo Eyes: false
+        Value: false
+      Invert Z Axis: false
+      Name: Current View
+      Near Clip Distance: 0.009999999776482582
+      Scale: 8.985701560974121
+      Target Frame: <Fixed Frame>
+      Value: TopDownOrtho (rviz)
+      X: -0.7054492831230164
+      Y: -0.3907702565193176
+    Saved: ~
+Window Geometry:
+  Displays:
+    collapsed: true
+  Height: 860
+  Hide Left Dock: true
+  Hide Right Dock: false
+  QMainWindow State: 000000ff00000000fd000000040000000000000156000002b0fc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073000000003d000002b0000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f000002b0fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003d000002b0000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000003200000003efc0100000002fb0000000800540069006d00650100000000000003200000025600fffffffb0000000800540069006d0065010000000000000450000000000000000000000320000002e500000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730000000000ffffffff0000000000000000
+  Selection:
+    collapsed: false
+  Time:
+    collapsed: false
+  Tool Properties:
+    collapsed: false
+  Views:
+    collapsed: false
+  Width: 800
+  X: 1996
+  Y: 0

@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+
+<launch>
+    <arg name="nr_of_robots" default="3"/>
+    <arg name="update_rate_info" default="1.0"/>
+    <arg name="node_name" default="local_controller"/>
+    
+    <node pkg="tuw_multi_robot_ctrl" type="local_multi_robot_controller" name="$(arg node_name)" output="screen">
+        <param name="nr_of_robots" value="$(arg nr_of_robots)"/>
+        <param name="update_rate_info" value="$(arg update_rate_info)"/>
+    </node>
+    
+</launch>

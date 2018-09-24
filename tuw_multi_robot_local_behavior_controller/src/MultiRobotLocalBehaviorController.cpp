@@ -89,19 +89,18 @@ MultiRobotLocalBehaviorController::MultiRobotLocalBehaviorController(ros::NodeHa
     subSegPath_.resize(no_robots_);
     subOdometry_.resize(no_robots_);
     robot_radius_.resize(no_robots_, robotDefaultRadius_);
+    robot_pose_.resize(no_robots_);
 
-    topic_path_ = "path_synced";
-    n_param_.param("path_topic", topic_path_, topic_path_);
+    n_param_.param<std::string>("path_topic", topic_path_, "path_synced");
 
-    topic_route_ = "route";
-    n_param_.param("route_topic", topic_route_, topic_route_);
+    n_param_.param<std::string>("route_topic", topic_route_, "route");
 
-    topic_odom_ = "odom";
-    n_param_.param("odom_topic", topic_odom_, topic_odom_);
+    n_param_.param<std::string>("odom_topic", topic_odom_, "odom");
 
-    topic_robot_info_ = "/robot_info";
-    n_param_.param("robotInfo_topic", topic_robot_info_, topic_robot_info_);
+    n_param_.param<std::string>("robotInfo_topic", topic_robot_info_, "/robot_info");
 
+    n_param_.param<std::string>("frame_map", frame_map_, "map");
+    
     for (int i = 0; i < no_robots_; i++)
     {
         converter_.emplace_back(no_robots_, i);
@@ -122,7 +121,7 @@ MultiRobotLocalBehaviorController::MultiRobotLocalBehaviorController(ros::NodeHa
 void MultiRobotLocalBehaviorController::subOdomCb(const ros::MessageEvent<const nav_msgs::Odometry> &_event, int _topic)
 {
     const nav_msgs::Odometry_<std::allocator<void>>::ConstPtr &odom = _event.getMessage();
-
+    robot_pose_[_topic] = odom->pose;
     Eigen::Vector2d pt(odom->pose.pose.position.x, odom->pose.pose.position.y);
 
     bool changed = false;
@@ -148,14 +147,14 @@ void MultiRobotLocalBehaviorController::publishPath(std::vector<Eigen::Vector3d>
     nav_msgs::Path path;
     path.header.seq = 0;
     path.header.stamp = ros::Time::now();
-    path.header.frame_id = "map";
+    path.header.frame_id = frame_map_;
 
     for (const Eigen::Vector3d &p : _p)
     {
         geometry_msgs::PoseStamped ps;
         ps.header.seq = 0;
         ps.header.stamp = ros::Time::now();
-        ps.header.frame_id = "map";
+        ps.header.frame_id = frame_map_;
 
         ps.pose.position.x = p[0];
         ps.pose.position.y = p[1];
@@ -252,7 +251,9 @@ void MultiRobotLocalBehaviorController::publishRobotInfo()
     {
         tuw_multi_robot_msgs::RobotInfo ri;
         ri.header.stamp = ros::Time::now();
+        ri.header.frame_id = frame_map_;
         ri.robot_name = robot_names_[i];
+        ri.pose = robot_pose_[i];
         ri.shape = ri.SHAPE_CIRCLE;
         ri.shape_variables.push_back(robot_radius_[i]);
         ri.sync.robot_id = robot_names_[i];

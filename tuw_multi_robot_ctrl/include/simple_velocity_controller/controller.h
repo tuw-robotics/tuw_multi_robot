@@ -6,6 +6,7 @@
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
 #include <nav_msgs/Path.h>
+#include <tuw_multi_robot_msgs/RobotInfo.h>
 
 namespace velocity_controller
 {
@@ -81,6 +82,14 @@ public:
    */
   void setState(state s);
 
+  int getStatus();
+  void setGoodId(int);
+  int getGoodId();
+  void setOrderId(int);
+  int getOrderId();
+  void setOrderStatus(int);
+  int getOrderStatus();
+
 private:
   float normalizeAngle(float _angle);
   float absolute(float _val);
@@ -95,6 +104,12 @@ private:
   float Kp_ = 5;
   float Kd_ = 1;
   float Ki_ = 0.0;
+
+  int robot_status = tuw_multi_robot_msgs::RobotInfo::STATUS_STOPPED;
+  int goodId;
+  int orderId;
+  int orderStatus;
+
   float goal_radius_ = 0.25;
 
   state actual_cmd_ = run;

@@ -12,12 +12,13 @@ Have a look at the [INSTALL.md](INSTALL.md) file
 Have a look at the [tuw_multi_robot_demo/README.md](tuw_multi_robot_demo/README.md) file
 
 # Packages
+* tuw\_multi\_robot\_ctrl
 * tuw\_multi\_robot\_demo
-* tuw\_voronoi\_graph
+* tuw\_multi\_robot\_goal\_generator
+* tuw\_multi\_robot\_local\_behavior\_controller
 * tuw\_multi\_robot\_router
 * tuw\_multi\_robot\_rviz
-* tuw\_multi\_robot\_ctrl
-* tuw\_multi\_robot\_local\_behavior\_controller
+* tuw\_voronoi\_graph
 
 # System overview
 <img src="tuw_multi_robot/res/dataflow.png" alt="200 Robots in stage" width="400px" />
@@ -28,9 +29,17 @@ This figure reprecents the current state and planed developments on the tuw\_mul
 Contains launch and config files to run a sample demo. 
 
 ```
-roslaunch tuw_multi_robot_demo demo.launch room:=cave cfg:=robot_2
+roslaunch tuw_multi_robot_demo demo.launch room:=cave  nr_of_robots:=3 
+roslaunch tuw_multi_robot_demo demo.launch room:=warehouse_14  nr_of_robots:=14 
+roslaunch tuw_multi_robot_demo demo.launch room:=warehouse_200  nr_of_robots:=50 
 ```
+## tuw\_multi\_robot\_goal\_generator
+Using this pkg one can genrate, save and read goal lists.
+The random goal generation needs a running map publisher in order to generate valid goals.
 
+```
+rosrun tuw_multi_robot_goal_generator goals_random _nr_of_robots:=3 _distance_boundary:=0.6 _distance_to_map_border:=0.2 _nr_of_avaliable_robots:=14
+```
 ## tuw\_voronoi\_graph
 This package includes a voronoi-graph-generator a dxf-to-graph-node and a segment-to-graph node for creating search graphs for the multi robot router.
 

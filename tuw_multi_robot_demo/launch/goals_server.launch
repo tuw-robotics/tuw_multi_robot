@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+
+<launch>
+  
+  
+    <arg name="room" default="cave" />      
+    <arg name="file" default="goals000.txt" />
+    <arg name="run_once" default="true" />   
+    <arg name="loop_rate" default="1.0" />   
+    
+    <!-- Use this parameters if you like to run over a patch of goal file starting with goals000.txt to goals999.txt
+        <arg name="file" default="goals" />
+        <arg name="run_once" default="false" />
+        <arg name="loop_rate" default="1.0" />   
+    -->
+    
+    <!-- This node only reads the dxf and stores it a graph in a folder structrue usabe by the graph_generator -->
+    <node pkg="tuw_multi_robot_goal_generator" type="goals_server" name="goals_server">
+        <param name="file_name" value="$(find tuw_multi_robot_demo)/cfg/goals/$(arg room)/$(arg file)" />
+        <param name="run_once" value="$(arg run_once)" />
+        <param name="loop_rate" value="$(arg loop_rate)" />
+	</node>
+</launch>

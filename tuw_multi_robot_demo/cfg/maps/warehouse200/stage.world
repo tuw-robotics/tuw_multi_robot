@@ -1,0 +1,1557 @@
+define hokuyolaser ranger
+(
+  sensor(       
+    # laser-specific properties
+    # factory settings for LMS200  
+    range [ 0.0  5.0 ]
+    fov 270.0
+    samples 270
+  )
+  model
+  (
+    # generic model properties
+    size [ 0.07 0.07 0.05 ] # dimensions from LMS200 data sheet  
+    color "blue"
+    obstacle_return 0
+  )
+)
+
+
+define floorplan model
+(
+  # sombre, sensible, artistic
+  color "gray30"
+
+  # most maps will need a bounding box
+  boundary 1
+
+  gui_nose 0
+  gui_grid 0
+
+  obstacle_return 1
+  gui_outline 0
+  gripper_return 0
+  fiducial_return 0
+  laser_return 1
+)
+
+
+define background model
+(
+  # sombre, sensible, artistic
+  color "red"
+
+  # most maps will need a bounding box
+  boundary 1
+
+  gui_nose 0
+  gui_grid 0
+
+  obstacle_return 0
+  gui_outline 0
+  gripper_return 0
+  fiducial_return 0
+  laser_return 1
+)
+
+
+# set the resolution of the underlying raytrace model in meters
+resolution 0.02
+
+interval_sim 10  # simulation timestep in milliseconds
+
+window
+( 
+  size [800.000 860.000 ] # in pixels
+  rotate [ 0.000 0 ]
+  scale 9 
+  show_data 1              # 1=on 0=off
+)
+
+
+
+# load an environment bitmap
+
+floorplan
+( 
+  name "warhouse"
+  bitmap "map.pgm"
+  size [80.0 80.0 0]
+  pose [ 0 0 0 0 ]
+)
+
+define pioneer_base position 
+(
+  color "red"                   # Default color.
+  drive "diff"                  # Differential steering model.
+  gui_nose 0                    # Draw a nose on the robot so we can see which way it points
+  obstacle_return 0             # Can hit things.
+  # ranger_return 0.5              # reflects sonar beams
+  # blob_return 1                 # Seen by blobfinders  
+  # fiducial_return 1             # Seen as "1" fiducial finders
+
+  localization "gps"             
+  localization_origin [0 0 0 0]   # Start odometry at (0, 0, 0).
+
+  # alternative odometric localization with simple error model
+  # localization "odom"              # Change to "gps" to have impossibly perfect, global odometry
+  # odom_error [ 0.05 0.05 0.1 ]    # Odometry error or slip in X, Y and Theta
+                                     # (Uniform random distribution)   
+
+  # four DOF kinematics limits
+  # [ xmin xmax ymin ymax zmin zmax amin amax ]        
+  velocity_bounds [-1 1 0 0 0 0 -45.0 45.0 ]          
+  acceleration_bounds [-1.0 1.0 0 0 0 0 -45 45.0 ]
+)
+
+define pioneer2dx_base_no_sonar pioneer_base
+(
+  # actual size
+  size [0.44 0.38 0.22] # sizes from MobileRobots' web site
+
+  # the pioneer's center of rotation is offset from its center of area
+  origin [-0.04 0 0 0]
+
+  # draw a nose on the robot so we can see which way it points
+  gui_nose 0
+
+  # estimated mass in KG
+  mass 23.0 
+)
+
+# as above, but with front sonar only
+define pioneer2dx_no_sonar pioneer2dx_base_no_sonar
+(  
+  # simplified Body shape:
+  block( 
+    points 8
+    point[0] [-0.2 0.12]
+    point[1] [-0.2 -0.12]
+    point[2] [-0.12 -0.2555]
+    point[3] [0.12 -0.2555]
+    point[4] [0.2 -0.12]
+    point[5] [0.2 0.12]
+    point[6] [0.12 0.2555]
+    point[7] [-0.12 0.2555]
+    z [0 0.22]
+  )
+  block( 
+    points 3
+    point[0] [  0.2  0.0]
+    point[1] [ -0.1 -0.15]
+    point[2] [ -0.1  0.15]
+    z [0 0.22]
+  )
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_0"
+  color "red"
+  pose [ 30 38 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_1"
+  color "green"
+  pose [ 30 34 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_2"
+  color "blue"
+  pose [ 30 30 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_3"
+  color "yellow"
+  pose [ 30 26 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_4"
+  color "cyan"
+  pose [ 30 22 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_5"
+  color "magenta"
+  pose [ 30 18 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_6"
+  color "NavyBlue"
+  pose [ 30 14 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_7"
+  color "DarkSeaGreen"
+  pose [ 30 10 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_8"
+  color "DarkKhaki"
+  pose [ 30 6 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_9"
+  color "peru"
+  pose [ 30 2 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_10"
+  color "tomato"
+  pose [ 30 -2 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_11"
+  color "plum"
+  pose [ 30 -6 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_12"
+  color "firebrick"
+  pose [ 30 -10 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_13"
+  color "YellowGreen"
+  pose [ 30 -14 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_14"
+  color "SeaGreen"
+  pose [ 30 -18 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_15"
+  color "PaleTurquoise"
+  pose [ 30 -22 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_16"
+  color "MediumBlue"
+  pose [ 30 -26 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_17"
+  color "SandyBrown"
+  pose [ 30 -30 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_18"
+  color "OrangeRed"
+  pose [ 30 -34 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_19"
+  color "LightPink"
+  pose [ 30 -38 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_20"
+  color "blue"
+  pose [ -30 38 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_21"
+  color "cyan"
+  pose [ -30 34 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_22"
+  color "green"
+  pose [ -30 30 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_23"
+  color "yellow"
+  pose [ -30 26 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_24"
+  color "red"
+  pose [ -30 22 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_25"
+  color "magenta"
+  pose [ -30 18 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_26"
+  color "NavyBlue"
+  pose [ -30 14 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_27"
+  color "DarkSeaGreen"
+  pose [ -30 10 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_28"
+  color "DarkKhaki"
+  pose [ -30 6 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_29"
+  color "peru"
+  pose [ -30 2 0 0 ]
+)
+pioneer2dx_no_sonar
+(
+  name "robot_30"
+  color "tomato"
+  pose [ -30 -2 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_31"
+  color "plum"
+  pose [ -30 -6 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_32"
+  color "firebrick"
+  pose [ -30 -10 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_33"
+  color "YellowGreen"
+  pose [ -30 -14 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_34"
+  color "SeaGreen"
+  pose [ -30 -18 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_35"
+  color "PaleTurquoise"
+  pose [ -30 -22 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_36"
+  color "MediumBlue"
+  pose [ -30 -26 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_37"
+  color "SandyBrown"
+  pose [ -30 -30 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_38"
+  color "OrangeRed"
+  pose [ -30 -34 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_39"
+  color "LightPink"
+  pose [ -30 -38 0 0 ]
+)
+
+
+# ---------
+
+pioneer2dx_no_sonar
+(
+  name "robot_40"
+  color "LightPink"
+  pose [ 34 38 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_41"
+  color "OrangeRed"
+  pose [ 34 34 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_42"
+  color "SandyBrown"
+  pose [ 34 30 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_43"
+  color "MediumBlue"
+  pose [ 34 26 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_44"
+  color "PaleTurquoise"
+  pose [ 34 22 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_45"
+  color "SeaGreen"
+  pose [ 34 18 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_46"
+  color "YellowGreen"
+  pose [ 34 14 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_47"
+  color "firebrick"
+  pose [ 34 10 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_48"
+  color "plum"
+  pose [ 34 6 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_49"
+  color "tomato"
+  pose [ 34 2 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_50"
+  color "peru"
+  pose [ 34 -2 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_51"
+  color "DarkKhaki"
+  pose [ 34 -6 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_52"
+  color "DarkSeaGreen"
+  pose [ 34 -10 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_53"
+  color "NavyBlue"
+  pose [ 34 -14 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_54"
+  color "magenta"
+  pose [ 34 -18 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_55"
+  color "red"
+  pose [ 34 -22 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_56"
+  color "yellow"
+  pose [ 34 -26 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_57"
+  color "green"
+  pose [ 34 -30 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_58"
+  color "cyan"
+  pose [ 34 -34 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_59"
+  color "blue"
+  pose [ 34 -38 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_60"
+  color "LightPink"
+  pose [ -34 38 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_61"
+  color "OrangeRed"
+  pose [ -34 34 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_62"
+  color "SandyBrown"
+  pose [ -34 30 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_63"
+  color "MediumBlue"
+  pose [ -34 26 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_64"
+  color "PaleTurquoise"
+  pose [ -34 22 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_65"
+  color "SeaGreen"
+  pose [ -34 18 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_66"
+  color "YellowGreen"
+  pose [ -34 14 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_67"
+  color "firebrick"
+  pose [ -34 10 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_68"
+  color "plum"
+  pose [ -34 6 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_69"
+  color "tomato"
+  pose [ -34 2 0 0 ]
+)
+pioneer2dx_no_sonar
+(
+  name "robot_70"
+  color "peru"
+  pose [ -34 -2 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_71"
+  color "DarkKhaki"
+  pose [ -34 -6 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_72"
+  color "DarkSeaGreen"
+  pose [ -34 -10 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_73"
+  color "NavyBlue"
+  pose [ -34 -14 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_74"
+  color "magenta"
+  pose [ -34 -18 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_75"
+  color "red"
+  pose [ -34 -22 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_76"
+  color "yellow"
+  pose [ -34 -26 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_77"
+  color "green"
+  pose [ -34 -30 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_78"
+  color "cyan"
+  pose [ -34 -34 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_79"
+  color "blue"
+  pose [ -34 -38 0 0 ]
+)
+
+# ---------
+
+
+pioneer2dx_no_sonar
+(
+  name "robot_80"
+  color "blue"
+  pose [ 18 34 0 -90 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_81"
+  color "cyan"
+  pose [ 14 34 0 -90 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_82"
+  color "green"
+  pose [ 10 34 0 -90 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_83"
+  color "yellow"
+  pose [ 6 34 0 -90 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_84"
+  color "red"
+  pose [ 2 34 0 -90 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_85"
+  color "magenta"
+  pose [ -2 34 0 -90 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_86"
+  color "NavyBlue"
+  pose [ -6 34 0 -90 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_87"
+  color "DarkSeaGreen"
+  pose [ -10 34 0 -90 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_88"
+  color "DarkKhaki"
+  pose [ -14 34 0 -90 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_89"
+  color "peru"
+  pose [ -18 34 0 -90 ]
+)
+
+
+pioneer2dx_no_sonar
+(
+  name "robot_90"
+  color "tomato"
+  pose [ 18 -34 0 90 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_91"
+  color "plum"
+  pose [ 14 -34 0 90 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_92"
+  color "firebrick"
+  pose [ 10 -34 0 90 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_93"
+  color "YellowGreen"
+  pose [ 6 -34 0 90 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_94"
+  color "SeaGreen"
+  pose [ 2 -34 0 90 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_95"
+  color "PaleTurquoise"
+  pose [ -2 -34 0 90 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_96"
+  color "MediumBlue"
+  pose [ -6 -34 0 90 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_97"
+  color "SandyBrown"
+  pose [ -10 -34 0 90 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_98"
+  color "OrangeRed"
+  pose [ -14 -34 0 90 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_99"
+  color "LightPink"
+  pose [ -18 -34 0 90 ]
+)
+# --------------
+
+pioneer2dx_no_sonar
+(
+  name "robot_100"
+  color "blue"
+  pose [ 22 38 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_101"
+  color "cyan"
+  pose [ 22 34 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_102"
+  color "green"
+  pose [ 22 30 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_103"
+  color "yellow"
+  pose [ 22 26 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_104"
+  color "red"
+  pose [ 22 22 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_105"
+  color "magenta"
+  pose [ 22 18 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_106"
+  color "NavyBlue"
+  pose [ 22 14 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_107"
+  color "DarkSeaGreen"
+  pose [ 22 10 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_108"
+  color "DarkKhaki"
+  pose [ 22 6 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_109"
+  color "peru"
+  pose [ 22 2 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_110"
+  color "tomato"
+  pose [ 22 -2 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_111"
+  color "plum"
+  pose [ 22 -6 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_112"
+  color "firebrick"
+  pose [ 22 -10 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_113"
+  color "YellowGreen"
+  pose [ 22 -14 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_114"
+  color "SeaGreen"
+  pose [ 22 -18 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_115"
+  color "PaleTurquoise"
+  pose [ 22 -22 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_116"
+  color "MediumBlue"
+  pose [ 22 -26 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_117"
+  color "SandyBrown"
+  pose [ 22 -30 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_118"
+  color "OrangeRed"
+  pose [ 22 -34 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_119"
+  color "LightPink"
+  pose [ 22 -38 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_120"
+  color "blue"
+  pose [ -22 38 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_121"
+  color "cyan"
+  pose [ -22 34 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_122"
+  color "green"
+  pose [ -22 30 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_123"
+  color "yellow"
+  pose [ -22 26 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_124"
+  color "red"
+  pose [ -22 22 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_125"
+  color "magenta"
+  pose [ -22 18 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_126"
+  color "NavyBlue"
+  pose [ -22 14 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_127"
+  color "DarkSeaGreen"
+  pose [ -22 10 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_128"
+  color "DarkKhaki"
+  pose [ -22 6 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_129"
+  color "peru"
+  pose [ -22 2 0 0 ]
+)
+pioneer2dx_no_sonar
+(
+  name "robot_130"
+  color "tomato"
+  pose [ -22 -2 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_131"
+  color "plum"
+  pose [ -22 -6 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_132"
+  color "firebrick"
+  pose [ -22 -10 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_133"
+  color "YellowGreen"
+  pose [ -22 -14 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_134"
+  color "SeaGreen"
+  pose [ -22 -18 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_135"
+  color "PaleTurquoise"
+  pose [ -22 -22 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_136"
+  color "MediumBlue"
+  pose [ -22 -26 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_137"
+  color "SandyBrown"
+  pose [ -22 -30 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_138"
+  color "OrangeRed"
+  pose [ -22 -34 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_139"
+  color "LightPink"
+  pose [ -22 -38 0 0 ]
+)
+
+
+# ---------
+
+pioneer2dx_no_sonar
+(
+  name "robot_140"
+  color "LightPink"
+  pose [ 26  38 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_141"
+  color "OrangeRed"
+  pose [ 26  34 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_142"
+  color "SandyBrown"
+  pose [ 26  30 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_143"
+  color "MediumBlue"
+  pose [ 26  26 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_144"
+  color "PaleTurquoise"
+  pose [ 26  22 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_145"
+  color "SeaGreen"
+  pose [ 26  18 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_146"
+  color "YellowGreen"
+  pose [ 26  14 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_147"
+  color "firebrick"
+  pose [ 26  10 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_148"
+  color "plum"
+  pose [ 26  6 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_149"
+  color "tomato"
+  pose [ 26  2 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_150"
+  color "peru"
+  pose [ 26  -2 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_151"
+  color "DarkKhaki"
+  pose [ 26  -6 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_152"
+  color "DarkSeaGreen"
+  pose [ 26  -10 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_153"
+  color "NavyBlue"
+  pose [ 26  -14 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_154"
+  color "magenta"
+  pose [ 26  -18 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_155"
+  color "red"
+  pose [ 26  -22 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_156"
+  color "yellow"
+  pose [ 26  -26 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_157"
+  color "green"
+  pose [ 26  -30 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_158"
+  color "cyan"
+  pose [ 26  -34 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_159"
+  color "blue"
+  pose [ 26  -38 0 180 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_160"
+  color "LightPink"
+  pose [ -26  38 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_161"
+  color "OrangeRed"
+  pose [ -26  34 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_162"
+  color "SandyBrown"
+  pose [ -26  30 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_163"
+  color "MediumBlue"
+  pose [ -26  26 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_164"
+  color "PaleTurquoise"
+  pose [ -26  22 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_165"
+  color "SeaGreen"
+  pose [ -26  18 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_166"
+  color "YellowGreen"
+  pose [ -26  14 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_167"
+  color "firebrick"
+  pose [ -26  10 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_168"
+  color "plum"
+  pose [ -26  6 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_169"
+  color "tomato"
+  pose [ -26  2 0 0 ]
+)
+pioneer2dx_no_sonar
+(
+  name "robot_170"
+  color "peru"
+  pose [ -26  -2 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_171"
+  color "DarkKhaki"
+  pose [ -26  -6 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_172"
+  color "DarkSeaGreen"
+  pose [ -26  -10 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_173"
+  color "NavyBlue"
+  pose [ -26  -14 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_174"
+  color "magenta"
+  pose [ -26  -18 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_175"
+  color "red"
+  pose [ -26  -22 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_176"
+  color "yellow"
+  pose [ -26  -26 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_177"
+  color "green"
+  pose [ -26  -30 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_178"
+  color "cyan"
+  pose [ -26  -34 0 0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_179"
+  color "blue"
+  pose [ -26  -38 0 0 ]
+)
+
+# ---------
+
+
+pioneer2dx_no_sonar
+(
+  name "robot_180"
+  color "blue"
+  pose [ 18 30 0 -90 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_181"
+  color "cyan"
+  pose [ 14 30 0 -90 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_182"
+  color "green"
+  pose [ 10 30 0 -90 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_183"
+  color "yellow"
+  pose [ 6 30 0 -90 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_184"
+  color "red"
+  pose [ 2 30 0 -90 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_185"
+  color "magenta"
+  pose [ -2 30 0 -90 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_186"
+  color "NavyBlue"
+  pose [ -6 30 0 -90 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_187"
+  color "DarkSeaGreen"
+  pose [ -10 30 0 -90 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_188"
+  color "DarkKhaki"
+  pose [ -14 30 0 -90 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_189"
+  color "peru"
+  pose [ -18 30 0 -90 ]
+)
+
+
+pioneer2dx_no_sonar
+(
+  name "robot_190"
+  color "tomato"
+  pose [ 18 -30 0 -0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_191"
+  color "plum"
+  pose [ 14 -30 0 -0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_192"
+  color "firebrick"
+  pose [ 10 -30 0 -0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_193"
+  color "YellowGreen"
+  pose [ 6 -30 0 -0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_194"
+  color "SeaGreen"
+  pose [ 2 -30 0 -0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_195"
+  color "PaleTurquoise"
+  pose [ -2 -30 0 -0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_196"
+  color "MediumBlue"
+  pose [ -6 -30 0 -0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_197"
+  color "SandyBrown"
+  pose [ -10 -30 0 -0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_198"
+  color "OrangeRed"
+  pose [ -14 -30 0 -0 ]
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_199"
+  color "LightPink"
+  pose [ -18 -30 0 -0 ]
+)
+# --------------

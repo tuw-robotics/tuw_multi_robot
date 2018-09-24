@@ -15,9 +15,9 @@ OrderPlanner::OrderPlanner(int argc, char** argv)
   subscribers_.push_back(nodeHandle_->subscribe("/orders", 0, &OrderPlanner::ordersCallback, this));
   subscribers_.push_back(nodeHandle_->subscribe("/robot_info", 10, &OrderPlanner::robotInfoCallback, this));
   subscribeRobotOdom();
-  pub_robot_goals_ = nodeHandle_->advertise<tuw_multi_robot_msgs::RobotGoalsArray>("goals", 0);
-  pub_pickup_ = nodeHandle_->advertise<tuw_multi_robot_msgs::Pickup>("pickup", 10);
-  pub_order_position_ = nodeHandle_->advertise<tuw_multi_robot_msgs::OrderPosition>("order_position", 10);
+  pub_robot_goals_ = nodeHandle_->advertise<tuw_multi_robot_msgs::RobotGoalsArray>("/goals", 0);
+  pub_pickup_ = nodeHandle_->advertise<tuw_multi_robot_msgs::Pickup>("/pickup", 10);
+  pub_order_position_ = nodeHandle_->advertise<tuw_multi_robot_msgs::OrderPosition>("/order_position", 10);
 }
 
 void OrderPlanner::run()
@@ -181,10 +181,10 @@ void OrderPlanner::route()
       pose.orientation.z = 0;
       pose.orientation.w = 1;
 
-      goals.path_points.push_back(pose);
+      goals.destinations.push_back(pose);
       goals.robot_name = pair.robot_name;
 
-      goals_array.goals.push_back(goals);
+      goals_array.robots.push_back(goals);
 
       consumed_robots.push_back(pair.robot_name);
     }
@@ -200,9 +200,9 @@ void OrderPlanner::route()
           std::find(consumed_robots.begin(), consumed_robots.end(), robot_name) == consumed_robots.end())
       {
         tuw_multi_robot_msgs::RobotGoals goals;
-        goals.path_points.push_back(*pose);
+        goals.destinations.push_back(*pose);
         goals.robot_name = robot_name;
-        goals_array.goals.push_back(goals);
+        goals_array.robots.push_back(goals);
       }
       ++search;
     }
@@ -245,9 +245,9 @@ void OrderPlanner::route()
         pose.orientation.y = 0;
         pose.orientation.z = 0;
         pose.orientation.w = 1;
-        goals.path_points.push_back(pose);
+        goals.destinations.push_back(pose);
         goals.robot_name = robot_name;
-        goals_array.goals.push_back(goals);
+        goals_array.robots.push_back(goals);
 
         consumed_robots.push_back(robot_name);
       }
@@ -266,9 +266,9 @@ void OrderPlanner::route()
           std::find(consumed_robots.begin(), consumed_robots.end(), robot_name) == consumed_robots.end())
       {
         tuw_multi_robot_msgs::RobotGoals goals;
-        goals.path_points.push_back(*pose);
+        goals.destinations.push_back(*pose);
         goals.robot_name = robot_name;
-        goals_array.goals.push_back(goals);
+        goals_array.robots.push_back(goals);
       }
       ++search;
     }

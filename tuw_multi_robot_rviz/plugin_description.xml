@@ -1,19 +1,35 @@
 <library path="lib/libtuw_multi_robot_rviz">
-  <class name="tuw_voronoi_graph"
+  <class name="VoronoiGraph"
          type="tuw_multi_robot_rviz::VoronoiGraphDisplay"
          base_class_type="rviz::Display">
     <description>
       Displays Voronoi Graphs in RVIZ
     </description>
-    <message_type>voronoi_segmentation/VoronoiGraph</message_type>
+    <message_type>tuw_multi_robot_msgs/Graph</message_type>
   </class>
-  <class name="tuw_voronoi_segment"
+  <class name="VoronoiSegment"
          type="tuw_multi_robot_rviz::VoronoiSegmentDisplay"
          base_class_type="rviz::Display">
     <description>
       Displays Voronoi Segments in RVIZ
     </description>
-    <message_type>voronoi_segmentation/VoronoiGraph</message_type>
+    <message_type>tuw_multi_robot_msgs/Graph</message_type>
+  </class>
+  <class name="MultiRobotInfo"
+         type="tuw_multi_robot_rviz::MultiRobotInfoDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      Displays Robot Positions in RVIZ
+    </description>
+    <message_type>tuw_multi_robot_msgs/RobotInfo</message_type>
+  </class>
+  <class name="RobotGoalArray"
+         type="tuw_multi_robot_rviz::RobotGoalsArrayDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      Displays Robot Goals in RVIZ
+    </description>
+    <message_type>tuw_multi_robot_msgs/RobotGoalsArray</message_type>
   </class>
   <class name="Goal Selector"
          type="tuw_multi_robot_rviz::MultiRobotGoalSelector"

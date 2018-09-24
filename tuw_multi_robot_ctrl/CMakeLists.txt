@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 2.8.3)
 project(tuw_multi_robot_ctrl)
 
 ## Add support for C++11, supported in ROS Kinetic and newer
-# add_definitions(-std=c++11)
+add_definitions(-std=c++14)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -19,7 +21,6 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -117,7 +118,6 @@ catkin_package(
 ## Build ##
 ###########
 
-add_definitions(-std=c++11)
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
@@ -155,8 +155,8 @@ target_link_libraries(tuw_velocity_controller
   ${catkin_LIBRARIES}
   ${PROJECT_NAME}
 )
-add_executable(tuw_segment_controller src/multi_segment_controller_node.cpp)
-target_link_libraries(tuw_segment_controller
+add_executable(local_multi_robot_controller src/local_multi_robot_controller_node.cpp)
+target_link_libraries(local_multi_robot_controller
   ${catkin_LIBRARIES}
   ${PROJECT_NAME}
 )

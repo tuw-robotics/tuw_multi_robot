@@ -17,12 +17,23 @@ find_package(catkin REQUIRED COMPONENTS
   tuw_voronoi_graph
 )
  
-find_package(Eigen3 REQUIRED)
 find_package(OpenCV 3 REQUIRED)
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
+find_package(Eigen3 QUIET)
 
 
+if(NOT EIGEN3_FOUND)
+  find_package(cmake_modules REQUIRED)
+  find_package(Eigen REQUIRED)
+  set(Eigen3_INCLUDE_DIRS ${EIGEN_INCLUDE_DIRS})
+endif()
+
+# Note that eigen 3.2 (on Ubuntu Wily) only provides EIGEN3_INCLUDE_DIR,
+# not EIGEN3_INCLUDE_DIRS, so we have to set the latter from the former.
+if(NOT Eigen3_INCLUDE_DIRS)
+  set(Eigen3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
+endif()
 
 
 #check for OpenMP
@@ -139,6 +150,7 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${Eigen3_INCLUDE_DIRS}
   ${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake
 )
 
@@ -153,6 +165,7 @@ add_library(${PROJECT_NAME}
     src/segment_expander.cpp
     src/route_coordinator_timed.cpp
     src/traceback.cpp
+    src/robot_info.cpp
     src/route_generator.cpp
     src/backtracking_resolution.cpp
     src/avoidance_resolution.cpp

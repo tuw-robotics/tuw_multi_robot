@@ -41,6 +41,7 @@ bool Controller::checkGoal(PathPoint _odom)
         if (path_iterator_ == path_->end())
         {
           ROS_INFO("Multi Robot Controller: goal reached");
+          robot_status = tuw_multi_robot_msgs::RobotInfo::STATUS_DONE;
           plan_active = false;
         }
       }
@@ -142,4 +143,31 @@ void Controller::getSpeed(float* _v, float* _w)
   *_v = v_;
   *_w = w_;
 }
+
+    int Controller::getStatus()
+    {
+        return robot_status;
+    }
+
+    void Controller::setOrderId(int orderId)
+    {
+        this->orderId = orderId;
+    }
+    void Controller::setGoodId(int goodId)
+    {
+        this->goodId = goodId;
+    }
+
+    int Controller::getGoodId()
+    {
+        return goodId;
+    }
+    void Controller::setOrderStatus(int orderStatus)
+    {
+        this->orderStatus = orderStatus;
+    }
+    int Controller::getOrderStatus()
+    {
+        return this->orderStatus;
+    }
 }

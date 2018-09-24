@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+
+<launch>
+<arg name="nr_of_robots" default="1"/> 
+<arg name="robot_name_prefix" default="robot_"/>
+      
+<!-- reduce the loop counter "nr_of_robots-1" = robot_id -->
+<arg name="robot_id" value="$(eval arg('nr_of_robots') - 1)"/>
+
+<!-- launch the controller -->
+<include file="$(find tuw_multi_robot_demo)/launch/local_controller.launch">
+    <arg name="robot_name" value="$(arg robot_name_prefix)$(arg robot_id)" />
+</include>
+
+<!-- recursive call -->
+<include file="$(find tuw_multi_robot_demo)/launch/local_controller_recursive.launch" if="$(eval arg('robot_id') > 0)">
+    <arg name="nr_of_robots" value="$(arg robot_id)" />
+    <arg name="robot_name_prefix" value="$(arg robot_name_prefix)" />
+</include>
+  
+</launch>

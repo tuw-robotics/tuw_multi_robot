@@ -109,6 +109,8 @@ class SegmentController
     void setOrderStatus(int);
     int getOrderStatus();
 
+    bool getPlanActive() { return plan_active; }
+
   private:
     bool checkPrecondition(PathPoint p);
     float normalizeAngle(float _angle);

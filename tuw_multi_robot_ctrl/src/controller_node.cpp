@@ -13,11 +13,13 @@ int main(int argc, char** argv)
 
     velocity_controller::ControllerNode ctrl(n);
     ros::Rate r(20);
-
+    
     while (ros::ok())
     {
       ros::spinOnce();
+      r.sleep();
     }
+    
     return 0;
   }
   else
@@ -30,8 +32,8 @@ namespace velocity_controller
 {
 ControllerNode::ControllerNode(ros::NodeHandle& n) : Controller(), n_(n), n_param_("~")
 {
-  topic_odom_ = "odom";
-  n_param_.getParam("odom_topic", topic_odom_);
+  topic_pose_ = "pose";
+  n_param_.getParam("pose_topic", topic_pose_);
 
   topic_cmdVel_ = "cmd_vel";
   n_param_.getParam("cmd_vel_topic", topic_cmdVel_);
@@ -66,19 +68,19 @@ ControllerNode::ControllerNode(ros::NodeHandle& n) : Controller(), n_(n), n_para
   ROS_INFO("%s", topic_cmdVel_.c_str());
 
   pubCmdVel_ = n.advertise<geometry_msgs::Twist>(topic_cmdVel_, 1000);
-  subOdom_ = n.subscribe(topic_odom_, 1000, &ControllerNode::subOdomCb, this);
+  subPose_ = n.subscribe(topic_pose_, 1000, &ControllerNode::subPoseCb, this);
   subPath_ = n.subscribe(topic_path_, 1000, &ControllerNode::subPathCb, this);
   subCtrl_ = n.subscribe(topic_ctrl_, 1000, &ControllerNode::subCtrlCb, this);
 }
 
-void ControllerNode::subOdomCb(const nav_msgs::Odometry_<std::allocator<void>>::ConstPtr& _odom)
+void ControllerNode::subPoseCb(const geometry_msgs::PoseWithCovarianceStampedConstPtr &_pose)
 {
   PathPoint pt;
-  pt.x = _odom->pose.pose.position.x;
-  pt.y = _odom->pose.pose.position.y;
+  pt.x = _pose->pose.pose.position.x;
+  pt.y = _pose->pose.pose.position.y;
 
-  tf::Quaternion q(_odom->pose.pose.orientation.x, _odom->pose.pose.orientation.y, _odom->pose.pose.orientation.z,
-                   _odom->pose.pose.orientation.w);
+  tf::Quaternion q(_pose->pose.pose.orientation.x, _pose->pose.pose.orientation.y, _pose->pose.pose.orientation.z,
+                   _pose->pose.pose.orientation.w);
   tf::Matrix3x3 m(q);
   double roll, pitch, yaw;
   m.getRPY(roll, pitch, yaw);
@@ -106,7 +108,7 @@ void ControllerNode::subPathCb(const nav_msgs::Path_<std::allocator<void>>::Cons
   if (_path->poses.size() == 0)
     return;
 
-  // start at nearest point on path to odom
+  // start at nearest point on path to pose
   // behavior controller resends full paths, therefore
   // it is important to start from the robots location
 

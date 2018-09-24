@@ -3,8 +3,8 @@ project(tuw_multi_robot_rviz)
 
 ## Add support for C++11, supported in ROS Kinetic and newer
 # add_definitions(-std=c++11)
+add_compile_options(-std=c++17)
 
-add_compile_options(-std=c++14)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -150,6 +150,15 @@ add_definitions(-DQT_NO_KEYWORDS)
 
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
+  include/tuw_multi_robot_rviz/TextVisual.h
+  include/tuw_multi_robot_rviz/RobotGoalsArrayVisual.h
+  include/tuw_multi_robot_rviz/RobotGoalsArrayDisplay.h
+  include/tuw_multi_robot_rviz/MultiRobotInfoVisual.h
+  include/tuw_multi_robot_rviz/MultiRobotInfoDisplay.h
+  src/MultiRobotInfoDisplay.cpp
+  src/MultiRobotInfoVisual.cpp
+  src/RobotGoalsArrayVisual.cpp
+  src/RobotGoalsArrayDisplay.cpp
   include/tuw_multi_robot_rviz/VoronoiGraphVisual.h
   include/tuw_multi_robot_rviz/VoronoiGraphDisplay.h
   src/VoronoiGraphVisual.cpp
@@ -227,6 +236,10 @@ install(FILES
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
+install(
+  DIRECTORY icons
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/icons
+)
 
 #############
 ## Testing ##

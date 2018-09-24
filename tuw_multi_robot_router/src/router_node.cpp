@@ -32,136 +32,147 @@
 #include <tuw_multi_robot_msgs/Route.h>
 #include <chrono>
 #include <boost/functional/hash.hpp>
+#include <boost/regex.hpp>
 #include <tf/tf.h>
 
 //TODO add Weights from robots...
 
-int main(int argc, char **argv)
-{
+int main ( int argc, char **argv ) {
 
-    ros::init(argc, argv, "tuw_multi_robot_router"); /// initializes the ros node with default name
+    ros::init ( argc, argv, "tuw_multi_robot_router" ); /// initializes the ros node with default name
     ros::NodeHandle n;
 
-    ros::Rate r(5);
+    ros::Rate r ( 1 );
 
-    multi_robot_router::Router_Node node(n);
+    multi_robot_router::Router_Node node ( n );
 
-    while (ros::ok())
-    {
+    while ( ros::ok() ) {
         r.sleep();
         ros::spinOnce();
-        node.updateTimeout(r.expectedCycleTime().toSec());
+        node.monitorExecution();
+        node.updateTimeout ( r.expectedCycleTime().toSec() );
     }
 
     return 0;
 }
 
-namespace multi_robot_router
-{
-Router_Node::Router_Node(ros::NodeHandle &_n) : Router(),
-                                                n_(_n),
-                                                n_param_("~")
-{
+
+namespace multi_robot_router {
+
+Router_Node::Router_Node ( ros::NodeHandle &_n ) : Router(),
+    n_ ( _n ),
+    n_param_ ( "~" ),
+    monitor_enabled_ ( false ),
+    attempts_total_(0),
+    attempts_successful_(0),
+    sum_processing_time_total_(.0),
+    sum_processing_time_successful_(.0){
     id_ = 0;
 
-    planner_status_topic_ = "planner_status";
-    n_param_.param("planner_status_topic", planner_status_topic_, planner_status_topic_);
 
-    odom_topic_ = "odom";
-    n_param_.param("odom_topic", odom_topic_, odom_topic_);
 
-    path_topic_ = "path_unsynced";
-    n_param_.param("path_topic", path_topic_, path_topic_);
-
-    goal_topic_ = "goals";
-    n_param_.param("goal_topic", goal_topic_, goal_topic_);
-
-    map_topic_ = "/map";
-    n_param_.param("map_topic", map_topic_, map_topic_);
-
-    voronoi_topic_ = "segments";
-    n_param_.param("graph_topic", voronoi_topic_, voronoi_topic_);
-
-    route_topic_ = "route";
-    n_param_.param("route", route_topic_, route_topic_);
-
-    robot_info_topic_ = "/robot_info";
-    n_param_.param("robot_info", robot_info_topic_, robot_info_topic_);
-
-    singleRobotName_ = "";
-    n_param_.param("robot_name", singleRobotName_, singleRobotName_);
-
-    singleRobotGoalTopic_ = "/goal";
-    n_param_.param("robot_goal", singleRobotGoalTopic_, singleRobotGoalTopic_);
+    n_param_.param<std::string> ( "robot_name", singleRobotName_, "" );
 
     // static subscriptions
-    subGoalSet_ = _n.subscribe(goal_topic_, 1, &Router_Node::goalsCallback, this);
-    subMap_ = _n.subscribe(map_topic_, 1, &Router_Node::mapCallback, this);
-    subVoronoiGraph_ = _n.subscribe(voronoi_topic_, 1, &Router_Node::graphCallback, this);
-    subRobotInfo_ = _n.subscribe(robot_info_topic_, 10000, &Router_Node::robotInfoCallback, this);
+    subGoalSet_ = n_.subscribe ( "goals" , 1, &Router_Node::goalsCallback, this );
+    subMap_ = n_.subscribe ( "/map", 1, &Router_Node::mapCallback, this );
+    subVoronoiGraph_ = n_.subscribe ( "segments", 1, &Router_Node::graphCallback, this );
+    subRobotInfo_ = n_.subscribe ( "/robot_info" , 10000, &Router_Node::robotInfoCallback, this );
 
-    if (!singleRobotName_.size() == 0)
-    {
-        subSingleRobotGoal_ = _n.subscribe(singleRobotGoalTopic_, 1, &Router_Node::goalCallback, this);
+    if ( !singleRobotName_.size() == 0 ) {
+        subSingleRobotGoal_ = n_.subscribe ( "/goal", 1, &Router_Node::goalCallback, this );
     }
 
     //static publishers
-    pubPlannerStatus_ = _n.advertise<tuw_multi_robot_msgs::RouterStatus>(planner_status_topic_, 1);
+    pubPlannerStatus_ = n_.advertise<tuw_multi_robot_msgs::RouterStatus> ( "planner_status", 1 );
 
     //dynamic reconfigure
-    call_type = boost::bind(&Router_Node::parametersCallback, this, _1, _2);
-    param_server.setCallback(call_type);
+    call_type = boost::bind ( &Router_Node::parametersCallback, this, _1, _2 );
+    param_server.setCallback ( call_type );
 }
 
-void Router_Node::goalCallback(const geometry_msgs::PoseStamped &_goal)
-{
+void Router_Node::monitorExecution() {
+    for ( const RobotInfoPtr robot: active_robots_ ) {
+        std::map<std::string, double>::iterator it = finished_robots_.find ( robot->robot_name );
+        if ( robot->status == tuw_multi_robot_msgs::RobotInfo::STATUS_DRIVING ) {
+            if ( it != finished_robots_.end() ) {
+                finished_robots_.erase ( it );
+                if ( monitor_enabled_ ) {
+                    ROS_INFO ( "%10s started!", robot->robot_name.c_str() );
+                }
+            }
+        } else {
+            if ( it == finished_robots_.end() ) {
+                double duration = (ros::Time::now() -  time_first_robot_started_).toSec();
+                finished_robots_[robot->robot_name] = duration;
+                int nr_of_driving_robots = active_robots_.size() - finished_robots_.size();
+                if ( monitor_enabled_ ) {
+                    ROS_INFO ( "%10s stopped @ %6.2lf sec, %3i robots left",  robot->robot_name.c_str(), duration, nr_of_driving_robots );
+                }
+            }
+        }
+    }
+    if ( finished_robots_.size() == active_robots_.size() ) {
+        if ( monitor_enabled_ ) {
+            ros::Duration duration = ros::Time::now() -  time_first_robot_started_;
+            ROS_INFO ( "Execution finished after %lf sec!", duration.toSec() );
+            std::stringstream ss;
+            for(std::map<std::string, double>::iterator it = finished_robots_.begin(); it!=finished_robots_.end(); ++it){
+                ss << it->second << ", ";
+            }
+            ROS_INFO ( "Duration by robot: \n [%s]", ss.str().c_str() );
+        }
+        monitor_enabled_ = false;
+    } else {
+        monitor_enabled_ = true;
+    }
+
+}
+
+void Router_Node::goalCallback ( const geometry_msgs::PoseStamped &_goal ) {
     tuw_multi_robot_msgs::RobotGoals goal;
     goal.robot_name = singleRobotName_;
-    goal.path_points.push_back(_goal.pose);
+    goal.destinations.push_back ( _goal.pose );
 
     tuw_multi_robot_msgs::RobotGoalsArray goals;
-    goals.goals.push_back(goal);
+    goals.robots.push_back ( goal );
 
-    goalsCallback(goals);
+    goalsCallback ( goals );
 }
 
-void Router_Node::updateTimeout(const float _secs)
-{
+void Router_Node::updateTimeout ( const float _secs ) {
     //Todo update timeouts and clear old messages
-    for (auto it = robot_starts_.begin(); it != robot_starts_.end(); it++)
-    {
-        (*it).second.first.updateStatus(_secs);
-    }
-
-    for (auto it = robot_radius_.begin(); it != robot_radius_.end(); it++)
-    {
-        (*it).second.first.updateStatus(_secs);
+    for ( auto it = subscribed_robots_.begin(); it != subscribed_robots_.end(); it++ ) {
+        ( *it )->updateOnlineStatus ( _secs );
     }
 }
-void Router_Node::parametersCallback(tuw_multi_robot_router::routerConfig &config, uint32_t level)
-{
+void Router_Node::parametersCallback ( tuw_multi_robot_router::routerConfig &config, uint32_t level ) {
     //Important set router before settings
     uint32_t threads = config.nr_threads;
-    if (config.router_type == 1)
-        setPlannerType(routerType::multiThreadSrr, threads);
+    if ( config.router_type == 1 )
+        setPlannerType ( routerType::multiThreadSrr, threads );
     else
-        setPlannerType(routerType::singleThread, 1);
+        setPlannerType ( routerType::singleThread, 1 );
 
-    if (config.collision_resolver == 0)
-        setCollisionResolutionType(SegmentExpander::CollisionResolverType::none);
-    else if (config.collision_resolver == 1)
-        setCollisionResolutionType(SegmentExpander::CollisionResolverType::backtracking);
-    else
-        setCollisionResolutionType(SegmentExpander::CollisionResolverType::avoidance);
+    if ( config.collision_resolver == 0 ){
+        setCollisionResolutionType ( SegmentExpander::CollisionResolverType::none );
+        collisionResolver_ = false;
+    } else if ( config.collision_resolver == 1 ) {
+        setCollisionResolutionType ( SegmentExpander::CollisionResolverType::backtracking );
+        collisionResolver_ = true;
+    }else{
+        setCollisionResolutionType ( SegmentExpander::CollisionResolverType::avoidance );
+        collisionResolver_ = true;
+    }
 
-    if (config.voronoi_graph)
+    if ( config.voronoi_graph )
         graphMode_ = graphType::voronoi;
     else
         graphMode_ = graphType::random;
 
-    if (config.goal_mode == 0)
+    if ( config.goal_mode == 0 )
         goalMode_ = goalMode::use_map_goal;
-    else if (config.goal_mode == 1)
+    else if ( config.goal_mode == 1 )
         goalMode_ = goalMode::use_voronoi_goal;
     else
         goalMode_ = goalMode::use_segment_goal;
@@ -172,241 +183,171 @@ void Router_Node::parametersCallback(tuw_multi_robot_router::routerConfig &confi
     priorityRescheduling_ = config.priority_rescheduling;
     speedRescheduling_ = config.speed_rescheduling;
     segmentOptimizations_ = config.path_endpoint_optimization;
+    publish_routing_table_ = config.publish_routing_table;
 }
 
-void Router_Node::mapCallback(const nav_msgs::OccupancyGrid &_map)
-{
+void Router_Node::mapCallback ( const nav_msgs::OccupancyGrid &_map ) {
     std::vector<signed char> map = _map.data;
 
     Eigen::Vector2d origin;
     origin[0] = _map.info.origin.position.x;
     origin[1] = _map.info.origin.position.y;
 
-    size_t new_hash = getHash(map, origin, _map.info.resolution);
+    size_t new_hash = getHash ( map, origin, _map.info.resolution );
 
-    ROS_INFO("map %f %f %f", origin[0], origin[1], _map.info.resolution);
+    ROS_INFO ( "map %f %f %f", origin[0], origin[1], _map.info.resolution );
 
-    if (new_hash != current_map_hash_)
-    {
+    if ( new_hash != current_map_hash_ ) {
         mapOrigin_[0] = _map.info.origin.position.x;
         mapOrigin_[1] = _map.info.origin.position.y;
         mapResolution_ = _map.info.resolution;
 
-        cv::Mat m(_map.info.height, _map.info.width, CV_8SC1, map.data());
+        cv::Mat m ( _map.info.height, _map.info.width, CV_8SC1, map.data() );
 
-        m.convertTo(m, CV_8UC1);
-        cv::bitwise_not(m, m);
+        m.convertTo ( m, CV_8UC1 );
+        cv::bitwise_not ( m, m );
 
-        cv::threshold(m, m, 40, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
-        cv::distanceTransform(m, distMap_, CV_DIST_L1, 3);
+        cv::threshold ( m, m, 40, 255, CV_THRESH_BINARY | CV_THRESH_OTSU );
+        cv::distanceTransform ( m, distMap_, CV_DIST_L1, 3 );
 
         current_map_hash_ = new_hash;
         got_map_ = true;
 
-        ROS_INFO("Multi Robot Router: New Map %i %i %lu", _map.info.width, _map.info.height, current_map_hash_);
+        ROS_INFO ( "%s: New Map %i %i %lu", n_param_.getNamespace().c_str() , _map.info.width, _map.info.height, current_map_hash_ );
     }
 }
 
-void Router_Node::odomCallback(const ros::MessageEvent<nav_msgs::Odometry const> &_event, int _robot_nr)
-{
-    if (robot_starts_[subscribed_robot_names_[_robot_nr]].first.getStatus() == TopicStatus::status::fixed) //Don't update fixed poses
-        return;
 
-    const nav_msgs::Odometry_<std::allocator<void>>::ConstPtr &nav_msg = _event.getMessage();
-    Eigen::Vector3d start(nav_msg->pose.pose.position.x, nav_msg->pose.pose.position.y, getYaw(nav_msg->pose.pose.orientation));
-    TopicStatus s(TopicStatus::status::active, topic_timeout_s_);
-    std::pair<TopicStatus, Eigen::Vector3d> start_pair(s, start);
-
-    if (robot_starts_.find(subscribed_robot_names_[_robot_nr]) == robot_starts_.end())
-    {
-        robot_starts_.emplace(subscribed_robot_names_[_robot_nr], start_pair);
-    }
-    else
-    {
-        robot_starts_[subscribed_robot_names_[_robot_nr]] = start_pair;
-    }
-}
-
-float Router_Node::calcRadius(const int shape, const std::vector<float> &shape_variables) const
-{
+float Router_Node::calcRadius ( const int shape, const std::vector<float> &shape_variables ) const {
     tuw_multi_robot_msgs::RobotInfo ri;
-    if (shape == ri.SHAPE_CIRCLE)
-    {
+    if ( shape == ri.SHAPE_CIRCLE ) {
         return shape_variables[0];
     }
 
     return -1;
 }
 
-void Router_Node::robotInfoCallback(const tuw_multi_robot_msgs::RobotInfo &_robotInfo)
-{
-    TopicStatus s(TopicStatus::status::active, topic_timeout_s_);
-    std::pair<TopicStatus, float> radius_pair(s, calcRadius(_robotInfo.shape, _robotInfo.shape_variables));
-    
-    if (std::find(subscribed_robot_names_.begin(), subscribed_robot_names_.end(), _robotInfo.robot_name) == subscribed_robot_names_.end())
-    {
-        subscribed_robot_names_.push_back(_robotInfo.robot_name);
-        robot_radius_.emplace(_robotInfo.robot_name, radius_pair);
-        //Not existant subscribe robots
-        ROS_INFO("Multi Robot Router: subscribing to %s", (_robotInfo.robot_name + "/" + odom_topic_).c_str());
-        subOdom_.emplace_back(n_.subscribe<nav_msgs::Odometry>(_robotInfo.robot_name + "/" + odom_topic_, 1, boost::bind(&Router_Node::odomCallback, this, _1, subscribed_robot_names_.size() - 1)));
+void Router_Node::robotInfoCallback ( const tuw_multi_robot_msgs::RobotInfo &_robotInfo ) {
 
-        ROS_INFO("Multi Robot Router: advertising on %s", (_robotInfo.robot_name + "/" + path_topic_).c_str());
-        pubPaths_.emplace_back(n_.advertise<nav_msgs::Path>(_robotInfo.robot_name + "/" + path_topic_, 1, true));
-        ROS_INFO("Multi Robot Router: advertising on %s", (_robotInfo.robot_name + "/" + route_topic_).c_str());
-        pubSegPaths_.emplace_back(n_.advertise<tuw_multi_robot_msgs::Route>(_robotInfo.robot_name + "/" + route_topic_, 1, true));
+    auto robot = RobotInfo::findObj ( subscribed_robots_, _robotInfo.robot_name );
+    if ( robot == subscribed_robots_.end() ) {
+        // create new entry
+        RobotInfoPtr robot_new = std::make_shared<RobotInfo> ( _robotInfo );
+        robot_new->initTopics ( n_ );
+        subscribed_robots_.push_back ( robot_new );
+    } else {
+        ( *robot )->updateInfo ( _robotInfo );
     }
-    else
-    {
-        robot_radius_[_robotInfo.robot_name] = radius_pair;
-    }
-    
+
     robot_radius_max_ = 0;
-    for(auto&& it = robot_radius_.begin(); it != robot_radius_.end(); it++)
-    {
-      if(it->second.second > robot_radius_max_)
-        robot_radius_max_ = it->second.second;
+    for ( RobotInfoPtr &r: subscribed_robots_ ) {
+        if ( r->radius() > robot_radius_max_ )
+            robot_radius_max_ = r->radius();
     }
 }
 
-void Router_Node::graphCallback(const tuw_multi_robot_msgs::Graph &msg)
-{
+void Router_Node::graphCallback ( const tuw_multi_robot_msgs::Graph &msg ) {
     std::vector<Segment> graph;
 
-    for (const tuw_multi_robot_msgs::Vertex &segment : msg.vertices)
-    {
+    for ( const tuw_multi_robot_msgs::Vertex &segment : msg.vertices ) {
         std::vector<Eigen::Vector2d> points;
 
-        for (const geometry_msgs::Point &point : segment.path)
-        {
-            points.emplace_back(point.x, point.y);
+        for ( const geometry_msgs::Point &point : segment.path ) {
+            points.emplace_back ( point.x, point.y );
         }
 
         std::vector<uint32_t> successors;
 
-        for (const auto &succ : segment.successors)
-        {
-            successors.emplace_back(succ);
+        for ( const auto &succ : segment.successors ) {
+            successors.emplace_back ( succ );
         }
 
         std::vector<uint32_t> predecessors;
 
-        for (const auto &pred : segment.predecessors)
-        {
-            predecessors.emplace_back(pred);
+        for ( const auto &pred : segment.predecessors ) {
+            predecessors.emplace_back ( pred );
         }
 
-        if (segment.valid)
-        {
-            graph.emplace_back(segment.id, points, successors, predecessors,  3 * robot_radius_max_ / mapResolution_); //segment.width);
-        }
-        else
-        {
-            graph.emplace_back(segment.id, points, successors, predecessors, 0);
+        if ( segment.valid ) {
+            graph.emplace_back ( segment.id, points, successors, predecessors,  2 * robot_radius_max_ / mapResolution_ ); //segment.width);
+        } else {
+            graph.emplace_back ( segment.id, points, successors, predecessors, 0 );
         }
     }
 
-    std::sort(graph.begin(), graph.end(), sortSegments);
+    std::sort ( graph.begin(), graph.end(), sortSegments );
 
-    size_t hash = getHash(graph);
+    size_t hash = getHash ( graph );
 
-    if (current_graph_hash_ != hash)
-    {
+    if ( current_graph_hash_ != hash ) {
         current_graph_hash_ = hash;
         graph_ = graph;
-        ROS_INFO("Multi Robot Router: Graph %lu", hash);
+        ROS_INFO ( "%s: Graph %lu", n_param_.getNamespace().c_str() , hash );
     }
     got_graph_ = true;
 }
 
-bool Router_Node::preparePlanning(std::vector<float> &_radius, std::vector<Eigen::Vector3d> &_starts, std::vector<Eigen::Vector3d> &_goals, const tuw_multi_robot_msgs::RobotGoalsArray &_rosGoals)
-{
+bool Router_Node::preparePlanning ( std::vector<float> &_radius, std::vector<Eigen::Vector3d> &_starts, std::vector<Eigen::Vector3d> &_goals, const tuw_multi_robot_msgs::RobotGoalsArray &goal_msg, std::vector<std::string> &robot_names ) {
     bool retval = true;
-    missing_robots_.clear();
-    std::vector<std::string> robot_names;
-    
-    // sort _rosGoals according to subscribed_robot_names_
-    
-    tuw_multi_robot_msgs::RobotGoalsArray goals_tmp = _rosGoals;
-    
-    for(int k = 0; k < _rosGoals.goals.size(); k++)
-    {
-      goals_tmp.goals[k] = _rosGoals.goals[std::distance(subscribed_robot_names_.begin(), std::find(subscribed_robot_names_.begin(), subscribed_robot_names_.end(), _rosGoals.goals[k].robot_name))];
-    }
-    
-    for (int i = 0; i < goals_tmp.goals.size(); i++)
-    {
-        std::string name = goals_tmp.goals[i].robot_name;
-        //Check duplicated goals
-        if (std::find(robot_names.begin(), robot_names.end(), name) != robot_names.end())
-        {
-            ROS_INFO("Multi Robot Router: Too many goals for one robot");
-            publishEmpty();
-            return false;
-        }
-        robot_names.push_back(name);
+    active_robots_.clear();
+    _starts.clear();
+    _goals.clear();
+    _radius.clear();
 
-        //Check if a robot is existant in general
-        if (robot_radius_[name].first.getStatus() == TopicStatus::status::active)
-        {
-            //Check if robot topics are active and save their values
-            std::pair<TopicStatus, float> radius_pair = robot_radius_[name];
-            _radius.push_back(robot_radius_[name].second);
+    for ( int k = 0; k < goal_msg.robots.size(); k++ ) {
+        const tuw_multi_robot_msgs::RobotGoals &route_request = goal_msg.robots[k];
+        RobotInfoPtrIterator active_robot = RobotInfo::findObj ( subscribed_robots_, route_request.robot_name );
+        if ( active_robot == subscribed_robots_.end() ) {
+            ROS_INFO ( "No robot subsribed with the name: %s", route_request.robot_name.c_str() );
+        } else {
+            if ( route_request.destinations.empty() ) {
+                ROS_INFO ( "No robot: %s has not goal defined", route_request.robot_name.c_str() );
+                continue;
+            } else {
 
-            if (goals_tmp.goals[i].path_points.size() == 0)
-            {
-                ROS_INFO("Multi Robot Router: Not enough goal points for robot %s", name.c_str());
-                return false;
-            }
-            Eigen::Vector3d goal(goals_tmp.goals[i].path_points.back().position.x, goals_tmp.goals[i].path_points.back().position.y, getYaw(goals_tmp.goals[i].path_points.back().orientation));
-            _goals.push_back(goal);
-        }
-        else
-        {
-            ROS_INFO("Multi Robot Router: Inactive Robot (%s)", name.c_str());
-            retval = false;
-            missing_robots_.push_back(name);
-        }
+                active_robots_.push_back ( *active_robot );
 
-        if (goals_tmp.goals[i].path_points.size() == 1)
-        {
-            //use current robot pose
-            if (robot_starts_[name].first.getStatus() == TopicStatus::status::active)
-            {
-                _starts.push_back(robot_starts_[name].second);
+                _radius.push_back ( ( *active_robot )->radius() );
+                if ( route_request.destinations.size() > 1 ) {
+                    geometry_msgs::Pose p = route_request.destinations[0];
+                    _starts.push_back ( Eigen::Vector3d ( p.position.x, p.position.y, getYaw ( p.orientation ) ) );
+                } else {
+                    _starts.push_back ( ( *active_robot )->getPose() );
+                }
+
+                geometry_msgs::Pose p = route_request.destinations.back();
+                _goals.push_back ( Eigen::Vector3d ( p.position.x, p.position.y, getYaw ( p.orientation ) ) );
             }
-            else
-            {
-                ROS_INFO("Multi Robot Router: Inactive Robot (%s)", name.c_str());
-                retval = false;
-                missing_robots_.push_back(name);
-            }
-        }
-        else
-        {
-            Eigen::Vector3d start(goals_tmp.goals[i].path_points.front().position.x, goals_tmp.goals[i].path_points.front().position.y, getYaw(goals_tmp.goals[i].path_points.front().orientation));
-            _starts.push_back(start);
+
         }
     }
-
+    robot_names.resize ( active_robots_.size() );
+    for ( size_t i=0; i < active_robots_.size(); i++ ) {
+        robot_names[i] = active_robots_[i]->robot_name;
+    }
     return retval;
 }
 
-void Router_Node::goalsCallback(const tuw_multi_robot_msgs::RobotGoalsArray &_goals)
-{
+void Router_Node::goalsCallback ( const tuw_multi_robot_msgs::RobotGoalsArray &_goals ) {
     //Get robots
     std::vector<Eigen::Vector3d> starts;
     std::vector<Eigen::Vector3d> goals;
     std::vector<float> radius;
+    std::vector<std::string> robot_names;
 
-    bool preparationSuccessful = preparePlanning(radius, starts, goals, _goals);
 
-    if (preparationSuccessful && got_map_ && got_graph_)
-    {
+
+    bool preparationSuccessful = preparePlanning ( radius, starts, goals, _goals, robot_names );
+    ROS_INFO ( "%s: Number of active robots %lu", n_param_.getNamespace().c_str(), active_robots_.size() );
+
+    if ( preparationSuccessful && got_map_ && got_graph_ ) {
+        attempts_total_++;
         auto t1 = std::chrono::high_resolution_clock::now();
-        preparationSuccessful &= makePlan(starts, goals, radius, distMap_, mapResolution_, mapOrigin_, graph_);
-        if (preparationSuccessful)
-        {
+        preparationSuccessful &= makePlan ( starts, goals, radius, distMap_, mapResolution_, mapOrigin_, graph_, robot_names );
+        auto t2 = std::chrono::high_resolution_clock::now();
+        int duration = std::chrono::duration_cast<std::chrono::milliseconds> ( t2 - t1 ).count();
+        sum_processing_time_total_ += duration;
+        if ( preparationSuccessful ) {
             int nx = distMap_.cols;
             int ny = distMap_.rows;
 
@@ -415,139 +356,123 @@ void Router_Node::goalsCallback(const tuw_multi_robot_msgs::RobotGoalsArray &_go
             int cy = mapOrigin_[1];
 
             publish();
-            ROS_INFO("Multi Robot Router: Publishing Plan");
+            attempts_successful_++;
+            sum_processing_time_successful_ += duration;
             freshPlan_ = false;
-        }
-        else
-        {
-            ROS_INFO("Multi Robot Router: No Plan found");
-
+        } else {
             publishEmpty();
         }
+        float rate_success = ((float) attempts_successful_) / (float) attempts_total_;
+        float avr_duration_total = sum_processing_time_total_ / (float) attempts_total_;
+        float avr_duration_successful = sum_processing_time_successful_ / (float) attempts_successful_;
+        ROS_INFO ( "\nSuccess %i, %i = %4.3f, avr %4.0f ms, success: %4.0f ms, %s, %s, %s \n [%4.3f, %4.0f,  %4.0f]", 
+              attempts_successful_, attempts_total_,  rate_success, avr_duration_total, avr_duration_successful,
+              (priorityRescheduling_?"PR= on":"PR= off"), (speedRescheduling_?"SR= on":"SR= off"), (collisionResolver_?"CR= on":"CR= off"),
+              rate_success, avr_duration_total, avr_duration_successful);
 
-        auto t2 = std::chrono::high_resolution_clock::now();
-        int duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
-        ROS_INFO("Multi Robot Router: OverallTime %i ms", duration);
 
         id_++;
-    }
-    else if (!got_map_ || !got_graph_)
-    {
+    } else if ( !got_map_ || !got_graph_ ) {
         publishEmpty();
-        ROS_INFO("Multi Robot Router: No Map or Graph received");
-    }
-    else
-    {
+        ROS_INFO ( "%s: Multi Robot Router: No Map or Graph received", n_param_.getNamespace().c_str() );
+    } else {
         publishEmpty();
     }
 }
 
-float Router_Node::getYaw(const geometry_msgs::Quaternion &_rot)
-{
+float Router_Node::getYaw ( const geometry_msgs::Quaternion &_rot ) {
     double roll, pitch, yaw;
 
-    tf::Quaternion q(_rot.x, _rot.y, _rot.z, _rot.w);
-    tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
+    tf::Quaternion q ( _rot.x, _rot.y, _rot.z, _rot.w );
+    tf::Matrix3x3 ( q ).getRPY ( roll, pitch, yaw );
     return yaw;
 }
 
-void Router_Node::publishEmpty()
-{
-    for (int i = 0; i < subscribed_robot_names_.size(); i++)
-    {
-        nav_msgs::Path ros_path;
-        ros_path.header.seq = 0;
-        ros_path.header.stamp = ros::Time::now();
-        ros_path.header.frame_id = "map";
+void Router_Node::publishEmpty() {
+    if(publish_routing_table_ == false) return;
+    ROS_INFO ( "%s: No Plan found!!!!, publishing empty plan", n_param_.getNamespace().c_str());
+    time_first_robot_started_ = ros::Time::now();
+    finished_robots_.clear();
+    nav_msgs::Path msg_path;
+    tuw_multi_robot_msgs::Route msg_route;
+    msg_path.header.seq = 0;
+    msg_path.header.stamp = time_first_robot_started_;
+    msg_path.header.frame_id = "map";
+    msg_route.header = msg_path.header;
 
-        pubPaths_[i].publish(ros_path);
+    for ( RobotInfoPtr &robot: subscribed_robots_ ) {
+        robot->pubPaths_.publish ( msg_path );
+        robot->pubRoute_.publish ( msg_route );
     }
 
-    for (int i = 0; i < subscribed_robot_names_.size(); i++)
-    {
-        tuw_multi_robot_msgs::Route ros_path;
-        ros_path.header.seq = 0;
-        ros_path.header.stamp = ros::Time::now();
-        ros_path.header.frame_id = "map";
-
-        pubSegPaths_[i].publish(ros_path);
-    }
-
-    tuw_multi_robot_msgs::RouterStatus ps;
-    ps.id = id_;
-    ps.success = 0;
-    ps.duration = getDuration_ms();
-    for (const std::string &name : missing_robots_)
-    {
-        ps.missing_robots.push_back(name);
-    }
-
-    pubPlannerStatus_.publish(ps);
+    mrrp_status_.id = id_;
+    mrrp_status_.success = 0;
+    mrrp_status_.duration = getDuration_ms();
+    pubPlannerStatus_.publish ( mrrp_status_ );
 }
 
-void Router_Node::publish()
-{
-    for (int i = 0; i < subscribed_robot_names_.size(); i++)
-    {
-        nav_msgs::Path ros_path;
-        ros_path.header.seq = 0;
-        ros_path.header.stamp = ros::Time::now();
-        ros_path.header.frame_id = "map";
-        const std::vector<Checkpoint> &route = getRoute(i);
+void Router_Node::publish() {
+    if(publish_routing_table_ == false) return;
+    ROS_INFO ( "%s: Plan found :-), publishing plan", n_param_.getNamespace().c_str());
+    time_first_robot_started_ = ros::Time::now();
+    finished_robots_.clear();
+    nav_msgs::Path msg_path;
+    tuw_multi_robot_msgs::Route msg_route;
+    msg_path.header.seq = 0;
+    msg_path.header.stamp = time_first_robot_started_;
+    msg_path.header.frame_id = "map";
+    msg_route.header = msg_path.header;
+
+    for ( int i = 0; i < active_robots_.size(); i++ ) {
+        RobotInfoPtr robot = active_robots_[i];
+        const std::vector<Checkpoint> &route = getRoute ( i );
+        msg_path.poses.clear();
 
         //Add first point
         geometry_msgs::PoseStamped pose_1;
         pose_1.header.seq = 0;
-        pose_1.header.stamp = ros::Time::now();
+        pose_1.header.stamp = time_first_robot_started_;
         pose_1.header.frame_id = "map";
 
-        Eigen::Vector2d pos(route[0].start[0] * mapResolution_, route[0].start[1] * mapResolution_);
+        Eigen::Vector2d pos ( route[0].start[0] * mapResolution_, route[0].start[1] * mapResolution_ );
         pose_1.pose.position.x = pos[0] + mapOrigin_[0];
         pose_1.pose.position.y = pos[1] + mapOrigin_[1];
 
         pose_1.pose.orientation.w = 1;
-        ros_path.poses.push_back(pose_1);
+        msg_path.poses.push_back ( pose_1 );
 
         //Add other points
-        for (const Checkpoint &c : route)
-        {
+        for ( const Checkpoint &c : route ) {
             geometry_msgs::PoseStamped pose;
             pose.header.seq = 0;
-            pose.header.stamp = ros::Time::now();
+            pose.header.stamp = time_first_robot_started_;
             pose.header.frame_id = "map";
 
-            Eigen::Vector2d pos(c.end[0] * mapResolution_, c.end[1] * mapResolution_);
+            Eigen::Vector2d pos ( c.end[0] * mapResolution_, c.end[1] * mapResolution_ );
             pose.pose.position.x = pos[0] + mapOrigin_[0];
             pose.pose.position.y = pos[1] + mapOrigin_[1];
 
             tf::Quaternion q;
-            q.setEuler(0, 0, c.end[2]);
+            q.setEuler ( 0, 0, c.end[2] );
 
             pose.pose.orientation.w = q.w();
             pose.pose.orientation.x = q.x();
             pose.pose.orientation.y = q.y();
             pose.pose.orientation.z = q.z();
-            ros_path.poses.push_back(pose);
+            msg_path.poses.push_back ( pose );
         }
 
-        pubPaths_[i].publish(ros_path);
-    }
+        robot->pubPaths_.publish ( msg_path );
 
-    for (int i = 0; i < subscribed_robot_names_.size(); i++)
-    {
-        tuw_multi_robot_msgs::Route ros_path;
-        ros_path.header.seq = 0;
-        ros_path.header.stamp = ros::Time::now();
-        ros_path.header.frame_id = "map";
-        const std::vector<Checkpoint> &route = getRoute(i);
 
-        for (const Checkpoint &cp : route)
-        {
+        msg_route.segments.clear();
+
+        for ( const Checkpoint &cp : route ) {
             tuw_multi_robot_msgs::RouteSegment seg;
 
-            Eigen::Vector2d posStart(cp.start[0] * mapResolution_, cp.start[1] * mapResolution_);
+            Eigen::Vector2d posStart ( cp.start[0] * mapResolution_, cp.start[1] * mapResolution_ );
             tf::Quaternion qStart;
-            qStart.setEuler(0, 0, cp.start[2]);
+            qStart.setEuler ( 0, 0, cp.start[2] );
 
             seg.start.position.x = posStart[0] + mapOrigin_[0];
             seg.start.position.y = posStart[1] + mapOrigin_[1];
@@ -556,9 +481,9 @@ void Router_Node::publish()
             seg.start.orientation.y = qStart.y();
             seg.start.orientation.z = qStart.z();
 
-            Eigen::Vector2d posEnd(cp.end[0] * mapResolution_, cp.end[1] * mapResolution_);
+            Eigen::Vector2d posEnd ( cp.end[0] * mapResolution_, cp.end[1] * mapResolution_ );
             tf::Quaternion qEnd;
-            qEnd.setEuler(0, 0, cp.end[2]);
+            qEnd.setEuler ( 0, 0, cp.end[2] );
 
             seg.end.position.x = posEnd[0] + mapOrigin_[0];
             seg.end.position.y = posEnd[1] + mapOrigin_[1];
@@ -570,112 +495,73 @@ void Router_Node::publish()
             seg.segment_id = cp.segId;
             seg.width = graph_[cp.segId].width() * mapResolution_;
 
-            for (int j = 0; j < cp.preconditions.size(); j++)
-            {
+            for ( int j = 0; j < cp.preconditions.size(); j++ ) {
                 tuw_multi_robot_msgs::RoutePrecondition pc;
-                pc.robot_id = subscribed_robot_names_[cp.preconditions[j].robotId];
+                pc.robot_id = active_robots_[cp.preconditions[j].robotId]->robot_name;
                 pc.current_route_segment = cp.preconditions[j].stepCondition;
-                seg.preconditions.push_back(pc);
+                seg.preconditions.push_back ( pc );
             }
 
-            ros_path.segments.push_back(seg);
+            msg_route.segments.push_back ( seg );
         }
 
-        pubSegPaths_[i].publish(ros_path);
+        robot->pubRoute_.publish ( msg_route );
     }
 
     tuw_multi_robot_msgs::RouterStatus ps;
     ps.id = id_;
     ps.success = 1;
-    ps.overall_path_length = (int32_t)getOverallPathLength();
-    ps.longest_path_length = (int32_t)getLongestPathLength();
-    ps.priority_scheduling_attemps = (int32_t)getPriorityScheduleAttemps();
-    ps.speed_scheduling_attemps = (int32_t)getSpeedScheduleAttemps();
-    ps.duration = (int32_t)getDuration_ms();
+    ps.overall_path_length = ( int32_t ) getOverallPathLength();
+    ps.longest_path_length = ( int32_t ) getLongestPathLength();
+    ps.priority_scheduling_attemps = ( int32_t ) getPriorityScheduleAttemps();
+    ps.speed_scheduling_attemps = ( int32_t ) getSpeedScheduleAttemps();
+    ps.duration = ( int32_t ) getDuration_ms();
 
-    pubPlannerStatus_.publish(ps);
+    pubPlannerStatus_.publish ( ps );
 }
 
-size_t Router_Node::getHash(const std::vector<signed char> &_map, const Eigen::Vector2d &_origin, const float &_resolution)
-{
+size_t Router_Node::getHash ( const std::vector<signed char> &_map, const Eigen::Vector2d &_origin, const float &_resolution ) {
     std::size_t seed = 0;
 
-    boost::hash_combine(seed, _origin[0]);
-    boost::hash_combine(seed, _origin[1]);
-    boost::hash_combine(seed, _resolution);
+    boost::hash_combine ( seed, _origin[0] );
+    boost::hash_combine ( seed, _origin[1] );
+    boost::hash_combine ( seed, _resolution );
 
-    for (const signed char &val : _map)
-    {
-        boost::hash_combine(seed, val);
+    for ( const signed char &val : _map ) {
+        boost::hash_combine ( seed, val );
     }
 
     return seed;
 }
 
-std::size_t Router_Node::getHash(const std::vector<Segment> &_graph)
-{
+std::size_t Router_Node::getHash ( const std::vector<Segment> &_graph ) {
     std::size_t seed = 0;
 
-    for (const Segment &seg : _graph)
-    {
-        boost::hash_combine(seed, seg.width());
-        boost::hash_combine(seed, seg.length());
-        boost::hash_combine(seed, seg.getSegmentId());
+    for ( const Segment &seg : _graph ) {
+        boost::hash_combine ( seed, seg.width() );
+        boost::hash_combine ( seed, seg.length() );
+        boost::hash_combine ( seed, seg.getSegmentId() );
 
-        for (const int &p : seg.getPredecessors())
-        {
-            boost::hash_combine(seed, p);
+        for ( const int &p : seg.getPredecessors() ) {
+            boost::hash_combine ( seed, p );
         }
 
-        for (const int &s : seg.getSuccessors())
-        {
-            boost::hash_combine(seed, s);
+        for ( const int &s : seg.getSuccessors() ) {
+            boost::hash_combine ( seed, s );
         }
 
-        for (const Eigen::Vector2d &vec : seg.getPoints())
-        {
-            boost::hash_combine(seed, vec[0]);
-            boost::hash_combine(seed, vec[1]);
+        for ( const Eigen::Vector2d &vec : seg.getPoints() ) {
+            boost::hash_combine ( seed, vec[0] );
+            boost::hash_combine ( seed, vec[1] );
         }
     }
 
     return seed;
 }
 
-Router_Node::TopicStatus::TopicStatus(const status _status, const float _activeTime)
-{
-    setStatus(_status, _activeTime);
-}
 
-Router_Node::TopicStatus::TopicStatus() : TopicStatus(status::inactive)
-{
-}
 
-Router_Node::TopicStatus::status Router_Node::TopicStatus::getStatus() const
-{
-    return status_;
-}
-
-void Router_Node::TopicStatus::updateStatus(const float _updateTime)
-{
-    if (activeTime_ > 0)
-        activeTime_ -= _updateTime;
-
-    if (activeTime_ < 0)
-        activeTime_ = 0;
-
-    if (activeTime_ == 0 && status_ != status::fixed)
-        status_ = status::inactive;
-}
-
-void Router_Node::TopicStatus::setStatus(const status _status, const float _activeTime)
-{
-    if (_status != status::active)
-        activeTime_ = 0;
-    else
-        activeTime_ = _activeTime;
-
-    status_ = _status;
-}
 
 } // namespace multi_robot_router
+
+

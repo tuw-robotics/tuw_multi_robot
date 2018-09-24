@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+
+<launch>
+	<arg name="cfg"  default="default" />
+	<arg name="use_gdb"  default="false" />
+	<arg name="priority_rescheduling"  default="true" />
+	<arg name="speed_rescheduling"  default="true" />
+	<arg name="collision_resolver"  default="2" />
+	<arg name="publish_routing_table"  default="true" />
+    
+	
+    <group if="$(arg use_gdb)">
+	<node launch-prefix="gdb -ex run --args" pkg="tuw_multi_robot_router" type="tuw_multi_robot_router_node" name="multi_robot_router" output="screen">
+        <param name="priority_rescheduling" value="$(arg priority_rescheduling)" />
+        <param name="speed_rescheduling" value="$(arg speed_rescheduling)" />
+        <param name="collision_resolver" value="$(arg collision_resolver)" />
+        <param name="publish_routing_table" value="$(arg publish_routing_table)" />
+		<rosparam command="load" file="$(find tuw_multi_robot_demo)/cfg/multi_robot_planner/$(arg cfg)/multi_robot.yaml" />
+	</node>
+    </group>
+    <group unless="$(arg use_gdb)">
+	<node pkg="tuw_multi_robot_router" type="tuw_multi_robot_router_node" name="multi_robot_router" output="screen">
+        <param name="priority_rescheduling" value="$(arg priority_rescheduling)" />
+        <param name="speed_rescheduling" value="$(arg speed_rescheduling)" />
+        <param name="collision_resolver" value="$(arg collision_resolver)" />
+        <param name="publish_routing_table" value="$(arg publish_routing_table)" />
+		<rosparam command="load" file="$(find tuw_multi_robot_demo)/cfg/multi_robot_planner/$(arg cfg)/multi_robot.yaml" />
+	</node>
+    </group>
+</launch>
+
+	

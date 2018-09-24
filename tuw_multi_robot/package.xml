@@ -54,6 +54,7 @@
   <buildtool_depend>catkin</buildtool_depend>
   <exec_depend>tuw_multi_robot_ctrl</exec_depend>
   <exec_depend>tuw_multi_robot_demo</exec_depend>
+  <exec_depend>tuw_multi_robot_goal_generator</exec_depend>
   <exec_depend>tuw_multi_robot_msgs</exec_depend>
   <exec_depend>tuw_multi_robot_local_behavior_controller</exec_depend>
   <exec_depend>tuw_multi_robot_router</exec_depend>

@@ -7,6 +7,7 @@ PLUGINLIB_EXPORT_CLASS(FakePoseEstimationNodelet, nodelet::Nodelet)
 void FakePoseEstimationNodelet::onInit()
 {
   nh_ = getPrivateNodeHandle();
+  nh_ = getNodeHandle();
   
   pose_pub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>("pose", 1);
   
