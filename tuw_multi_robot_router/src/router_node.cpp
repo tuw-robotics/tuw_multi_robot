@@ -69,32 +69,22 @@ Router_Node::Router_Node ( ros::NodeHandle &_n ) : Router(),
     sum_processing_time_successful_(.0){
     id_ = 0;
 
-    n_param_.param<std::string> ( "planner_status_topic", planner_status_topic_, "planner_status" );
 
-    n_param_.param<std::string> ( "goal_topic", goal_topic_, "goals" );
-
-    n_param_.param<std::string> ( "map_topic", map_topic_, "/map" );
-
-    n_param_.param<std::string> ( "graph_topic", voronoi_topic_, "segments" );
-
-    n_param_.param<std::string> ( "robot_info", robot_info_topic_, "/robot_info" );
 
     n_param_.param<std::string> ( "robot_name", singleRobotName_, "" );
 
-    n_param_.param<std::string> ( "robot_goal", singleRobotGoalTopic_, "/goal" );
-
     // static subscriptions
-    subGoalSet_ = n_.subscribe ( goal_topic_, 1, &Router_Node::goalsCallback, this );
-    subMap_ = n_.subscribe ( map_topic_, 1, &Router_Node::mapCallback, this );
-    subVoronoiGraph_ = n_.subscribe ( voronoi_topic_, 1, &Router_Node::graphCallback, this );
-    subRobotInfo_ = n_.subscribe ( robot_info_topic_, 10000, &Router_Node::robotInfoCallback, this );
+    subGoalSet_ = n_.subscribe ( "goals" , 1, &Router_Node::goalsCallback, this );
+    subMap_ = n_.subscribe ( "/map", 1, &Router_Node::mapCallback, this );
+    subVoronoiGraph_ = n_.subscribe ( "segments", 1, &Router_Node::graphCallback, this );
+    subRobotInfo_ = n_.subscribe ( "/robot_info" , 10000, &Router_Node::robotInfoCallback, this );
 
     if ( !singleRobotName_.size() == 0 ) {
-        subSingleRobotGoal_ = n_.subscribe ( singleRobotGoalTopic_, 1, &Router_Node::goalCallback, this );
+        subSingleRobotGoal_ = n_.subscribe ( "/goal", 1, &Router_Node::goalCallback, this );
     }
 
     //static publishers
-    pubPlannerStatus_ = n_.advertise<tuw_multi_robot_msgs::RouterStatus> ( planner_status_topic_, 1 );
+    pubPlannerStatus_ = n_.advertise<tuw_multi_robot_msgs::RouterStatus> ( "planner_status", 1 );
 
     //dynamic reconfigure
     call_type = boost::bind ( &Router_Node::parametersCallback, this, _1, _2 );

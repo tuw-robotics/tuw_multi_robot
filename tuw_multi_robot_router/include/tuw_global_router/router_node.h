@@ -109,15 +109,7 @@ private:
     cv::Mat distMap_;
     Eigen::Vector2d mapOrigin_;
     float mapResolution_;
-    std::string route_topic_;
-    std::string odom_topic_;
-    std::string path_topic_;
-    std::string goal_topic_;
-    std::string map_topic_;
-    std::string robot_info_topic_;
-    std::string voronoi_topic_;
-    std::string planner_status_topic_;
-    std::string singleRobotGoalTopic_;
+    std::string singleRobotName_;
     bool publish_routing_table_;
     bool got_map_ = false;
     bool got_graph_ = false;
@@ -127,7 +119,6 @@ private:
     int id_;
     float topic_timeout_s_ = 10;
     bool freshPlan_ = false;
-    std::string singleRobotName_ = "";
     bool monitor_enabled_;
     
     void parametersCallback ( tuw_multi_robot_router::routerConfig &config, uint32_t level );
