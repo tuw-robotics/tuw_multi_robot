@@ -278,7 +278,6 @@ void velocity_controller::LocalMultiRobotControllerNode::subPickupCb(const tuw_m
         {
             //controller[i].setGoodId(pickup->good_id);
             controller[i].setOrderId(pickup->order_id);
-            publishRobotInfo();
             break;
         }
     }

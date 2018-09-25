@@ -21,14 +21,16 @@ class AbstractSolver
 public:
   explicit AbstractSolver(
       std::map<std::string, geometry_msgs::Pose*> robots,
-      std::vector<tuw_multi_robot_msgs::Order> orders)
-    : robots_(robots), orders_(orders){};
+      std::vector<tuw_multi_robot_msgs::Order> orders,
+      std::map<int, geometry_msgs::Pose*> order_positions)
+    : robots_(robots), orders_(orders), order_positions_(order_positions){};
 
   virtual std::vector<TransportPair> solve() = 0;
 
 protected:
   std::map<std::string, geometry_msgs::Pose*> robots_;
   std::vector<tuw_multi_robot_msgs::Order> orders_;
+  std::map<int, geometry_msgs::Pose*> order_positions_;
 };
 
 }  // end namespace tuw_order_planner

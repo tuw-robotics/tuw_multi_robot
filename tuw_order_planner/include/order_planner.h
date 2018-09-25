@@ -8,7 +8,6 @@
 #include <tuw_multi_robot_msgs/OrderPosition.h>
 #include <tuw_multi_robot_msgs/Pickup.h>
 #include <tuw_multi_robot_msgs/RobotInfo.h>
-#include <nav_msgs/Odometry.h>
 #include <geometry_msgs/Pose.h>
 #include <map>
 
@@ -32,9 +31,7 @@ public:
 private:
   void robotInfoCallback(const tuw_multi_robot_msgs::RobotInfo::ConstPtr& robotInfo);
   void ordersCallback(const tuw_multi_robot_msgs::OrderArray::ConstPtr& orders);
-  void odomCallback(const nav_msgs::Odometry& odom);
   int incrementRobotProgress(std::string robot_name);
-  void subscribeRobotOdom();
   void route();
   void reset();
 
@@ -53,6 +50,7 @@ private:
   ros::NodeHandle* nodeHandle_;
 
   std::map<std::string, geometry_msgs::Pose*> subscribed_robots_;
+  std::map<int, geometry_msgs::Pose*> order_positions_;
   std::map<std::string, int> robots_status_;
   std::map<std::string, int> robots_progress_;
   std::vector<TransportPair> transport_pairs_;
