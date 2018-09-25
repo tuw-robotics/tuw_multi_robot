@@ -43,14 +43,7 @@ namespace tuw_graph
 {
 VoronoiGeneratorNode::VoronoiGeneratorNode(ros::NodeHandle &n) : voronoi_map::VoronoiPathGenerator(), VoronoiGraphGenerator(), Serializer(), n_(n), n_param_("~")
 {
-
-    n_param_.param<std::string>("map_topic", topicGlobalMap_, "/map");
-
     n_param_.param<int>("map_smoothing", smoothing_, 0);
-
-    n_param_.param<std::string>("voronoi_topic", topicVoronoiMap_, "voronoi_map");
-
-    n_param_.param<std::string>("segments_topic", topicSegments_, "/segments");
 
     n_param_.param<float>("segment_length", path_length_, 1.0);
 
@@ -71,9 +64,9 @@ VoronoiGeneratorNode::VoronoiGeneratorNode(ros::NodeHandle &n) : voronoi_map::Vo
         customGraphPath_ += "/";
     }
 
-    subMap_ = n.subscribe(topicGlobalMap_, 1, &VoronoiGeneratorNode::globalMapCallback, this);
-    //pubVoronoiMap_    = n.advertise<nav_msgs::OccupancyGrid>(topicVoronoiMap_, 1);                        //DEBUG
-    pubSegments_ = n.advertise<tuw_multi_robot_msgs::Graph>(topicSegments_, 1);
+    subMap_ = n.subscribe("map", 1, &VoronoiGeneratorNode::globalMapCallback, this);
+    //pubVoronoiMap_    = n.advertise<nav_msgs::OccupancyGrid>( "voronoi_map", 1);                        //DEBUG
+    pubSegments_ = n.advertise<tuw_multi_robot_msgs::Graph>("segments", 1);
 
     //ros::Rate(1).sleep();
     ros::spinOnce();

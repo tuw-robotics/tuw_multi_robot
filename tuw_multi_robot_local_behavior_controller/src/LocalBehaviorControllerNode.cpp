@@ -52,46 +52,27 @@ LocalBehaviorControllerNode::LocalBehaviorControllerNode(ros::NodeHandle &n)
   n_param_.param<double>("robot_radius", robot_radius_, robot_radius_);
   
   n_param_.param<double>("robot_default_radius", robotDefaultRadius_, 0.3);
+  
+  n_param_.param<std::string>("frame_id", frame_id_, "map");
+  
+  n_param_.param<double>("update_rate", update_rate_, 5.0);
 
-  n_param_.param<std::string>("path_topic", topic_path_, "path");
+  subPose_ = n.subscribe<geometry_msgs::PoseWithCovarianceStamped>("pose", 1,  &LocalBehaviorControllerNode::subPoseCb, this);
+  subRobotInfo_ = n.subscribe<tuw_multi_robot_msgs::RobotInfo>("/robot_info", 10000, &LocalBehaviorControllerNode::subRobotInfoCb, this);
 
-  n_param_.param<std::string>("route_topic", topic_route_, "route");
-
-  n_param_.param<std::string>("robotInfo_topic", topic_robot_info_, "/robot_info");
+  subRoute_ = n.subscribe<tuw_multi_robot_msgs::Route>("route", 1, &LocalBehaviorControllerNode::subRouteCb, this);
   
-  n_param_.param<std::string>("pose_topic", topic_pose_, "pose");
-  
-  n_param_.param<std::string>("frame_map", frame_map_, "map");
-  
-  n_param_.param<std::string>("frame_map", frame_map_, "map");
-  
-  n_param_.param<double>("update_rate", update_rate_, 1.0);
-  
-  n_param_.param<double>("update_rate_info", update_rate_info_, 5.0);
-
-  subPose_ = n.subscribe<geometry_msgs::PoseWithCovarianceStamped>(topic_pose_, 1,
-                                                                   &LocalBehaviorControllerNode::subPoseCb, this);
-  subRobotInfo_ = n.subscribe<tuw_multi_robot_msgs::RobotInfo>(topic_robot_info_, 10000, &LocalBehaviorControllerNode::subRobotInfoCb, this);
-
-  subRoute_ = n.subscribe<tuw_multi_robot_msgs::Route>(topic_route_, 1,
-                                                       &LocalBehaviorControllerNode::subRouteCb, this);
-  
-  pubRobotInfo_ = n.advertise<tuw_multi_robot_msgs::RobotInfo>(topic_robot_info_, 10000);
-  pubPath_ = n.advertise<nav_msgs::Path>(topic_path_, 1);
+  pubRobotInfo_ = n.advertise<tuw_multi_robot_msgs::RobotInfo>("/robot_info", 10000);
+  pubPath_ = n.advertise<nav_msgs::Path>("path", 1);
   
   
   ros::Rate r(update_rate_);
 
-  int robot_info_trigger_ = 0;
   while (ros::ok())
   {
     r.sleep();
     ros::spinOnce();
-    if(robot_info_trigger_ >  update_rate_ / update_rate_info_) {
-        publishRobotInfo();
-        robot_info_trigger_ = 0;
-    }            
-    robot_info_trigger_++;
+    publishRobotInfo();
   }
 }
 
@@ -100,13 +81,13 @@ void LocalBehaviorControllerNode::publishPath(std::vector<Eigen::Vector3d> _p)
   nav_msgs::Path path;
   ros::Time now = ros::Time::now();
   path.header.stamp = now;
-  path.header.frame_id = frame_map_;
+  path.header.frame_id = frame_id_;
   
   for(auto&& p : _p)
   {
     geometry_msgs::PoseStamped ps;
     ps.header.stamp = now;
-    ps.header.frame_id = frame_map_;
+    ps.header.frame_id = frame_id_;
      
     ps.pose.position.x = p[0];
     ps.pose.position.y = p[1];
@@ -219,7 +200,7 @@ void LocalBehaviorControllerNode::publishRobotInfo()
 {
   tuw_multi_robot_msgs::RobotInfo ri;
   ri.header.stamp = ros::Time::now();
-  ri.header.frame_id = frame_map_;
+  ri.header.frame_id = frame_id_;
   ri.robot_name = robot_name_;
   ri.pose = robot_pose_;
   ri.shape = ri.SHAPE_CIRCLE;
