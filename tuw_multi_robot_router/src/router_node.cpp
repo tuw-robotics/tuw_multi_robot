@@ -74,13 +74,16 @@ Router_Node::Router_Node ( ros::NodeHandle &_n ) : Router(),
     n_param_.param<std::string> ( "robot_name", singleRobotName_, "" );
 
     // static subscriptions
-    subGoalSet_ = n_.subscribe ( "goals" , 1, &Router_Node::goalsCallback, this );
-    subMap_ = n_.subscribe ( "/map", 1, &Router_Node::mapCallback, this );
+    subMap_ = n_.subscribe ( "map", 1, &Router_Node::mapCallback, this );
     subVoronoiGraph_ = n_.subscribe ( "segments", 1, &Router_Node::graphCallback, this );
-    subRobotInfo_ = n_.subscribe ( "/robot_info" , 10000, &Router_Node::robotInfoCallback, this );
+    subRobotInfo_ = n_.subscribe ( "robot_info" , 10000, &Router_Node::robotInfoCallback, this );
 
-    if ( !singleRobotName_.size() == 0 ) {
-        subSingleRobotGoal_ = n_.subscribe ( "/goal", 1, &Router_Node::goalCallback, this );
+    if ( singleRobotName_.size() == 0 ) {
+        /// Multi Robot Mode
+        subGoalSet_ = n_.subscribe ( "goals" , 1, &Router_Node::goalsCallback, this );
+    } else {
+        /// Sinble Robot Mode
+        subSingleRobotGoal_ = n_.subscribe ( "goal", 1, &Router_Node::goalCallback, this );
     }
 
     //static publishers

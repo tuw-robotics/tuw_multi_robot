@@ -40,9 +40,6 @@ namespace tuw_graph
             ros::Subscriber                         subMap_;
   
 
-            std::string                             topicGlobalMap_;
-            std::string                             topicVoronoiMap_;
-            std::string                             topicSegments_;
             std::string                             graphCachePath_;
             std::string                             customGraphPath_;
     
