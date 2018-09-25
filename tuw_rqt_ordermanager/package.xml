@@ -6,7 +6,7 @@
 
   <maintainer email="eric.aichinger@tuwien.ac.at">Eric Aichinger</maintainer>
   <license>BSD</license>
-  <url type="https://github.com/tuw-robotics/tuw_multi_robot_gui"></url>
+  <url type="https://github.com/tuw-robotics/tuw_multi_robot/"></url>
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
