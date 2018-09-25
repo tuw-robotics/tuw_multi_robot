@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<package>
+  <name>tuw_rqt_ordermanager</name>
+  <version>0.0.0</version>
+  <description>The tuw_rqt_ordermanager package</description>
+
+  <maintainer email="eric.aichinger@tuwien.ac.at">Eric Aichinger</maintainer>
+  <license>BSD</license>
+  <url type="https://github.com/tuw-robotics/tuw_multi_robot_gui"></url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>roslint</build_depend>
+  <build_depend>rqt_gui</build_depend>
+  <build_depend>rqt_gui_cpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>nav_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>tuw_multi_robot_msgs</build_depend>
+  <build_depend>tf</build_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>rqt_gui</run_depend>
+  <run_depend>rqt_gui_cpp</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>nav_msgs</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>tuw_multi_robot_msgs</run_depend>
+  <run_depend>tf</run_depend>
+
+
+  <export>
+    <rqt_gui plugin="${prefix}/plugin.xml"/>
+  </export>
+</package>
