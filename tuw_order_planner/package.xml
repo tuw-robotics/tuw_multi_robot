@@ -2,7 +2,7 @@
 <package format="2">
   <name>tuw_order_planner</name>
   <version>0.0.0</version>
-  <description>The tuw_order_planner package</description>
+  <description>Assign robots to orders</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
