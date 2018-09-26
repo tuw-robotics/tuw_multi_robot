@@ -18,12 +18,14 @@ Have a look at the [tuw_multi_robot_demo/README.md](tuw_multi_robot_demo/README.
 * tuw\_multi\_robot\_local\_behavior\_controller
 * tuw\_multi\_robot\_router
 * tuw\_multi\_robot\_rviz
+* tuw\_order\_planner
+* tuw\_rqt\_ordermanager
 * tuw\_voronoi\_graph
 
 # System overview
 <img src="tuw_multi_robot/res/dataflow.png" alt="200 Robots in stage" width="400px" />
 
-This figure reprecents the current state and planed developments on the tuw\_multi\_robot framework. The framework is designed to cover all tools needed for an automated delivery system with autonomouos vehicles. In the current state of the system allows one to set goals for multiple vehicles using RViz or by a configuration file. In the future we also want to integrate an order mangement system which is capable to assign vehicles for specific deliveries and generates goals for the multi robot route planner. The green boxes show already existing modules while the red boxes are not yet implmented/released. The system provides a simple local motion controller for all robots, which allows a high number (> 100) of vehicles to be controlled in real time using stage. Furthermore, the design allows the usage of existing individual controllers such as DWA implmented in move_base.
+This figure represents the current state and planned developments on the tuw\_multi\_robot framework. The framework is designed to cover all tools needed for an automated delivery system with autonomous vehicles. The current state of the system allows one to set goals for multiple vehicles using RViz, a configuration file, or an order mangement system which is capable to assign vehicles for specific deliveries and generates goals for the multi robot route planner. The green boxes show already existing modules while the red boxes are not yet implmented/released. The system provides a simple local motion controller for all robots, which allows a high number (> 100) of vehicles to be controlled in real time using stage. Furthermore, the design allows the usage of existing individual controllers such as DWA implmented in move_base.
 
 ## tuw\_multi\_robot\_demo
 Contains launch and config files to run a sample demo. 
@@ -34,14 +36,14 @@ roslaunch tuw_multi_robot_demo demo.launch room:=warehouse_14  nr_of_robots:=14
 roslaunch tuw_multi_robot_demo demo.launch room:=warehouse_200  nr_of_robots:=50 
 ```
 ## tuw\_multi\_robot\_goal\_generator
-Using this pkg one can genrate, save and read goal lists.
+Using this pkg one can generate, save and read goal lists.
 The random goal generation needs a running map publisher in order to generate valid goals.
 
 ```
 rosrun tuw_multi_robot_goal_generator goals_random _nr_of_robots:=3 _distance_boundary:=0.6 _distance_to_map_border:=0.2 _nr_of_avaliable_robots:=14
 ```
 ## tuw\_voronoi\_graph
-This package includes a voronoi-graph-generator a dxf-to-graph-node and a segment-to-graph node for creating search graphs for the multi robot router.
+This package includes a voronoi-graph-generator, a dxf-to-graph-node and a segment-to-graph node for creating search graphs for the multi robot router.
 
 The _voronoi-graph-generator-node_ receives a pixel map ([occupancy\_grid](http://docs.ros.org/api/nav_msgs/html/msg/OccupancyGrid.html)) and converts it into a voronoi graph describing the original map. This graph is automatically generated or loaded from a cache folder if saved. Additionally the node can load specific graphs saved in a folder.
 
@@ -73,6 +75,12 @@ This package contains a node, which receives the tuw_multi_robot_msgs/RouteSegme
 
 A tuw_multi_robot_msgs/RouteSegment contains a set of segments, where each of them has preconditions to tell when a robot is allowed to enter a certain segment. The tuw_multi_robot_route_to_path_node subscribes to these messages and checks how many of these preconditions are met and publishes a path from start to the last segment, for which the preconditions are met. This node subscribes to all robots as one node for performance reasons while testing with a large number of robots. 
 
+## tuw\_order\_planner
+Assigns robots to orders and publishes goals until all orders are complete. See [tuw\_order\_planner](tuw\_order\_planner).
+
+## tuw\_rqt\_ordermanager
+RQT plugin to build stations interactively and assign them to orders. See [tuw\_rqt\_ordermanager](tuw\_rqt\_ordermanager).
+<img src="res/rqt_ordermanager.png" alt="RQT ordermanager" width="400px" />
 
 # References
 http://wiki.ros.org/tuw_multi_robot

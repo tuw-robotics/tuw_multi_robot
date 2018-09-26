@@ -25,7 +25,7 @@ Use the scrollwheel to zoom in or out.
 A rightclick on the map opens a context menu where you can delete stations.
 
 # Code overview
-* GraphicVview: subclass of QGraphicsView with panning, zooming, contextmenu
+* GraphicsView: subclass of QGraphicsView with panning, zooming, contextmenu
 * Item{Order,Robot,Station}: subclass of QGraphicsItem and QListWidgetItem so we can have the same object in the list and graphics views. Most important is the `paint()` function
 * MapTransformation: deal with transformations of coordinates or poses between ROS map coordinates and QT scene coordinates
 * \*Dialog: gui code for create/edit dialogs

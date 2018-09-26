@@ -16,12 +16,12 @@ git clone git@github.com:tuw-robotics/tuw_multi_robot.git
 git clone git@github.com:tuw-robotics/tuw_msgs.git 
 ```
 
-if you like to run also the demos/tutorials you also need some addinal packages such as
+if you like to run also the demos/tutorials you also need some additional packages such as
 - stage_ros
 - map-server
 - a CAD program such as librecad (if you like to draw your own graph using dxf files) 
 
-Since there are not all programs and pkgs avaliabve for ubuntu 18.04 you have to comple some of them by your own.
+Since there are not all programs and pkgs available for ubuntu 18.04 you have to compile some of them by your own.
 ### for Ubuntu 16.04 /  18.04
 
 ```
