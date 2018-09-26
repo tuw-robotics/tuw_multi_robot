@@ -93,7 +93,7 @@ public slots:
   void ordersItemSelectionChanged();
   void deleteStation();
   void deleteStationByName(std::string);
-  void lockedDeleteStationByName(std::string);
+  void lockingDeleteStationByName(std::string);
   void editStation();
 
   void newOrder();

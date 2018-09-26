@@ -33,15 +33,16 @@ void ItemStation::paint(
   float y = pose_.position.y;
   float z = pose_.position.z;
 
+  // draw station rectangle
   painter->setPen(Qt::SolidLine);
   painter->setBrush(*(new QColor(0, 0, 255, 255)));
   painter->drawRect(QRectF(x-radius_/2, y-radius_/2, radius_, radius_));
 
+  // circle around hovered (active) stations
   if (is_hovered_)
   {
     painter->setPen(Qt::SolidLine);
     painter->setBrush(*(new QColor(0, 0, 0, 0)));
-    //painter->drawRect(QRectF(x, y, radius_*2, radius_*2));
     painter->drawEllipse(QPointF(x, y), radius_*2, radius_*2);
   }
 

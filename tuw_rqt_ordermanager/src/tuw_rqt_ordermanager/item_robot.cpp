@@ -23,6 +23,7 @@ void ItemRobot::paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
   float y = pose_.position.y;
   float z = pose_.position.z;
 
+  // draw view angle of robot
   painter->setPen(Qt::NoPen);
   painter->setBrush(*(new QColor(0, 0, 0, 25)));
   QRectF rect(x - 25, y - 25, 50, 50);
@@ -31,6 +32,7 @@ void ItemRobot::paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
   int angle = (angzero)*16 - span / 2;
   painter->drawPie(rect, angle, span);
 
+  // draw robot circle
   painter->setPen(Qt::SolidLine);
   painter->setBrush(*(new QColor(0, 255, 0, 255)));
   painter->drawEllipse(QPointF(x, y), radius_, radius_);

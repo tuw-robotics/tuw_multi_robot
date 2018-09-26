@@ -65,9 +65,11 @@ void RQTOrdermanager::initPlugin(qt_gui_cpp::PluginContext& context)
   connect(this, &RQTOrdermanager::orderPositionReceived, this, &RQTOrdermanager::orderPositionHandle, Qt::QueuedConnection);
   connect(this, &RQTOrdermanager::stationsReceived, this, &RQTOrdermanager::stationsHandle, Qt::QueuedConnection);
 
+  /*
   connect(ui_.btn_new_robot, SIGNAL(clicked()), this, SLOT(newRobot()), Qt::QueuedConnection);
   connect(ui_.btn_delete_robot, SIGNAL(clicked()), this, SLOT(deleteRobot()), Qt::QueuedConnection);
   connect(ui_.btn_edit_robot, SIGNAL(clicked()), this, SLOT(editRobot()), Qt::QueuedConnection);
+  */
 
   connect(ui_.btn_new_station, SIGNAL(clicked()), this, SLOT(newStation()), Qt::QueuedConnection);
   connect(ui_.btn_delete_station, SIGNAL(clicked()), this, SLOT(deleteStation()), Qt::QueuedConnection);
@@ -82,7 +84,7 @@ void RQTOrdermanager::initPlugin(qt_gui_cpp::PluginContext& context)
 
   connect(ui_.map_view, &GraphicsView::orderAddStation, this, &RQTOrdermanager::orderAddStation, Qt::QueuedConnection);
   connect(ui_.map_view, &GraphicsView::newStation, this, &RQTOrdermanager::newStation, Qt::QueuedConnection);
-  connect(ui_.map_view, &GraphicsView::removeStation, this, &RQTOrdermanager::lockedDeleteStationByName, Qt::QueuedConnection);
+  connect(ui_.map_view, &GraphicsView::removeStation, this, &RQTOrdermanager::lockingDeleteStationByName, Qt::QueuedConnection);
 
   connect(ui_.lst_orders, &QListWidget::itemSelectionChanged, this, &RQTOrdermanager::ordersItemSelectionChanged, Qt::QueuedConnection);
 
@@ -135,6 +137,7 @@ void RQTOrdermanager::mapCallback(const nav_msgs::OccupancyGrid& msg)
   emit mapChanged(msg);
 }
 
+// store received map in a pixmap
 void RQTOrdermanager::setMap(const nav_msgs::OccupancyGrid& map)
 {
   int width = map.info.width;
@@ -185,6 +188,7 @@ void RQTOrdermanager::setMap(const nav_msgs::OccupancyGrid& map)
   this->requestUpdateOnce();
 }
 
+// show dialog to create order
 void RQTOrdermanager::newOrder()
 {
   OrderDialog* dialog = new OrderDialog();
@@ -206,12 +210,6 @@ void RQTOrdermanager::newOrder()
     ir->setOrderName(dialog->getOrderName());
     ir->setColor(order_colors_[id % order_colors_.size()]);
 
-    /*
-    ir->setPositionX(transformMapToScene(TRANSFORM_X, dialog->getPositionX()));
-    ir->setPositionY(transformMapToScene(TRANSFORM_Y, dialog->getPositionY()));
-    ir->setPositionZ(transformMapToScene(TRANSFORM_Z, dialog->getPositionZ()));
-    */
-
     ir->setZValue(2);
 
     scene_.addItem(ir);
@@ -220,6 +218,7 @@ void RQTOrdermanager::newOrder()
   }
 }
 
+// delete order
 void RQTOrdermanager::deleteOrder()
 {
   QList<QListWidgetItem*> list = ui_.lst_orders->selectedItems();
@@ -230,6 +229,7 @@ void RQTOrdermanager::deleteOrder()
   }
 }
 
+// show edit order dialog
 void RQTOrdermanager::editOrder()
 {
   QList<QListWidgetItem*> list = ui_.lst_orders->selectedItems();
@@ -239,25 +239,15 @@ void RQTOrdermanager::editOrder()
   OrderDialog* dialog = new OrderDialog();
   dialog->setOrderName(ir->getOrderName());
 
-  /*
-  dialog->setPositionX(transformSceneToMap(TRANSFORM_X, ir->getPositionX()));
-  dialog->setPositionY(transformSceneToMap(TRANSFORM_Y, ir->getPositionY()));
-  dialog->setPositionZ(transformSceneToMap(TRANSFORM_Z, ir->getPositionZ()));
-  */
-
   int ret = dialog->exec();
   if (ret == QDialog::Accepted)
   {
     ir->setOrderName(dialog->getOrderName());
-    /*
-    ir->setPositionX(transformMapToScene(TRANSFORM_X, dialog->getPositionX()));
-    ir->setPositionY(transformMapToScene(TRANSFORM_Y, dialog->getPositionY()));
-    ir->setPositionZ(transformMapToScene(TRANSFORM_Z, dialog->getPositionZ()));
-    */
     scene_.update();
   }
 }
 
+/*
 void RQTOrdermanager::newRobot()
 {
   RobotDialog* dialog = new RobotDialog();
@@ -267,11 +257,6 @@ void RQTOrdermanager::newRobot()
     ItemRobot* ir = new ItemRobot();
     ir->setDrawBoundingRect(ui_.cb_showBoundingRects->isChecked());
     ir->setRobotName(dialog->getRobotName());
-    /*
-    ir->setPositionX(dialog->getPositionX());
-    ir->setPositionY(dialog->getPositionY());
-    ir->setPositionZ(dialog->getPositionZ());
-    */
 
     scene_.addItem(ir);
     ui_.lst_robots->addItem(ir);
@@ -289,6 +274,25 @@ void RQTOrdermanager::deleteRobot()
   }
 }
 
+void RQTOrdermanager::editRobot()
+{
+  QList<QListWidgetItem*> list = ui_.lst_robots->selectedItems();
+  if (list.size() < 1)
+    return;
+  ItemRobot* ir = (ItemRobot*)list[0];
+  RobotDialog* dialog = new RobotDialog();
+  dialog->setRobotName(ir->getRobotName());
+
+  int ret = dialog->exec();
+  if (ret == QDialog::Accepted)
+  {
+    ir->setRobotName(dialog->getRobotName());
+    scene_.update();
+  }
+}
+*/
+
+// enable or disable drawing of bounding rects of all items
 void RQTOrdermanager::setDrawBoundingRects(bool checked)
 {
   mtx_lst_stations->lock();
@@ -311,34 +315,7 @@ void RQTOrdermanager::setDrawBoundingRects(bool checked)
   }
 }
 
-void RQTOrdermanager::editRobot()
-{
-  QList<QListWidgetItem*> list = ui_.lst_robots->selectedItems();
-  if (list.size() < 1)
-    return;
-  ItemRobot* ir = (ItemRobot*)list[0];
-  RobotDialog* dialog = new RobotDialog();
-  dialog->setRobotName(ir->getRobotName());
-  /*
-  dialog->setPositionX(transformSceneToMap(TRANSFORM_X, ir->getPositionX()));
-  dialog->setPositionY(transformSceneToMap(TRANSFORM_Y, ir->getPositionY()));
-  dialog->setPositionZ(transformSceneToMap(TRANSFORM_Z, ir->getPositionZ()));
-  */
-
-  int ret = dialog->exec();
-  if (ret == QDialog::Accepted)
-  {
-    ir->setRobotName(dialog->getRobotName());
-    /*
-    ir->setPositionX(transformMapToScene(TRANSFORM_X, dialog->getPositionX()));
-    ir->setPositionY(transformMapToScene(TRANSFORM_Y, dialog->getPositionY()));
-    ir->setPositionZ(transformMapToScene(TRANSFORM_Z, dialog->getPositionZ()));
-    */
-
-    scene_.update();
-  }
-}
-
+// return station which is identified by station_name, or null
 ItemStation* RQTOrdermanager::findStationByName(std::string station_name)
 {
   for (int i = 0; i < ui_.lst_stations->count(); ++i)
@@ -353,6 +330,7 @@ ItemStation* RQTOrdermanager::findStationByName(std::string station_name)
   return NULL;
 }
 
+// find a station_name which is not yet in use
 std::string RQTOrdermanager::findUnusedStationName()
 {
   bool found = false;
@@ -374,13 +352,15 @@ std::string RQTOrdermanager::findUnusedStationName()
   return station_name;
 }
 
-void RQTOrdermanager::lockedDeleteStationByName(std::string station_name)
+// delete station by station_name but acquire lock to do so
+void RQTOrdermanager::lockingDeleteStationByName(std::string station_name)
 {
   mtx_lst_stations->lock();
   deleteStationByName(station_name);
   mtx_lst_stations->unlock();
 }
 
+// delete station by station_name. lock yourself!
 void RQTOrdermanager::deleteStationByName(std::string station_name)
 {
   ItemStation* is = findStationByName(station_name);
@@ -401,6 +381,7 @@ void RQTOrdermanager::deleteStationByName(std::string station_name)
   }
 }
 
+// delete station currently selected in station list
 void RQTOrdermanager::deleteStation()
 {
   //TODO: delete station from orders as well
@@ -414,6 +395,7 @@ void RQTOrdermanager::deleteStation()
   mtx_lst_stations->unlock();
 }
 
+// show new station dialog
 void RQTOrdermanager::newStation(float x, float y, float z)
 {
   StationDialog* dialog = new StationDialog();
@@ -429,12 +411,10 @@ void RQTOrdermanager::newStation(float x, float y, float z)
   int ret = dialog->exec();
   if (ret == QDialog::Accepted)
   {
-
-  
     tuw_multi_robot_srvs::StationManagerStationProtocol addStation;
     tuw_multi_robot_msgs::Station station;
-    station.id = dialog->getStationId(); //int32
-    station.name = dialog->getStationName().toStdString(); //string
+    station.id = dialog->getStationId();
+    station.name = dialog->getStationName().toStdString();
 
     geometry_msgs::Pose* pose = new geometry_msgs::Pose();
     pose->position.x = dialog->getPositionX();
@@ -470,6 +450,7 @@ void RQTOrdermanager::robotInfoCallback(const tuw_multi_robot_msgs::RobotInfo& r
   emit robotInfoReceived(ri);
 }
 
+// set current position of an order
 void RQTOrdermanager::orderPositionHandle(const tuw_multi_robot_msgs::OrderPosition& gp)
 {
   for (int i = 0; i < ui_.lst_orders->count(); ++i)
@@ -492,6 +473,7 @@ void RQTOrdermanager::orderPositionHandle(const tuw_multi_robot_msgs::OrderPosit
   }
 }
 
+// receive stations list
 void RQTOrdermanager::stationsHandle(const tuw_multi_robot_msgs::StationArray& sa)
 {
   mtx_lst_stations->lock();
@@ -500,8 +482,8 @@ void RQTOrdermanager::stationsHandle(const tuw_multi_robot_msgs::StationArray& s
   {
     tuw_multi_robot_msgs::Station station = sa.stations[i];
 
-    // XXX: id from message seems to be not respected. use own id
-    station.id = i;
+    // station manager ignores id
+    //station.id = i;
 
     ItemStation* is = new ItemStation();
     is->setDrawBoundingRect(ui_.cb_showBoundingRects->isChecked());
@@ -516,6 +498,7 @@ void RQTOrdermanager::stationsHandle(const tuw_multi_robot_msgs::StationArray& s
   mtx_lst_stations->unlock();
 }
 
+// set current robot positions
 void RQTOrdermanager::robotInfoHandle(const tuw_multi_robot_msgs::RobotInfo& ri)
 {
   std::string robot_name = ri.robot_name;
@@ -544,6 +527,7 @@ void RQTOrdermanager::robotInfoHandle(const tuw_multi_robot_msgs::RobotInfo& ri)
   scene_.update();
 }
 
+// publish /orders message
 void RQTOrdermanager::sendOrders()
 {
   tuw_multi_robot_msgs::OrderArray order_array_msg;
@@ -551,7 +535,6 @@ void RQTOrdermanager::sendOrders()
   {
     ItemOrder* ir = (ItemOrder*)ui_.lst_orders->item(i);
     ir->setDrawingMode(DRAWING_MODE_EXEC);
-    //std::vector<geometry_msgs::Pose*> poses = ir->getPoses();
     RWVector<std::string> * station_names = ir->getStations();
     station_names->lock();
 
@@ -592,6 +575,7 @@ void RQTOrdermanager::sendOrders()
   pub_orders_.publish(order_array_msg);
 }
 
+// add station to selected order
 void RQTOrdermanager::orderAddStation(std::string station_name)
 {
   QList<QListWidgetItem*> list = ui_.lst_orders->selectedItems();
@@ -605,6 +589,7 @@ void RQTOrdermanager::orderAddStation(std::string station_name)
   scene_.update();
 }
 
+// remove all stations from an order
 void RQTOrdermanager::orderClearPoses()
 {
   QList<QListWidgetItem*> list = ui_.lst_orders->selectedItems();
@@ -617,6 +602,7 @@ void RQTOrdermanager::orderClearPoses()
   scene_.update();
 }
 
+// request to stationmanager to publish stations
 void RQTOrdermanager::requestUpdateOnce()
 {
   tuw_multi_robot_srvs::StationManagerControlProtocol command;
@@ -632,6 +618,7 @@ void RQTOrdermanager::requestUpdateOnce()
   }
 }
 
+// called when selected order changes
 void RQTOrdermanager::ordersItemSelectionChanged()
 {
   for (int i = 0; i < ui_.lst_orders->count(); ++i)
