@@ -80,7 +80,7 @@ Assigns robots to orders and publishes goals until all orders are complete. See 
 
 ## tuw\_rqt\_ordermanager
 RQT plugin to build stations interactively and assign them to orders. See [tuw\_rqt\_ordermanager](tuw\_rqt\_ordermanager).
-<img src="res/rqt_ordermanager.png" alt="RQT ordermanager" width="400px" />
+<img src="tuw_rqt_ordermanager/res/rqt_ordermanager.png" alt="RQT ordermanager" width="400px" />
 
 # References
 http://wiki.ros.org/tuw_multi_robot
