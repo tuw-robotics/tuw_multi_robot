@@ -1,5 +1,6 @@
 #include <ros/ros.h>
 #include <simple_velocity_controller/controller_node.h>
+#include <tuw_nav_msgs/ControllerState.h>
 #include <tf/transform_datatypes.h>
 
 #define NSEC_2_SECS(A) ((float)A / 1000000000.0)
@@ -12,13 +13,7 @@ int main(int argc, char** argv)
     ros::NodeHandle n;
 
     velocity_controller::ControllerNode ctrl(n);
-    ros::Rate r(20);
     
-    while (ros::ok())
-    {
-      ros::spinOnce();
-      r.sleep();
-    }
     
     return 0;
   }
@@ -32,15 +27,6 @@ namespace velocity_controller
 {
 ControllerNode::ControllerNode(ros::NodeHandle& n) : Controller(), n_(n), n_param_("~")
 {
-  topic_pose_ = "pose";
-  n_param_.getParam("pose_topic", topic_pose_);
-
-  topic_cmdVel_ = "cmd_vel";
-  n_param_.getParam("cmd_vel_topic", topic_cmdVel_);
-
-  topic_path_ = "path";
-  n_param_.getParam("path_topic", topic_path_);
-
   max_vel_v_ = 0.8;
   n_param_.getParam("max_v", max_vel_v_);
 
@@ -62,15 +48,23 @@ ControllerNode::ControllerNode(ros::NodeHandle& n) : Controller(), n_(n), n_para
   n_param_.getParam("Kd", Kd_val_);
   setPID(Kp_val_, Ki_val_, Kd_val_);
 
-  topic_ctrl_ = "/ctrl";
-  n_param_.getParam("topic_control", topic_ctrl_);
-
-  ROS_INFO("%s", topic_cmdVel_.c_str());
-
-  pubCmdVel_ = n.advertise<geometry_msgs::Twist>(topic_cmdVel_, 1000);
-  subPose_ = n.subscribe(topic_pose_, 1000, &ControllerNode::subPoseCb, this);
-  subPath_ = n.subscribe(topic_path_, 1000, &ControllerNode::subPathCb, this);
-  subCtrl_ = n.subscribe(topic_ctrl_, 1000, &ControllerNode::subCtrlCb, this);
+  double loop_rate;
+  n_param_.param<double>("loop_rate", loop_rate, 5);
+  
+  pubCmdVel_ = n.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
+  pubState_ = n.advertise<tuw_nav_msgs::ControllerState>("state_trajectory_ctrl", 10);
+  subPose_ = n.subscribe("pose", 1000, &ControllerNode::subPoseCb, this);
+  subPath_ = n.subscribe("path", 1000, &ControllerNode::subPathCb, this);
+  subCtrl_ = n.subscribe("ctrl", 1000, &ControllerNode::subCtrlCb, this);
+  
+    ros::Rate r(loop_rate);
+    
+    while (ros::ok())
+    {
+      ros::spinOnce();
+      publishState();
+      r.sleep();
+    }
 }
 
 void ControllerNode::subPoseCb(const geometry_msgs::PoseWithCovarianceStampedConstPtr &_pose)
@@ -93,18 +87,32 @@ void ControllerNode::subPoseCb(const geometry_msgs::PoseWithCovarianceStampedCon
   float delta_t = d.sec + NSEC_2_SECS(d.nsec);
   update(pt, delta_t);
 
-  geometry_msgs::Twist msg;
 
   float v, w;
   getSpeed(&v, &w);
-  msg.linear.x = v;
-  msg.angular.z = w;
+  cmd_.linear.x = v;
+  cmd_.angular.z = w;
 
-  pubCmdVel_.publish(msg);
+  
+  pubCmdVel_.publish(cmd_);
+}
+
+void ControllerNode::publishState() {
+    ctrl_state_.header.stamp = ros::Time::now();
+    ctrl_state_.progress = getProgress();
+    if(isActive()) {
+        ctrl_state_.state = ctrl_state_.STATE_DRIVING;
+    } else {
+        ctrl_state_.state = ctrl_state_.STATE_IDLE;
+    }
+    pubState_.publish(ctrl_state_);    
 }
 
 void ControllerNode::subPathCb(const nav_msgs::Path_<std::allocator<void>>::ConstPtr& _path)
 {
+    ctrl_state_.progress_in_relation_to = _path->header.seq;
+    ctrl_state_.header.frame_id =  _path->header.frame_id;
+    
   if (_path->poses.size() == 0)
     return;
 

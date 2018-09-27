@@ -82,11 +82,11 @@ public:
         void updateInfo(const tuw_multi_robot_msgs::RobotInfo &info);
         
         /**
-         * crates subsribers and publisher based on the robot name
+         * crates subsribers and publisher using a given namespace
          * @param n node handler
-         * @return index or data.size() if no matching element was found
+         * @param robot_name_as_namespace on true it will use the robots name as namespace prefix
          **/
-        void initTopics(ros::NodeHandle &n);
+        void initTopics(ros::NodeHandle &n,  bool robot_name_as_namespace);
         
         Online getOnlineStatus() const;
         void updateOnlineStatus ( const float updateTime );

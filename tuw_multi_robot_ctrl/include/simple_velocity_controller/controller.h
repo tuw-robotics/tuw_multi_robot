@@ -80,15 +80,25 @@ public:
    * @param s the state (run stop wait_step step)
    */
   void setState(state s);
+  /**
+   * @brief return progress, 
+   * @return passed waypoints on the given path
+   */
+  size_t getProgress();
+  /**
+   * @brief return progress, passed waypoints on the given path
+   * @return if the vehicle is driving
+   */
+  bool isActive();
 
 private:
   float normalizeAngle(float _angle);
   float absolute(float _val);
   bool checkGoal(PathPoint _odom);
-  std::shared_ptr<std::vector<PathPoint>> path_;
+  std::vector<PathPoint> path_;
+  size_t idx_path_target_point_;
   float max_v_, max_w_;
   float v_, w_;
-  std::vector<PathPoint>::iterator path_iterator_;
   bool plan_active = false;
   float e_last_ = 0;
   float e_dot_ = 0;

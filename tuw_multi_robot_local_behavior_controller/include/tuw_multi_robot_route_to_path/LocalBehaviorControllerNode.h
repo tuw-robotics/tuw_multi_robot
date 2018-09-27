@@ -31,10 +31,12 @@
 #include <ros/ros.h>
 #include <nav_msgs/Path.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <tuw_nav_msgs/ControllerState.h>
 #include <tuw_multi_robot_msgs/Route.h>
 #include <tuw_multi_robot_msgs/RobotInfo.h>
 #include <tuw_multi_robot_route_to_path/RobotRouteToPath.h>
 #include <tuw_multi_robot_route_to_path/RobotStateObserver.h>
+#include <tuw_multi_robot_route_to_path/RouteProgressMonitor.h>
 
 #include <memory>
 
@@ -52,12 +54,12 @@ public:
 
   void publishRobotInfo();
 private:
-  void publishPath(std::vector<Eigen::Vector3d> _p);
   void updatePath();
 
   ros::Publisher pubPath_;
   ros::Publisher pubRobotInfo_;
   ros::Subscriber subRoute_;
+  ros::Subscriber subCtrlState_;
   ros::Subscriber subPose_;
   ros::Subscriber subRobotInfo_;
 
@@ -70,7 +72,14 @@ private:
   
   geometry_msgs::PoseWithCovariance robot_pose_;
   tuw_multi_robot_msgs::Route robot_route_;
+  tuw_multi_robot_msgs::RobotInfo robot_info_;
+  tuw_nav_msgs::ControllerState ctrl_state_;
+  nav_msgs::Path path_;
+  
+  size_t path_segment_start; /// route segment idx used to define the path start point
+  size_t path_segment_end;   /// route segment idx used to define the path end point
 
+  void subCtrlCb(const tuw_nav_msgs::ControllerStateConstPtr& msg);
   void subPoseCb(const geometry_msgs::PoseWithCovarianceStampedConstPtr& _pose);
   void subRobotInfoCb(const tuw_multi_robot_msgs::RobotInfo::ConstPtr& _robot_info);
   void subRouteCb(const tuw_multi_robot_msgs::Route::ConstPtr& _route);
@@ -80,7 +89,7 @@ private:
   int robot_step_;
   std::map<std::string, int> robot_steps_;
   
-  RobotStateObserver observer_;
+  tuw::RouteProgressMonitor progress_monitor_;
 };
 
 }  // namespace tuw_multi_robot_route_to_path

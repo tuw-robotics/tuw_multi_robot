@@ -1,0 +1,174 @@
+define hokuyolaser ranger
+(
+  sensor(       
+    # laser-specific properties
+    # factory settings for LMS200  
+    range [ 0.0  5.0 ]
+    fov 270.0
+    samples 270
+  )
+  model
+  (
+    # generic model properties
+    size [ 0.07 0.07 0.05 ] # dimensions from LMS200 data sheet  
+    color "blue"
+    obstacle_return 0
+  )
+)
+
+
+define floorplan model
+(
+  # sombre, sensible, artistic
+  color "gray30"
+
+  # most maps will need a bounding box
+  boundary 1
+
+  gui_nose 0
+  gui_grid 0
+
+  obstacle_return 1
+  gui_outline 0
+  gripper_return 0
+  fiducial_return 0
+  laser_return 1
+)
+
+
+define background model
+(
+  # sombre, sensible, artistic
+  color "red"
+
+  # most maps will need a bounding box
+  boundary 1
+
+  gui_nose 0
+  gui_grid 0
+
+  obstacle_return 0
+  gui_outline 0
+  gripper_return 0
+  fiducial_return 0
+  laser_return 1
+)
+
+
+# set the resolution of the underlying raytrace model in meters
+resolution 0.02
+
+interval_sim 10  # simulation timestep in milliseconds
+
+
+window
+( 
+  size [ 800.000 860.000 ] 
+
+  rotate [ 0.000 0 ]
+  scale 50 
+
+  show_data 1              # 1=on 0=off
+)
+
+
+# load an environment bitmap
+
+floorplan
+( 
+  name "test_1"
+  bitmap "map.pgm"
+  size [16.0 16.0 0]
+  pose [ 0 0 0 0 ]
+)
+
+define pioneer_base position 
+(
+  color "red"                   # Default color.
+  drive "diff"                  # Differential steering model.
+  gui_nose 0                    # Draw a nose on the robot so we can see which way it points
+  obstacle_return 0             # Can hit things.
+  ranger_return 0.5              # reflects sonar beams
+  blob_return 1                 # Seen by blobfinders  
+  fiducial_return 1             # Seen as "1" fiducial finders
+
+  localization "gps"             
+  localization_origin [0 0 0 0]   # Start odometry at (0, 0, 0).
+
+  # alternative odometric localization with simple error model
+  # localization "odom"              # Change to "gps" to have impossibly perfect, global odometry
+  # odom_error [ 0.05 0.05 0.1 ]    # Odometry error or slip in X, Y and Theta
+                                     # (Uniform random distribution)   
+
+  # four DOF kinematics limits
+  # [ xmin xmax ymin ymax zmin zmax amin amax ]        
+  velocity_bounds [-1 1 0 0 0 0 -45.0 45.0 ]          
+  acceleration_bounds [-1.0 1.0 0 0 0 0 -45 45.0 ]
+  
+  # laser scaner
+  # hokuyolaser(pose [ 0.225 0.000 -0.15 0.000 ])
+)
+
+define pioneer2dx_base_no_sonar pioneer_base
+(
+  # actual size
+  size [0.44 0.38 0.22] # sizes from MobileRobots' web site
+
+  # the pioneer's center of rotation is offset from its center of area
+  origin [-0.04 0 0 0]
+
+  # draw a nose on the robot so we can see which way it points
+  gui_nose 0
+
+  # estimated mass in KG
+  mass 23.0 
+)
+
+# as above, but with front sonar only
+define pioneer2dx_no_sonar pioneer2dx_base_no_sonar
+(  
+  # simplified Body shape:
+  block( 
+    points 8
+    point[0] [-0.2 0.12]
+    point[1] [-0.2 -0.12]
+    point[2] [-0.12 -0.2555]
+    point[3] [0.12 -0.2555]
+    point[4] [0.2 -0.12]
+    point[5] [0.2 0.12]
+    point[6] [0.12 0.2555]
+    point[7] [-0.12 0.2555]
+    z [0 0.22]
+  )
+)
+
+define arrow model
+(
+  block( 
+    points 3
+    point[0] [  0.1  0.0]
+    point[1] [ -0.05 -0.7]
+    point[2] [ -0.05  0.7]
+    z [0 0 0]
+  )
+  obstacle_return 0             # Can hit things.
+  color "white" 
+)
+
+
+
+pioneer2dx_no_sonar
+(
+  name "robot_0"
+  color "red"
+  arrow(pose [ 0.0 0.000 0.01 0.000 ])
+  pose [ -3 -1.2 0 0 ] 
+)
+
+pioneer2dx_no_sonar
+(
+  name "robot_1"
+  color "blue"
+  arrow(pose [ 0.0 0.000 0.01 0.000 ])
+  pose [ -1 -1.2 0 180 ] 
+)

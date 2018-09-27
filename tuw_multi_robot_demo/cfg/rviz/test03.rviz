@@ -81,18 +81,6 @@ Visualization Manager:
       Robots:
         robot_0: true
         robot_1: true
-        robot_10: true
-        robot_11: true
-        robot_12: true
-        robot_13: true
-        robot_2: true
-        robot_3: true
-        robot_4: true
-        robot_5: true
-        robot_6: true
-        robot_7: true
-        robot_8: true
-        robot_9: true
       Scale Pose: 0.30000001192092896
       Topic: /robot_info
       Unreliable: false
@@ -125,7 +113,7 @@ Visualization Manager:
       Radius: 0.029999999329447746
       Shaft Diameter: 0.10000000149011612
       Shaft Length: 0.10000000149011612
-      Topic: /robot_4/path
+      Topic: /robot_0/path
       Unreliable: false
       Value: true
     - Alpha: 1
@@ -148,7 +136,7 @@ Visualization Manager:
       Radius: 0.029999999329447746
       Shaft Diameter: 0.10000000149011612
       Shaft Length: 0.10000000149011612
-      Topic: /robot_5/path
+      Topic: /robot_1/path
       Unreliable: false
       Value: true
   Enabled: true
@@ -221,5 +209,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 800
-  X: 2235
+  X: 2234
   Y: 0

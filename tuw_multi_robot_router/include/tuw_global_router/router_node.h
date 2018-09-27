@@ -109,7 +109,7 @@ private:
     cv::Mat distMap_;
     Eigen::Vector2d mapOrigin_;
     float mapResolution_;
-    std::string singleRobotName_;
+    bool single_robot_mode_;
     bool publish_routing_table_;
     bool got_map_ = false;
     bool got_graph_ = false;
