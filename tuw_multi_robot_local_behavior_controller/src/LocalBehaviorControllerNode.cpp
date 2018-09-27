@@ -40,7 +40,7 @@ namespace tuw_multi_robot_route_to_path {
 LocalBehaviorControllerNode::LocalBehaviorControllerNode ( ros::NodeHandle &n )
     : n_ ( n ), n_param_ ( "~" ) {
     robot_step_ = -1;
-    robot_route_ = tuw_multi_robot_msgs::Route();
+    route_ = tuw_multi_robot_msgs::Route();
     path_segment_end = 0;
     path_segment_start = 0;
 
@@ -79,8 +79,8 @@ void LocalBehaviorControllerNode::updatePath() {
     bool valid = true;
     size_t last_active_segment = 0;
     // go through all segments in the route
-    for ( size_t i = 0; i < robot_route_.segments.size(); i++ ) {
-        const tuw_multi_robot_msgs::RouteSegment &seg = robot_route_.segments[i];
+    for ( size_t i = 0; i < route_.segments.size(); i++ ) {
+        const tuw_multi_robot_msgs::RouteSegment &seg = route_.segments[i];
         // go through all preconditions and check if they are fulfilled
         for ( auto&& prec : seg.preconditions ) {
             std::string other_robot_name = prec.robot_id;
@@ -109,16 +109,17 @@ void LocalBehaviorControllerNode::updatePath() {
             path_segment_start = 0;
         } else {
             path_segment_start = path_segment_start + ctrl_state_.progress;
+            //path_segment_start = progress_monitor_.getProgress();
         } 
         geometry_msgs::PoseStamped pose_stamped;
-        path_.header = robot_route_.header;
+        path_.header = route_.header;
         path_.header.stamp = ros::Time::now(); 
-        pose_stamped.header = robot_route_.header;
+        pose_stamped.header = route_.header;
         pose_stamped.header.stamp = ros::Time::now(); 
             
         path_.poses.clear();
         for ( size_t i = path_segment_start; i <= path_segment_end; i++ ) {
-            pose_stamped.pose = robot_route_.segments[i].end;
+            pose_stamped.pose = route_.segments[i].end;
             path_.poses.push_back(pose_stamped);            
         }
         pubPath_.publish(path_);        
@@ -131,13 +132,15 @@ void LocalBehaviorControllerNode::subCtrlCb ( const tuw_nav_msgs::ControllerStat
 }
 
 void LocalBehaviorControllerNode::subRouteCb ( const tuw_multi_robot_msgs::Route::ConstPtr &_route ) {
-    robot_route_ = *_route;
+    route_ = *_route;
     path_segment_end = 0;
     path_segment_start = 0;
+    progress_monitor_.init(route_);
 }
 
 void LocalBehaviorControllerNode::subPoseCb ( const geometry_msgs::PoseWithCovarianceStampedConstPtr &_pose ) {
     robot_pose_ = _pose->pose;
+    progress_monitor_.updateProgress(tuw::Point2D(robot_pose_.pose.position.x, robot_pose_.pose.position.y) );
 }
 
 void LocalBehaviorControllerNode::subRobotInfoCb ( const tuw_multi_robot_msgs::RobotInfo_<std::allocator<void> >::ConstPtr &_robot_info ) {
@@ -153,9 +156,11 @@ void LocalBehaviorControllerNode::publishRobotInfo() {
     robot_info_.robot_name = robot_name_;
     robot_info_.pose = robot_pose_;
     robot_info_.shape = robot_info_.SHAPE_CIRCLE;
-    robot_info_.shape_variables.push_back ( robot_radius_ );
+    robot_info_.shape_variables.resize ( 1 );
+    robot_info_.shape_variables[0] =  robot_radius_;
     robot_info_.sync.robot_id = robot_name_;
-    robot_info_.sync.current_route_segment = path_segment_start +  ctrl_state_.progress;
+    robot_info_.sync.current_route_segment = path_segment_start + ctrl_state_.progress;
+    robot_info_.sync.current_route_segment = progress_monitor_.getProgress();
     robot_info_.mode = robot_info_.MODE_NA;
     robot_info_.status = robot_info_.STATUS_STOPPED;  // TODO
     robot_info_.good_id = robot_info_.GOOD_NA;

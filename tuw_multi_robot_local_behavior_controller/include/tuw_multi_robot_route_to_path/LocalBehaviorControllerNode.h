@@ -71,7 +71,7 @@ private:
   double robotDefaultRadius_ = 0.6;
   
   geometry_msgs::PoseWithCovariance robot_pose_;
-  tuw_multi_robot_msgs::Route robot_route_;
+  tuw_multi_robot_msgs::Route route_;
   tuw_multi_robot_msgs::RobotInfo robot_info_;
   tuw_nav_msgs::ControllerState ctrl_state_;
   nav_msgs::Path path_;

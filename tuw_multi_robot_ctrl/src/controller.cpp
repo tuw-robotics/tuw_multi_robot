@@ -8,6 +8,7 @@ namespace velocity_controller
 Controller::Controller()
 {
   actual_cmd_ = run;
+  idx_path_target_point_ = 0;
   current_pose_ = PathPoint();
 }
 

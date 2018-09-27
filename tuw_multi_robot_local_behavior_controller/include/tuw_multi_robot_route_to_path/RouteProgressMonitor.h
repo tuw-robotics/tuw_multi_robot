@@ -57,7 +57,7 @@ public:
     RouteProgressMonitor();
     
     
-    void init(const tuw_multi_robot_msgs::Route::ConstPtr &route);
+    void init(const tuw_multi_robot_msgs::Route &route);
     void updateProgress(const tuw::Point2D p);
     int getProgress();
     bool finished();
