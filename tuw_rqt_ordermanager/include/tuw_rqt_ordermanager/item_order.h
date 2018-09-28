@@ -58,7 +58,7 @@ private:
   QString order_name_;
 
   RWVector<std::string>* stations_;
-  geometry_msgs::Pose* current_pose_;
+  geometry_msgs::Pose* current_pose_ = nullptr;
   QBrush* colored_brush_;
   QPen* colored_pen_;
   QColor color_;
