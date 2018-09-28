@@ -57,11 +57,11 @@ LocalBehaviorControllerNode::LocalBehaviorControllerNode ( ros::NodeHandle &n )
 
     subCtrlState_ = n.subscribe<tuw_nav_msgs::ControllerState> ( "state_trajectory_ctrl", 1,  &LocalBehaviorControllerNode::subCtrlCb, this );
     subPose_ = n.subscribe<geometry_msgs::PoseWithCovarianceStamped> ( "pose", 1,  &LocalBehaviorControllerNode::subPoseCb, this );
-    subRobotInfo_ = n.subscribe<tuw_multi_robot_msgs::RobotInfo> ( "/robot_info", 10000, &LocalBehaviorControllerNode::subRobotInfoCb, this );
+    subRobotInfo_ = n.subscribe<tuw_multi_robot_msgs::RobotInfo> ( "robot_info", 10000, &LocalBehaviorControllerNode::subRobotInfoCb, this );
 
     subRoute_ = n.subscribe<tuw_multi_robot_msgs::Route> ( "route", 1, &LocalBehaviorControllerNode::subRouteCb, this );
 
-    pubRobotInfo_ = n.advertise<tuw_multi_robot_msgs::RobotInfo> ( "/robot_info", 10000 );
+    pubRobotInfo_ = n.advertise<tuw_multi_robot_msgs::RobotInfo> ( "robot_info", 10000 );
     pubPath_ = n.advertise<nav_msgs::Path> ( "path", 1 );
 
 
