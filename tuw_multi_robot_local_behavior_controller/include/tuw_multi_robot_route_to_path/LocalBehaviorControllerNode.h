@@ -76,8 +76,8 @@ private:
   tuw_nav_msgs::ControllerState ctrl_state_;
   nav_msgs::Path path_;
   
-  size_t path_segment_start; /// route segment idx used to define the path start point
-  size_t path_segment_end;   /// route segment idx used to define the path end point
+  int path_segment_start; /// route segment idx used to define the path start point
+  int path_segment_end;   /// route segment idx used to define the path end point
 
   void subCtrlCb(const tuw_nav_msgs::ControllerStateConstPtr& msg);
   void subPoseCb(const geometry_msgs::PoseWithCovarianceStampedConstPtr& _pose);

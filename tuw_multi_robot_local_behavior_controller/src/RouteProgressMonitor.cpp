@@ -34,19 +34,25 @@ namespace  tuw {
 RouteProgressMonitor::Segment::Segment ( double x0, double y0, double x1, double y1, double width )
     : l ( x0, y0, x1, y1 )
     , width ( width )
-    , state ( SEGMENT_STATE_AHEAD ) {
+    , state ( SEGMENT_STATE_AHEAD ){
 }
 
-RouteProgressMonitor::RouteProgressMonitor() {
+RouteProgressMonitor::RouteProgressMonitor()
+    : idx_active_segment_(0) {
 }
 
 void RouteProgressMonitor::init ( const tuw_multi_robot_msgs::Route &route ) {
     for ( size_t i = 0; i < route.segments.size(); i++ ) {
         auto &seg = route.segments[i];
         SegmentPtr s = SegmentPtr ( new RouteProgressMonitor::Segment ( seg.start.position.x, seg.start.position.y, seg.end.position.x, seg.end.position.y, seg.width ) );
-        s->state = SEGMENT_STATE_AHEAD;
+        if(i == 0){
+            s->state = SEGMENT_STATE_ACTIVE;
+        }else {
+            s->state = SEGMENT_STATE_AHEAD;
+        }
         segments_.push_back ( s );
     }
+    idx_active_segment_ = 0;
 }
 
 
@@ -55,17 +61,13 @@ bool RouteProgressMonitor::finished(){
 }
 
 int RouteProgressMonitor::getProgress () {
-    if ( segments_.empty() ) {
-        return -1;
-    }
-    for ( size_t i = 0; i < segments_.size(); i++ ) {
-        if ( segments_[i]->state == SEGMENT_STATE_ACTIVE ) return i;
-    }
+    return idx_active_segment_ - 1;
 }
 
 void RouteProgressMonitor::updateProgress ( const tuw::Point2D p ) {
     for ( auto segment: segments_ ) {
         segment->distance = segment->l.distanceTo ( p );
+        segment->distance = p.distanceTo(segment->l.p1());
     }
     if ( segments_.empty() ) {
         return;
@@ -74,12 +76,15 @@ void RouteProgressMonitor::updateProgress ( const tuw::Point2D p ) {
         segments_[0]->state = SEGMENT_STATE_ACTIVE;
     }
     for ( size_t i = 0; i < segments_.size()-1; i++ ) {
-        SegmentPtr current = segments_[i];
+        SegmentPtr curr = segments_[i];
         SegmentPtr next = segments_[i+1];
-        if ( ( current->state == SEGMENT_STATE_ACTIVE ) && ( next->state == SEGMENT_STATE_AHEAD ) ) {
-            if ( current->distance < next->distance ) {
-                current->state = SEGMENT_STATE_INACTIVE;
+        if ( ( curr->state == SEGMENT_STATE_ACTIVE ) && ( next->state == SEGMENT_STATE_AHEAD ) ) {
+            double d_curr = curr->distance;
+            double d_next = next->distance;
+            if ( d_next <= d_curr) {
+                curr->state = SEGMENT_STATE_INACTIVE;
                 next->state = SEGMENT_STATE_ACTIVE;
+                idx_active_segment_ = i+1;
             }
         }
     }

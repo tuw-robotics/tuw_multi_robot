@@ -7,7 +7,7 @@
 <group ns="$(arg robot_name)">
   
   <node pkg="tuw_multi_robot_ctrl" type="tuw_velocity_controller" name="trajectory_controller" output="screen" >
-      <remap from="cmd_vel" to="cmd_vel_not_connected"/>
+      <!--remap from="cmd_vel" to="cmd_vel_not_connected"/-->
   </node>
   
   <node pkg="tuw_multi_robot_local_behavior_controller" type="tuw_local_behavior_controller_node" name="local_behavior" output="screen">

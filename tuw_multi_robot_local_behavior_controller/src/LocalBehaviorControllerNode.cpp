@@ -79,7 +79,7 @@ void LocalBehaviorControllerNode::updatePath() {
     bool valid = true;
     size_t last_active_segment = 0;
     // go through all segments in the route
-    for ( size_t i = 0; i < route_.segments.size(); i++ ) {
+    for ( size_t i = path_segment_start; i < route_.segments.size(); i++ ) {
         const tuw_multi_robot_msgs::RouteSegment &seg = route_.segments[i];
         // go through all preconditions and check if they are fulfilled
         for ( auto&& prec : seg.preconditions ) {
@@ -101,16 +101,13 @@ void LocalBehaviorControllerNode::updatePath() {
         // add segments to path as long as the prec. are fulfilled
         if ( valid ) {
             last_active_segment = i;
+        } else {
+            break;
         }
     }
     if ( last_active_segment > path_segment_end ) {
         path_segment_end = last_active_segment;
-        if(ctrl_state_.state == ctrl_state_.STATE_IDLE){
-            path_segment_start = 0;
-        } else {
-            path_segment_start = path_segment_start + ctrl_state_.progress;
-            //path_segment_start = progress_monitor_.getProgress();
-        } 
+        path_segment_start = progress_monitor_.getProgress() + 1;
         geometry_msgs::PoseStamped pose_stamped;
         path_.header = route_.header;
         path_.header.stamp = ros::Time::now(); 
@@ -159,7 +156,6 @@ void LocalBehaviorControllerNode::publishRobotInfo() {
     robot_info_.shape_variables.resize ( 1 );
     robot_info_.shape_variables[0] =  robot_radius_;
     robot_info_.sync.robot_id = robot_name_;
-    robot_info_.sync.current_route_segment = path_segment_start + ctrl_state_.progress;
     robot_info_.sync.current_route_segment = progress_monitor_.getProgress();
     robot_info_.mode = robot_info_.MODE_NA;
     robot_info_.status = robot_info_.STATUS_STOPPED;  // TODO

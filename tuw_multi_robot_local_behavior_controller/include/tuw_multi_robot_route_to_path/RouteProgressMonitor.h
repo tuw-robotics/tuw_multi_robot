@@ -61,6 +61,7 @@ public:
     void updateProgress(const tuw::Point2D p);
     int getProgress();
     bool finished();
+    int idx_active_segment_;
     
     tuw_multi_robot_msgs::Route route_;
     std::vector<SegmentPtr> segments_;
