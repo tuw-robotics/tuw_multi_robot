@@ -48,6 +48,7 @@
   <build_depend>roscpp</build_depend>
   <build_depend>tf</build_depend>
   <build_depend>tuw_multi_robot_msgs</build_depend>
+  <build_depend>tuw_nav_msgs</build_depend>
   <build_depend>nodelet</build_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>nav_msgs</exec_depend>
@@ -55,6 +56,7 @@
   <exec_depend>roscpp</exec_depend>
   <exec_depend>tf</exec_depend>
   <exec_depend>tuw_multi_robot_msgs</exec_depend>
+  <exec_depend>tuw_nav_msgs</exec_depend>
   <exec_depend>nodelet</exec_depend>
 
 

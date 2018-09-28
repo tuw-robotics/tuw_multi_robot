@@ -52,19 +52,23 @@ bool RobotInfo::compareName(const std::shared_ptr<RobotInfo> robot) const{
         /// @ToDo check if it crashes if the robot name holds no number 
         return std::stoi ( a ) <  std::stoi ( b );    
 }
-void RobotInfo::initTopics ( ros::NodeHandle &n ) {
+void RobotInfo::initTopics ( ros::NodeHandle &n,  bool robot_name_as_namespace) {
 
     //Not existant subscribe robots
-    std::string topic_odom_name = robot_name + "/odom";
+    std::string ns;
+    if( robot_name_as_namespace ) {
+        ns = robot_name + "/";
+    }
+    std::string topic_odom_name = ns + "odom";
     ROS_DEBUG ( "Multi Robot Router: subscribing to %s", topic_odom_name.c_str() );
     subOdom_ = n.subscribe ( topic_odom_name, 1, &RobotInfo::callback_odom, this );
 
-    std::string topic_path_name = robot_name + "/path_unsynced";
+    std::string topic_path_name = ns + "path_unsynced";
     ROS_DEBUG ( "Multi Robot Router: advertising on %s", topic_path_name.c_str() );
     pubPaths_ = n.advertise<nav_msgs::Path> ( topic_path_name, 1, true );
 
 
-    std::string topic_route_name = robot_name + "/route";
+    std::string topic_route_name = ns + "route";
     ROS_DEBUG ( "Multi Robot Router: advertising on %s", topic_route_name.c_str() );
     pubRoute_ = n.advertise<tuw_multi_robot_msgs::Route> ( topic_route_name, 1, true );
 }

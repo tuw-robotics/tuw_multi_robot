@@ -12,6 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   roscpp
   tuw_multi_robot_msgs
+  tuw_geometry
+  tuw_nav_msgs
 )
 
 find_package(Eigen3 REQUIRED)
@@ -126,6 +128,7 @@ include_directories(
 add_library(${PROJECT_NAME}
   src/RobotRouteToPath.cpp
   src/RobotStateObserver.cpp
+  src/RouteProgressMonitor.cpp
 )
 
 ## Add cmake target dependencies of the library

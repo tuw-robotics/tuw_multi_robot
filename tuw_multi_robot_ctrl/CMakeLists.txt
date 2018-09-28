@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   tf
   tuw_multi_robot_msgs
+  tuw_nav_msgs
   nodelet
 )
 
