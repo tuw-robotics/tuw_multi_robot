@@ -9,7 +9,6 @@
 
 void publishTf(std::string mapName);
 
-bool allowPublish = false;
 
 int main(int argc, char **argv)
 {
@@ -19,23 +18,6 @@ int main(int argc, char **argv)
 
     tuw_graph::VoronoiGeneratorNode mapNode(n);
 
-    ros::Rate r(0.5);
-
-    ROS_INFO("Initialization done!");
-
-    while (ros::ok())
-    {
-        ros::spinOnce();
-
-        if (allowPublish)
-        {
-            mapNode.publishMap();
-            mapNode.publishSegments();
-        }
-
-        r.sleep();
-    }
-
     return 0;
 }
 
@@ -43,9 +25,17 @@ namespace tuw_graph
 {
 VoronoiGeneratorNode::VoronoiGeneratorNode(ros::NodeHandle &n) : voronoi_map::VoronoiPathGenerator(), VoronoiGraphGenerator(), Serializer(), n_(n), n_param_("~")
 {
-    n_param_.param<int>("map_smoothing", smoothing_, 0);
 
-    n_param_.param<float>("segment_length", path_length_, 1.0);
+
+    double loop_rate;
+    n_param_.param<double>("loop_rate", loop_rate, 0.1);
+
+    n_param_.param<bool>("publish_voronoi_map_image", publishVoronoiMapImage_, true);
+    
+    n_param_.param<double>("map_inflation", inflation_, 0.1); /// [meters]
+
+    n_param_.param<float>("segment_length", segment_length_, 1.0); /// [meters]
+
 
     crossingOptimization_ = 0.2;
     n_param_.param<float>("opt_crossings", crossingOptimization_, 0.2);
@@ -65,28 +55,49 @@ VoronoiGeneratorNode::VoronoiGeneratorNode(ros::NodeHandle &n) : voronoi_map::Vo
     }
 
     subMap_ = n.subscribe("map", 1, &VoronoiGeneratorNode::globalMapCallback, this);
-    //pubVoronoiMap_    = n.advertise<nav_msgs::OccupancyGrid>( "voronoi_map", 1);                        //DEBUG
+    if(publishVoronoiMapImage_){
+        pubVoronoiMapImage_    = n.advertise<nav_msgs::OccupancyGrid>( "voronoi_map_image", 1);
+    }
     pubSegments_ = n.advertise<tuw_multi_robot_msgs::Graph>("segments", 1);
 
-    //ros::Rate(1).sleep();
-    ros::spinOnce();
+
+    ros::Rate r(loop_rate);
+
+    ROS_INFO("Initialization done!");
+
+    while (ros::ok())
+    {
+        ros::spinOnce();
+            
+        publishSegments();
+
+        r.sleep();
+    }
+
 }
 
 void VoronoiGeneratorNode::globalMapCallback(const nav_msgs::OccupancyGrid::ConstPtr &_map)
 {
     std::vector<signed char> map = _map->data;
 
-    Eigen::Vector2d origin;
-    origin[0] = _map->info.origin.position.x;
-    origin[1] = _map->info.origin.position.y;
+    
+    std::vector<double> parameters;
+    parameters.push_back(_map->info.origin.position.x);
+    parameters.push_back(_map->info.origin.position.y);
+    parameters.push_back(_map->info.resolution);
+    parameters.push_back(inflation_);
+    parameters.push_back(segment_length_);
+    parameters.push_back(endSegmentOptimization_);
+    parameters.push_back(crossingOptimization_);
 
-    size_t new_hash = getHash(map, origin, _map->info.resolution);
+    size_t new_hash = getHash(map, parameters);
+    
 
     if (customGraphPath_.size() == 0)
     {
-        if (new_hash != current_map_hash_)
+        if (new_hash != current_map_hash_ )
         {
-            if (!loadGraph(new_hash))
+            if (!loadGraph(new_hash) )
             {
                 ROS_INFO("Graph generator: Graph not found! Generating new one!");
                 createGraph(_map, new_hash);
@@ -97,8 +108,6 @@ void VoronoiGeneratorNode::globalMapCallback(const nav_msgs::OccupancyGrid::Cons
             }
 
             current_map_hash_ = new_hash;
-
-            allowPublish = true;
         }
     }
     else
@@ -109,6 +118,20 @@ void VoronoiGeneratorNode::globalMapCallback(const nav_msgs::OccupancyGrid::Cons
         else
             ROS_INFO("failed to load graph");
     }
+    
+    if (publishVoronoiMapImage_ && (map_.size > 0))
+    {
+        voronoiMapImage_.header = _map->header;
+        voronoiMapImage_.info = _map->info;
+        voronoiMapImage_.data.resize(_map->data.size());
+
+        for (unsigned int i = 0; i < voronoiMapImage_.data.size(); i++)
+        {
+            voronoiMapImage_.data[i] = map_.data[i];
+        }
+        pubVoronoiMapImage_.publish(voronoiMapImage_);
+    }
+    
 }
 
 void VoronoiGeneratorNode::createGraph(const nav_msgs::OccupancyGrid::ConstPtr &_map, size_t _map_hash)
@@ -124,7 +147,7 @@ void VoronoiGeneratorNode::createGraph(const nav_msgs::OccupancyGrid::ConstPtr &
     resolution_ = _map->info.resolution;
 
     cv::Mat m(_map->info.height, _map->info.width, CV_8SC1, map.data());
-    prepareMap(m, map_, smoothing_);
+    prepareMap(m, map_, inflation_ / _map->info.resolution);
     computeDistanceField(map_, distField_);
 
     ROS_INFO("Graph generator: Computing voronoi graph ...");
@@ -132,11 +155,11 @@ void VoronoiGeneratorNode::createGraph(const nav_msgs::OccupancyGrid::ConstPtr &
 
     ROS_INFO("Graph generator: Generating graph ...");
     potential.reset(new float[m.cols * m.rows]);
-    float pixel_path_length = path_length_ / resolution_;
+    float pixel_path_length = segment_length_ / resolution_;
     segments_ = calcSegments(m, distField_, voronoiMap_, potential.get(), pixel_path_length, crossingOptimization_ / resolution_, endSegmentOptimization_ / resolution_);
 
     //Check Directroy
-    save(graphCachePath_ + std::to_string(_map_hash) + "/", segments_, origin_, resolution_);
+    save(graphCachePath_ + std::to_string(_map_hash) + "/", segments_, origin_, resolution_, map_);
     ROS_INFO("Graph generator: Created new Graph %lu", _map_hash);
 }
 
@@ -144,19 +167,14 @@ bool VoronoiGeneratorNode::loadGraph(std::size_t _hash)
 {
     segments_.clear();
     Segment::resetId();
-    return load(graphCachePath_ + std::to_string(_hash) + "/", segments_, origin_, resolution_);
+    return load(graphCachePath_ + std::to_string(_hash) + "/", segments_, origin_, resolution_, map_);
 }
 
 bool VoronoiGeneratorNode::loadCustomGraph(std::string _path)
 {
-    if (!allowPublish)
-    {
-        segments_.clear();
-        Segment::resetId();
-        allowPublish = true;
-        return load(_path, segments_, origin_, resolution_);
-    }
-    return false;
+    segments_.clear();
+    Segment::resetId();
+    return load(_path, segments_, origin_, resolution_);
 }
 
 void VoronoiGeneratorNode::publishSegments()
@@ -210,37 +228,6 @@ void VoronoiGeneratorNode::publishSegments()
     }
 
     pubSegments_.publish(graph);
-}
-
-void VoronoiGeneratorNode::publishMap() //DEBUG
-{
-    nav_msgs::OccupancyGrid grid;
-    // Publish Whole Grid
-    grid.header.frame_id = "map";
-    grid.header.stamp = ros::Time::now();
-    grid.info.resolution = resolution_;
-
-    int nx = map_.cols;
-    int ny = map_.rows;
-
-    grid.info.width = nx;
-    grid.info.height = ny;
-
-    //double wx, wy;
-    //costmap_->mapToWorld(0, 0, wx, wy);
-    grid.info.origin.position.x = origin_[0];
-    grid.info.origin.position.y = origin_[1];
-    grid.info.origin.position.z = 0.0;
-    grid.info.origin.orientation.w = 1.0;
-
-    grid.data.resize(nx * ny);
-
-    for (unsigned int i = 0; i < grid.data.size(); i++)
-    {
-        grid.data[i] = (map_.data[i]);
-    }
-
-    //pubVoronoiMap_.publish(grid);
 }
 
 } // namespace tuw_graph

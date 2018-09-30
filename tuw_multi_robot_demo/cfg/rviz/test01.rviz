@@ -5,9 +5,6 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Status1
-        - /RobotGoalArray1
-        - /Path1
-        - /Path2
       Splitter Ratio: 0.5
     Tree Height: 563
   - Class: rviz/Selection
@@ -151,6 +148,15 @@ Visualization Manager:
       Topic: /robot_5/path
       Unreliable: false
       Value: true
+    - Class: VoronoiGraph
+      Enabled: true
+      History Length: 1
+      Name: VoronoiGraph
+      Path Color: 50; 51; 204
+      Path Points Scale: 0.10000000149011612
+      Topic: /segments
+      Unreliable: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -221,5 +227,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 800
-  X: 2235
-  Y: 0
+  X: 1118
+  Y: 25

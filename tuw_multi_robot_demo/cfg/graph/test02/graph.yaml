@@ -1,5 +1,5 @@
 map_topic: "/map"
-map_smoothing: 5
+map_inflation: 0.1
 segments_topic: "/segments"
 segment_length: 0.70
 crossingOptimization: 0.2

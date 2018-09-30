@@ -1,5 +1,5 @@
 map_topic: "/map"
-map_smoothing: 7
+map_inflation: 0.3
 segments_topic: "/segments"
 segment_length: 0.6
 opt_crossings: 0.2
