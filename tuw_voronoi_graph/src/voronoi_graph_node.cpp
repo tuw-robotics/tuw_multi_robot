@@ -30,7 +30,7 @@ VoronoiGeneratorNode::VoronoiGeneratorNode(ros::NodeHandle &n) : voronoi_map::Vo
     double loop_rate;
     n_param_.param<double>("loop_rate", loop_rate, 0.1);
 
-    n_param_.param<bool>("publish_voronoi_map_image", publishVoronoiMapImage_, true);
+    n_param_.param<bool>("publish_voronoi_map_image", publishVoronoiMapImage_, false);
     
     n_param_.param<double>("map_inflation", inflation_, 0.1); /// [meters]
 
@@ -56,7 +56,7 @@ VoronoiGeneratorNode::VoronoiGeneratorNode(ros::NodeHandle &n) : voronoi_map::Vo
 
     subMap_ = n.subscribe("map", 1, &VoronoiGeneratorNode::globalMapCallback, this);
     if(publishVoronoiMapImage_){
-        pubVoronoiMapImage_    = n.advertise<nav_msgs::OccupancyGrid>( "voronoi_map_image", 1);
+        pubVoronoiMapImage_    = n.advertise<nav_msgs::OccupancyGrid>( "map_eroded", 1);
     }
     pubSegments_ = n.advertise<tuw_multi_robot_msgs::Graph>("segments", 1);
 
