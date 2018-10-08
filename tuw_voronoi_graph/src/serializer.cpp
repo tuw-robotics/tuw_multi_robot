@@ -9,26 +9,27 @@
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 
-using namespace cv;
 
 namespace tuw_graph
 {
 #define GRAPH_INFO_NAME     "graphInfo"
 #define TREE_INFO_NAME      "treeInfo"
 #define DATA_NAME           "graphData"
+#define MAP_NAME            "map.png"
 
     Serializer::Serializer()
     {
 
     }
 
-    std::size_t Serializer::getHash(const std::vector<signed char> &_map, Eigen::Vector2d _origin, float _resolution)
+    std::size_t Serializer::getHash(const std::vector<signed char> &_map, const std::vector<double> &_parameters) const
     {
         std::size_t seed = 0;
 
-        boost::hash_combine(seed, _origin[0]);
-        boost::hash_combine(seed, _origin[1]);
-        boost::hash_combine(seed, _resolution);
+        for(const double & val : _parameters)
+        {
+            boost::hash_combine(seed, val);
+        }
 
         for(const signed char & val : _map)
         {
@@ -41,14 +42,15 @@ namespace tuw_graph
     
     bool Serializer::load(const std::string &_mapPath, std::vector<Segment> &_segs, Eigen::Vector2d &_origin, float &_resolution)
     {
-
-        boost::filesystem::path graf(_mapPath + GRAPH_INFO_NAME);
-        boost::filesystem::path tree(_mapPath + TREE_INFO_NAME);
-        boost::filesystem::path data(_mapPath + DATA_NAME);
-
-        if(!boost::filesystem::exists(graf) | !boost::filesystem::exists(tree) | !boost::filesystem::exists(data))
         {
-            return false;
+            boost::filesystem::path graf(_mapPath + GRAPH_INFO_NAME);
+            boost::filesystem::path tree(_mapPath + TREE_INFO_NAME);
+            boost::filesystem::path data(_mapPath + DATA_NAME);
+
+            if(!boost::filesystem::exists(graf) | !boost::filesystem::exists(tree) | !boost::filesystem::exists(data) )
+            {
+                return false;
+            }
         }
 
 
@@ -132,7 +134,16 @@ namespace tuw_graph
 
         }
 
+            
         return true;
+    }
+    bool Serializer::load(const std::string &_mapPath, std::vector<Segment> &_segs, Eigen::Vector2d &_origin, float &_resolution, cv::Mat &_map){
+        if(load(_mapPath, _segs, _origin, _resolution) && boost::filesystem::exists(boost::filesystem::path(_mapPath + MAP_NAME))){            
+             _map = cv::imread(_mapPath + MAP_NAME, cv::IMREAD_GRAYSCALE);
+            return true;            
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -175,6 +186,15 @@ namespace tuw_graph
         boost::archive::xml_oarchive oaGraph(ofsGraph);
         oaGraph <<  boost::serialization::make_nvp("graph", graph);
         ofsGraph.close();
+        
+    }
+    void Serializer::save(const std::string &_mapPath, const std::vector<Segment> &_segs, const Eigen::Vector2d &_origin, const float &_resolution, const cv::Mat &_map){
+        save(_mapPath, _segs, _origin, _resolution);  
+        if(!boost::filesystem::exists(_mapPath))
+            boost::filesystem::create_directories(_mapPath);      
+        if(_map.size != 0){
+            cv::imwrite(_mapPath + MAP_NAME,  _map);
+        }
     }
 
 }

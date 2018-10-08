@@ -17,36 +17,31 @@ namespace voronoi_map
 
     }
 
-    void VoronoiPathGenerator::prepareMap(const Mat& _map, Mat& _smoothedMap, int blurSize)
+    void VoronoiPathGenerator::prepareMap(const Mat& _map, Mat& _des, int erodeSize)
     {
         static Mat srcMap;
         _map.convertTo(srcMap, CV_8UC1);
 
         for(int i = 0; i < srcMap.cols * srcMap.rows; i++)
         {
-            if((signed char)_map.data[i] < 0)
-                srcMap.data[i] = 100;
+            if((signed char)_map.data[i] < 0)  srcMap.data[i] = 100;
         }
 
-        _smoothedMap = srcMap;
-
-        try
-        {
-            if(blurSize > 0)
-            {
-                cv::Size sz(blurSize, blurSize);
-                cv::GaussianBlur(srcMap, srcMap, sz, 0);
-                cv::GaussianBlur(srcMap, srcMap, sz, 0);
-            }
-        }
-        catch(...)
-        {
-            // if opencv fails to smooth continue 
-            ROS_INFO("Smoothing map failed");
-        }
+        _des = srcMap;
 
         cv::bitwise_not(srcMap, srcMap);
-        cv::threshold(srcMap, _smoothedMap, 10, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
+        cv::threshold(srcMap, _des, 10, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
+        
+        if(erodeSize <= 0){
+            erodeSize = 1;
+        }
+        if(erodeSize > 0){
+            cv::Mat element = cv::getStructuringElement( cv::MORPH_ELLIPSE,
+                                        cv::Size( 2*erodeSize + 1, 2*erodeSize+1 ),
+                                        cv::Point( erodeSize, erodeSize ) );
+    
+            cv::erode(_des, _des, element);
+        }
     }
 
 

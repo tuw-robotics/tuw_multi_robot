@@ -18,9 +18,9 @@ namespace voronoi_map
              * @brief prepares the map by smoothing it
              * @param _map the map 
              * @param _smoothedMap the smoothed map 
-             * @param _blurSize the intensity of the smoothing
+             * @param _erodeSize the erode map [pix]
              */
-            void prepareMap(const cv::Mat& _map, cv::Mat& _smoothedMap, int _blurSize);
+            void prepareMap(const cv::Mat& _map, cv::Mat& _smoothedMap, int _erodeSize);
             /** 
              * @brief  computes the distance field of a map 
              * @param _map the _map

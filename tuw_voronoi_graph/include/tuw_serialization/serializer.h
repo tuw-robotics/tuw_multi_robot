@@ -4,7 +4,7 @@
 
 #include <nav_msgs/OccupancyGrid.h>
 #include <memory>
-#include <opencv/cv.h>
+#include <opencv/cv.hpp>
 #include <tuw_voronoi_graph/segment.h>
 
 #include <fstream>
@@ -13,7 +13,6 @@
 
 #define DEFAULT_MAP_NAME    "voronoi_map"
 #include <eigen3/Eigen/Dense>
-#include <opencv/cv.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/functional/hash.hpp>
 
@@ -228,6 +227,15 @@ namespace tuw_graph
              */
             void save(const std::string &_mapPath, const std::vector<Segment> &_segs, const Eigen::Vector2d &_origin, const float &_resolution);
             /** 
+             * @brief saves the graph to a specific path in xml format
+             * @param _mapPath the save path of the graph
+             * @param _segs the segments generated Segments for the graph
+             * @param _origin the origin of the graph
+             * @param _resolution the resolution of the graph 
+             * @param _map map on which the graph is based
+             */
+            void save(const std::string &_mapPath, const std::vector<Segment> &_segs, const Eigen::Vector2d &_origin, const float &_resolution, const cv::Mat &_map);
+            /** 
              * @brief loads a graph from memory which is saved in plain text
              * @param _mapPath the save path of the graph
              * @param _segs the segments generated Segments for the graph
@@ -235,13 +243,21 @@ namespace tuw_graph
              * @param _resolution the resolution of the graph 
              */
             bool load(const std::string &_mapPath, std::vector<Segment> &_segs, Eigen::Vector2d &_origin, float &_resolution);
+            /** 
+             * @brief loads a graph from memory which is saved in plain text
+             * @param _mapPath the save path of the graph
+             * @param _segs the segments generated Segments for the graph
+             * @param _origin the origin of the graph
+             * @param _resolution the resolution of the graph 
+             * @param _map map on which the graph is based
+             */
+            bool load(const std::string &_mapPath, std::vector<Segment> &_segs, Eigen::Vector2d &_origin, float &_resolution, cv::Mat &_map);
             /**
              * @brief generate a hash from a _map
              * @param _map the map data used for the hash 
-             * @param _origin the origin of the graph
-             * @param _resolution the resolution of the graph 
+             * @param _parameters parameters to check for changes
              */
-            size_t getHash(const std::vector<signed char> &_map, Eigen::Vector2d _origin, float _resolution);
+            size_t getHash(const std::vector<signed char> &_map, const std::vector<double> &_parameters) const;
     };
 
 }

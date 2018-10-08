@@ -29,8 +29,8 @@
 *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef TEXT_VISUAL_H
-#define TEXT_VISUAL_H
+#ifndef MULTI_ROBOT_TEXT_VISUAL_H
+#define MULTI_ROBOT_TEXT_VISUAL_H
 
 #include <rviz/ogre_helpers/shape.h>
 #include <rviz/ogre_helpers/movable_text.h>
