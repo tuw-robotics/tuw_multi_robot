@@ -16,7 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 ## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED COMPONENTS system)
 find_package(Eigen3 REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -120,6 +120,7 @@ catkin_package(
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR} 
+  ${Boost_INCLUDE_DIRS}
   include
 )
 
@@ -175,6 +176,7 @@ add_library(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
   ${QT_LIBRARIES} 
   ${catkin_LIBRARIES}
+  ${Boost_LIBRARIES}
 )
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
