@@ -124,6 +124,7 @@ catkin_package(
 )
 
 SET(CMAKE_AUTOUIC ON)
+SET(CMAKE_AUTOMOC ON)
 
 set (tuw_rqt_ordermanager_SRCS
   src/tuw_rqt_ordermanager/rqtordermanager.cpp
@@ -158,13 +159,13 @@ set(tuw_rqt_ordermanager_INCLUDE_DIRECTORIES
 )
 
 if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
-  qt5_wrap_cpp(tuw_rqt_ordermanager_MOCS ${tuw_rqt_ordermanager_HDRS})
-  qt5_wrap_ui(tuw_rqt_ordermanager_UIS_H ${tuw_rqt_ordermanager_UIS})
+  qt5_wrap_cpp(tuw_rqt_ordermanager_MOCS ${tuw_rqt_ordermanager_SRCS})
+  qt5_wrap_ui(tuw_rqt_ordermanager_UIS_H ${tuw_rqt_ordermanager_HDRS})
   set(qt_LIBRARIES Qt5::Widgets)
 else()
   find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
   include(${QT_USE_FILE})
-  qt4_wrap_cpp(tuw_rqt_ordermanager_MOCS ${tuw_rqt_ordermanager_HDRS})
+  qt4_wrap_cpp(tuw_rqt_ordermanager_MOCS ${tuw_rqt_ordermanager_SRCS})
   qt4_wrap_ui(tuw_rqt_ordermanager_UIS_H ${tuw_rqt_ordermanager_UIS})
   set(qt_LIBRARIES ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY})
 endif()

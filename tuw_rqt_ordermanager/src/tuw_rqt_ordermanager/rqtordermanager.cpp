@@ -636,4 +636,4 @@ void RQTOrdermanager::ordersItemSelectionChanged()
 }
 
 }  // end namespace tuw_rqt_ordermanager
-PLUGINLIB_DECLARE_CLASS(tuw_rqt_ordermanager, RQTOrdermanager, tuw_rqt_ordermanager::RQTOrdermanager, rqt_gui_cpp::Plugin)
+PLUGINLIB_EXPORT_CLASS(tuw_rqt_ordermanager::RQTOrdermanager, rqt_gui_cpp::Plugin)
