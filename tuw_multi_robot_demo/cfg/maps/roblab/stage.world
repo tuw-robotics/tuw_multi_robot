@@ -58,15 +58,15 @@ define background model
 # set the resolution of the underlying raytrace model in meters
 resolution 0.02
 
-interval_sim 10  # simulation timestep in milliseconds
+interval_sim 100  # simulation timestep in milliseconds
 
 
 window
 ( 
-  size [ 1500.000 1500.000 ] 
-
-  rotate [ 0.000 0 ]
-  scale 50 
+  size [ 600.000 400.000 ] # in pixels
+  center [ -5  -5 ]
+  rotate [ 0  0 ]
+  scale 15 
 
   show_data 1              # 1=on 0=off
 )
