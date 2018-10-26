@@ -83,7 +83,7 @@ Checkpoint RouteGenerator::createElement(const RouteVertex &_element) const
         ps.start[0] = _element.getSegment().getStart()[0];
         ps.start[1] = _element.getSegment().getStart()[1];
 
-        float angle = atan2(ps.end[1] - ps.start[1], ps.end[0] - ps.start[0]);
+        float angle = atan2(ps.start[1] - ps.end[1], ps.start[0] - ps.end[0]);
         ps.start[2] = angle;
         ps.end[2] = angle;
     }
