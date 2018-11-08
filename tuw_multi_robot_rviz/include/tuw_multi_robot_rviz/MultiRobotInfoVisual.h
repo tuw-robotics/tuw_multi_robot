@@ -75,6 +75,12 @@ class RobotAttributes {
     void updatePose(const buf_type &pose)
     {
       ros_poses = pose;
+
+      if (pose.empty())
+      {
+        return;
+      }
+
       const auto current_pose = pose.front();
       current_pos = Ogre::Vector3(current_pose.pose.position.x,
                                   current_pose.pose.position.y,

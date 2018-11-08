@@ -108,7 +108,6 @@ void MultiRobotInfoDisplay::callbackRobotInfo(const tuw_multi_robot_msgs::RobotI
     //visual_->setColorPose ( property_color_pose_->getOgreColor() );
 
     //auto dur = ros::Time::now() - tic;
-    //std::cout << "process message call took " << dur << "sec" << std::endl;
     auto it = bool_properties_.find(msg->robot_name);
     if (it == bool_properties_.end())
     {
@@ -121,6 +120,7 @@ void MultiRobotInfoDisplay::callbackRobotInfo(const tuw_multi_robot_msgs::RobotI
                                 this));
       bool_properties_.insert(std::pair<std::string,std::unique_ptr<rviz::BoolProperty>>(msg->robot_name, std::move(bp)));
     }
+
 }
 // After the top-level rviz::Display::initialize() does its own setup,
 // it calls the subclass's onInitialize() function.  This is where we
