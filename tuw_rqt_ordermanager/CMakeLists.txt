@@ -16,7 +16,6 @@ find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   geometry_msgs
   tuw_multi_robot_msgs
-  tuw_multi_robot_srvs
   tf
 )
 
@@ -119,7 +118,7 @@ roslint_cpp()
 catkin_package(
   INCLUDE_DIRS include ${tuw_rqt_ordermanager_INCLUDE_DIRECTORIES}
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS roscpp rqt_gui_cpp std_msgs nav_msgs geometry_msgs tf
+  CATKIN_DEPENDS roscpp rqt_gui_cpp std_msgs nav_msgs geometry_msgs tuw_multi_robot_msgs tf
 #  DEPENDS system_lib
 )
 
@@ -178,7 +177,6 @@ endif()
 ## Your package locations should be listed before other locations
 include_directories(
   include
-  ${CMAKE_CURRENT_BINARY_DIR}/..
   ${catkin_INCLUDE_DIRS}
   ${tuw_rqt_ordermanager_INCLUDE_DIRECTORIES}
 )
@@ -311,9 +309,3 @@ endif()
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-
-add_dependencies(${PROJECT_NAME}
-    tuw_multi_robot_msgs_generate_messages_cpp
-    geometry_msgs_generate_messages_cpp
-    tuw_multi_robot_srvs_generate_messages_cpp
-)

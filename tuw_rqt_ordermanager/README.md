@@ -39,3 +39,9 @@ Still some synchronisation of shared structures are necessary, for which mutexes
 
 # Troubleshooting
 If the plugin does not load after (re-)compiling, try `rqt --clear-config`.
+
+# Installl
+
+```
+sudo apt install ros-melodic-rqt ros-melodic-rqt-common-plugins
+```
