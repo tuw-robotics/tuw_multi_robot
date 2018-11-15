@@ -263,11 +263,11 @@ namespace tuw_multi_robot_rviz {
   void MultiRobotInfoVisual::setMessage(const tuw_multi_robot_msgs::RobotInfoConstPtr _msg)
   {
     map_iterator it = robot2attribute_map_.find(_msg->robot_name);
-
     if (it == robot2attribute_map_.end())
     {
       double robot_radius = _msg->shape_variables.size() ? _msg->shape_variables[0] : 1.0;
-      auto pose = boost::circular_buffer<geometry_msgs::PoseWithCovariance>(default_size_);
+      boost::circular_buffer<geometry_msgs::PoseWithCovariance> pose;
+      pose.set_capacity(default_size_);
       std::string rn = _msg->robot_name;
       std::shared_ptr<RA> robot_attr = std::make_shared<RA>(id_cnt++,
                                                             rn,
@@ -279,6 +279,7 @@ namespace tuw_multi_robot_rviz {
 
       robot2attribute_map_.insert(internal_map_type(rn, robot_attr));
       it = robot2attribute_map_.find(_msg->robot_name);
+
       recycle_map_.insert(std::pair<std::string, ros::Time>(_msg->robot_name, ros::Time(0)));
     }
 
@@ -289,7 +290,6 @@ namespace tuw_multi_robot_rviz {
     {
       doRender();
     }
-
   }
 
   void MultiRobotInfoVisual::setFramePosition(const Ogre::Vector3& position)

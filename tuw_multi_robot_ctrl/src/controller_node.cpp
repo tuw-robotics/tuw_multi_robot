@@ -7,8 +7,11 @@
 
 int main(int argc, char** argv)
 {
+  std::string name("pid_controller");
   if (argc >= 2)
   {
+      name =  argv[1];
+  }
     ros::init(argc, argv, argv[1]);  /// initializes the ros node with default name
     ros::NodeHandle n;
 
@@ -16,11 +19,6 @@ int main(int argc, char** argv)
     
     
     return 0;
-  }
-  else
-  {
-    ROS_INFO("Please specifie name \nrosrun simple_velocity_controller velocity_controller [name]");
-  }
 }
 
 namespace velocity_controller
