@@ -202,8 +202,8 @@ void VoronoiGeneratorNode::publishSegments()
         for (uint32_t i = 0; i < path.size(); i++)
         {
             geometry_msgs::Point pos;
-            pos.x = path[i][0];
-            pos.y = path[i][1];
+            pos.x = path[i][0] * resolution_;
+            pos.y = path[i][1] * resolution_;
             pos.z = 0;
 
             seg.path.push_back(pos);

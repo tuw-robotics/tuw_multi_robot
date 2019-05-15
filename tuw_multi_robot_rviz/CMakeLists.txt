@@ -170,7 +170,7 @@ add_library(${PROJECT_NAME}
   src/VoronoiSegmentDisplay.cpp
   include/tuw_multi_robot_rviz/MultiRobotGoalSelector.h
   src/MultiRobotGoalSelector.cpp
-)
+        )
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}
