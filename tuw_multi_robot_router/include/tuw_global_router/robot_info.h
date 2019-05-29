@@ -42,7 +42,7 @@
 #include <dynamic_reconfigure/server.h>
 #include <tuw_multi_robot_router/routerConfig.h>
 
-#include <tuw_global_router/router.h>
+#include <tuw_global_router/router/default_router.h>
 #include <tuw_global_router/mrr_utils.h>
 #include <opencv/cv.hpp>
 

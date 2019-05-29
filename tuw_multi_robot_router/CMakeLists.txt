@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(tuw_multi_robot_router)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++14)
+add_compile_options(-std=c++17)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   tuw_multi_robot_msgs
   tuw_voronoi_graph
 )
+
  
 find_package(OpenCV 3 REQUIRED)
 ## System dependencies are found with CMake's conventions
@@ -156,7 +157,9 @@ include_directories(
 
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
-    src/router.cpp
+        include/tuw_global_router/router/router.h
+        src/ros/router_node.cpp include/tuw_global_router/ros/router_node.h
+        src/router/default_router.cpp  include/tuw_global_router/router/default_router.h
     src/srr_utils.cpp
     src/point_expander.cpp
     src/multi_robot_router.cpp
@@ -177,7 +180,7 @@ add_library(${PROJECT_NAME}
  )
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 
-add_executable(tuw_multi_robot_router_node src/router_node.cpp)
+add_executable(tuw_multi_robot_router_node src/ros/router_node.cpp)
 target_link_libraries(tuw_multi_robot_router_node
   ${catkin_LIBRARIES}
   ${PROJECT_NAME}

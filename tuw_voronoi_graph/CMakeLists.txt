@@ -160,16 +160,8 @@ add_library(dxf_graph_lib
 )
 target_link_libraries(dxf_graph_lib graph_serialization_lib voronoi_graph_lib ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${Boost_PROGRAM_OPTIONS_LIBRARY} dxflib)
 
-add_library(voronoi_graph_generator_node_lib
-  src/ros/voronoi_graph_generator_node.cpp include/ros/voronoi_graph_generator_node.h
-)
-target_link_libraries(voronoi_graph_generator_node_lib voronoi_path_lib)
-
 add_executable(tuw_voronoi_graph_node src/voronoi_graph_node.cpp)
 target_link_libraries(tuw_voronoi_graph_node voronoi_path_lib)
-
-add_executable(tuw_voronoi_graph_generator_node src/ros/voronoi_graph_generator_node.cpp)
-target_link_libraries(tuw_voronoi_graph_generator_node voronoi_path_lib)
 
 add_executable(tuw_dxf_graph_node src/dxf_to_graph_node.cpp)
 target_link_libraries(tuw_dxf_graph_node dxf_graph_lib)
@@ -249,15 +241,11 @@ add_dependencies(tuw_segment_to_graph_node ${${PROJECT_NAME}_EXPORTED_TARGETS} $
 ## Testing ##
 #############
 
-if(CATKIN_ENABLE_TESTING)
-  find_package(rostest REQUIRED)
-endif()
+#if(CATKIN_ENABLE_TESTING)
+#  find_package(rostest REQUIRED)
+#endif()
 
 ## Add gtest based cpp test target and link libraries
-catkin_add_gtest(${PROJECT_NAME}-test src/ros/test/voronoi_graph_generator_node_test.cpp)
-if(TARGET ${PROJECT_NAME}-test)
-  target_link_libraries(${PROJECT_NAME}-test voronoi_graph_generator_node_lib)
-endif()
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
