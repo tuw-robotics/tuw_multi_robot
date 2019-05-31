@@ -47,6 +47,9 @@ class DefaultRouter: public multi_robot_router::Router
 
     void resize(const uint32_t _nr_robots) override ;
 
+    std::unordered_map<std::string, std::vector<Checkpoint>>
+    computePlan(const std::vector<Agent> &agents, const Environment &environment) override;
+
     bool makePlan(const std::vector<Eigen::Vector3d> &_starts, const std::vector<Eigen::Vector3d> &_goals, const std::vector<float> &_radius, const cv::Mat &_map, const float &_resolution, const Eigen::Vector2d &_origin, const std::vector<Segment> &_graph, const std::vector<std::string> &_robot_names) override ;
 
     void setCollisionResolutionType(const SegmentExpander::CollisionResolverType _cr) override;

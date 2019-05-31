@@ -61,6 +61,10 @@ namespace multi_robot_router
          */
         explicit RouterNode(Router* router);
 
+        /**
+         * Subscribes to topics and initializes publishers.
+         * @param n ROS node handle
+         */
         void start(ros::NodeHandle& n);
 
         /**
@@ -100,7 +104,6 @@ namespace multi_robot_router
 
         std::optional<tuw_multi_robot_msgs::Graph> current_graph_;
         std::optional<nav_msgs::OccupancyGrid> current_map_;
-        std::optional<tuw_multi_robot_msgs::RobotInfo> current_robot_info_;
 
 
         //these 3 members are for time logging
@@ -141,17 +144,15 @@ namespace multi_robot_router
 
         void parametersCallback(tuw_multi_robot_router::routerConfig &config, uint32_t level);
 
-        void odomCallback(const ros::MessageEvent<nav_msgs::Odometry const> &_event, int _topic);
+        void onGraphReceived(const tuw_multi_robot_msgs::Graph& graph);
 
-        void graphCallback(const tuw_multi_robot_msgs::Graph &msg);
+        void onGoalsReceived(const tuw_multi_robot_msgs::RobotGoalsArray& goals);
 
-        void goalsCallback(const tuw_multi_robot_msgs::RobotGoalsArray &_goals);
+        void onMapReceived(const nav_msgs::OccupancyGrid &_map);
 
-        void mapCallback(const nav_msgs::OccupancyGrid &_map);
+        void onRobotInfoReceived(const tuw_multi_robot_msgs::RobotInfo &_robotInfo);
 
-        void robotInfoCallback(const tuw_multi_robot_msgs::RobotInfo &_robotInfo);
-
-        void goalCallback(const geometry_msgs::PoseStamped &_goal);
+        void onGoalReceived(const geometry_msgs::PoseStamped &_goal);
 
         size_t getHash(const std::vector<signed char> &_map, const Eigen::Vector2d &_origin, const float &_resolution);
 
@@ -162,16 +163,18 @@ namespace multi_robot_router
             return i.getSegmentId() < j.getSegmentId();
         }
 
-        void unsubscribeTopic(std::string _robot_name);
-
         float getYaw(const geometry_msgs::Quaternion &_rot);
-
-        float calcRadius(const int shape, const std::vector<float> &shape_variables) const;
 
         bool preparePlanning(std::vector<float> &_radius, std::vector<Eigen::Vector3d> &_starts,
                              std::vector<Eigen::Vector3d> &_goals,
                              const tuw_multi_robot_msgs::RobotGoalsArray &_ros_goals,
                              std::vector<std::string> &robot_names);
+
+        void processGraph(const tuw_multi_robot_msgs::Graph& graph);
+
+        void processRobotInfo(const tuw_multi_robot_msgs::RobotInfo &_robotInfo);
+
+        void processMap(const nav_msgs::OccupancyGrid &map);
     };
 }
 #endif // Router_Node_H

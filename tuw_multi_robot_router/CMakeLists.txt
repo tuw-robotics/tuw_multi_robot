@@ -157,9 +157,10 @@ include_directories(
 
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
-        include/tuw_global_router/router/router.h
-        src/ros/router_node.cpp include/tuw_global_router/ros/router_node.h
-        src/router/default_router.cpp  include/tuw_global_router/router/default_router.h
+  include/tuw_global_router/router/router.h include/tuw_global_router/router/agent.h include/tuw_global_router/router/environment.h
+  include/tuw_global_router/ros/router_config.h
+  src/ros/router_node.cpp include/tuw_global_router/ros/router_node.h
+  src/router/default_router.cpp  include/tuw_global_router/router/default_router.h
     src/srr_utils.cpp
     src/point_expander.cpp
     src/multi_robot_router.cpp
@@ -177,7 +178,7 @@ add_library(${PROJECT_NAME}
     src/potential_calculator.cpp
     src/speed_scheduler.cpp
     src/route_coordinator.cpp
- )
+  include/tuw_global_router/router/router_factory.h)
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 
 add_executable(tuw_multi_robot_router_node src/ros/router_node.cpp)

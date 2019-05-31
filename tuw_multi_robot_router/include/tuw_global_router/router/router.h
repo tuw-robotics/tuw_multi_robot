@@ -6,6 +6,9 @@
 #include <tuw_global_router/srr_utils.h>
 #include <tuw_global_router/segment_expander.h>
 #include <tuw_global_router/mrr_utils.h>
+#include "agent.h"
+#include "environment.h"
+#include <unordered_map>
 
 namespace multi_robot_router
 {
@@ -13,6 +16,8 @@ namespace multi_robot_router
     {
     public:
         virtual void resize(const uint32_t _nr_robots) = 0;
+
+        virtual std::unordered_map<std::string, std::vector<Checkpoint>> computePlan(const std::vector<Agent>& agents, const Environment& environment) = 0;
 
         /**
                 * @brief generates the plan from (Vertex[odom robotPose] to Vertex[_goals]

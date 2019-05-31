@@ -342,6 +342,107 @@ namespace multi_robot_router
         return false;
     }
 
+    std::unordered_map<std::string, std::vector<Checkpoint>>
+    DefaultRouter::computePlan(const std::vector<Agent> &agents, const Environment &environment)
+    {
+        auto t1 = std::chrono::high_resolution_clock::now();
+        std::clock_t startcputime = std::clock();
+
+        resize(agents.size());
+        pointExpander_.initialize(environment.map);
+        std::vector<Eigen::Vector3d> goals;
+        std::transform(agents.begin(), agents.end(), std::back_inserter(goals),
+                       [](const Agent &agent)
+                       {
+                           return Eigen::Vector3d{agent.goal.x, agent.goal.y, agent.goal.z};
+                       }
+        );
+
+        std::vector<Eigen::Vector3d> starts;
+        std::transform(agents.begin(), agents.end(), std::back_inserter(starts),
+                       [](const Agent &agent)
+                       {
+                           return Eigen::Vector3d{agent.start.x, agent.start.y, agent.start.z};
+                       }
+        );
+
+        std::vector<float> radius;
+        std::transform(agents.begin(), agents.end(), std::back_inserter(radius),
+                       [](const Agent &agent)
+                       {
+                           return agent.radius;
+                       }
+        );
+
+        goals_ = goals;
+        starts_ = starts;
+
+        if (!calculateStartPoints(radius, environment.map, environment.resolution, environment.origin, environment.graph))
+        {
+            ROS_INFO("Multi Robot DefaultRouter: Failed to find Endpoints !!!");
+            auto t2 = std::chrono::high_resolution_clock::now();
+            duration_ = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+            throw "failed to find endpoints";
+        }
+
+        multiRobotRouter_->setRobotNr(robot_nr_);
+        std::vector<uint32_t> diameter;
+
+        for (int i = 0; i < agents.size(); i++)
+        {
+            diameter.push_back(2 * ((float) agents[i].radius) / environment.resolution);
+        }
+
+        multiRobotRouter_->setRobotDiameter(diameter);
+        multiRobotRouter_->setPriorityRescheduling(priorityRescheduling_);
+        multiRobotRouter_->setSpeedRescheduling(speedRescheduling_);
+        routingTable_.clear();
+
+        if (!multiRobotRouter_->getRoutingTable(environment.graph, startSegments_, goalSegments_, routingTable_,
+                                                routerTimeLimit_s_))
+        {
+            ROS_INFO("Multi Robot DefaultRouter: Failed to find Routing Table !!!");
+            auto t2 = std::chrono::high_resolution_clock::now();
+            duration_ = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+            throw "failed to find routing table";
+        }
+
+        if (segmentOptimizations_)
+            optimizePaths(environment.graph);
+
+        postprocessRoutingTable();
+
+        //DEBUG STATS
+        longestPatLength_ = 0;
+        overallPathLength_ = 0;
+
+        for (std::vector<Checkpoint> &path : routingTable_)
+        {
+            float lengthPath = 0;
+
+            for (Checkpoint &seg : path)
+            {
+                Eigen::Vector3d vec = (seg.end - seg.start);
+                float lengthVertex = std::sqrt(vec[0] * vec[0] + vec[1] * vec[1]);
+                overallPathLength_ += lengthVertex;
+                lengthPath += lengthVertex;
+            }
+
+            longestPatLength_ = std::max<int>(longestPatLength_, lengthPath);
+        }
+
+        longestPatLength_ *= environment.resolution;
+        overallPathLength_ *= environment.resolution;
+
+        auto t2 = std::chrono::high_resolution_clock::now();
+        duration_ = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+        //DEBUG STATS
+
+
+        std::unordered_map<std::string, std::vector<Checkpoint>> map;
+        map.
+    }
+
     bool
     DefaultRouter::makePlan(const std::vector<Eigen::Vector3d> &_starts, const std::vector<Eigen::Vector3d> &_goals,
                             const std::vector<float> &_radius, const cv::Mat &_map, const float &_resolution,
@@ -506,4 +607,8 @@ namespace multi_robot_router
     {
         return multiRobotRouter_->getSpeedScheduleAttempts();
     }
+
+
+
+
 }
