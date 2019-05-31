@@ -213,6 +213,7 @@ namespace multi_robot_router
         bool preparationSuccessful = preparePlanning(radius, starts, goals, _goals, robot_names);
         ROS_INFO ("%s: Number of active robots %lu", n_param_.getNamespace().c_str(), active_robots_.size());
 
+
         if (preparationSuccessful && current_map_.has_value() && current_graph_.has_value())
         {
             processGraph(current_graph_.value());
@@ -288,7 +289,7 @@ namespace multi_robot_router
 
     void RouterNode::onRobotInfoReceived(const tuw_multi_robot_msgs::RobotInfo& robot_info)
     {
-        processRobotInfo(robot_info);
+        updateSubscribedRobots(robot_info);
     }
 
     void RouterNode::onGraphReceived(const tuw_multi_robot_msgs::Graph& graph)
@@ -339,8 +340,9 @@ namespace multi_robot_router
         got_graph_ = true;
     }
 
-    void RouterNode::processRobotInfo(const tuw_multi_robot_msgs::RobotInfo &_robotInfo)
+    void RouterNode::updateSubscribedRobots(const tuw_multi_robot_msgs::RobotInfo &_robotInfo)
     {
+
         auto robot = RobotInfo::findObj(subscribed_robots_, _robotInfo.robot_name);
         if (robot == subscribed_robots_.end()) {
             // create new entry
@@ -392,6 +394,11 @@ namespace multi_robot_router
             ROS_INFO ("%s: New Map %i %i %lu", n_param_.getNamespace().c_str(), map.info.width, map.info.height,
                       current_map_hash_);
         }
+    }
+
+    std::vector<Agent> RouterNode::extractAgents(const tuw_multi_robot_msgs::RobotGoalsArray &goals)
+    {
+        return std::vector<Agent>();
     }
 
     bool RouterNode::preparePlanning(std::vector<float> &_radius, std::vector<Eigen::Vector3d> &_starts,

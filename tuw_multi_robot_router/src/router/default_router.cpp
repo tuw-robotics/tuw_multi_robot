@@ -415,11 +415,13 @@ namespace multi_robot_router
         //DEBUG STATS
         longestPatLength_ = 0;
         overallPathLength_ = 0;
-
+        int i = 0;
+        std::unordered_map<std::string, std::vector<Checkpoint>> routes;
         for (std::vector<Checkpoint> &path : routingTable_)
         {
+            routes[agents[i].name] = path;
+            i++;
             float lengthPath = 0;
-
             for (Checkpoint &seg : path)
             {
                 Eigen::Vector3d vec = (seg.end - seg.start);
@@ -437,10 +439,8 @@ namespace multi_robot_router
         auto t2 = std::chrono::high_resolution_clock::now();
         duration_ = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
         //DEBUG STATS
+        return routes;
 
-
-        std::unordered_map<std::string, std::vector<Checkpoint>> map;
-        map.
     }
 
     bool

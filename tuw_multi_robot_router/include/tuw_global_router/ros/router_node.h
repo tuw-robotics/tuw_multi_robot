@@ -170,9 +170,11 @@ namespace multi_robot_router
                              const tuw_multi_robot_msgs::RobotGoalsArray &_ros_goals,
                              std::vector<std::string> &robot_names);
 
+        std::vector<Agent> extractAgents(const tuw_multi_robot_msgs::RobotGoalsArray& goals);
+
         void processGraph(const tuw_multi_robot_msgs::Graph& graph);
 
-        void processRobotInfo(const tuw_multi_robot_msgs::RobotInfo &_robotInfo);
+        void updateSubscribedRobots(const tuw_multi_robot_msgs::RobotInfo &_robotInfo);
 
         void processMap(const nav_msgs::OccupancyGrid &map);
     };
