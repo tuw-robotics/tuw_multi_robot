@@ -6,7 +6,7 @@
 #define TUW_ENVIRONMENT_H
 
 #include <opencv2/opencv.hpp>
-#include <tuw_global_router/srr_utils.h>
+#include <tuw_global_router/legacy/srr_utils.h>
 #include <eigen3/Eigen/Eigen>
 
 namespace multi_robot_router

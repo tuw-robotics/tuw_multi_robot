@@ -33,7 +33,7 @@
 #include <ros/ros.h>
 #include <tuw_multi_robot_msgs/RobotGoalsArray.h>
 #include <tuw_multi_robot_msgs/RobotGoals.h>
-#include <tuw_global_router/robot_info.h>
+#include <tuw_global_router/legacy/robot_info.h>
 #include <nav_msgs/Odometry.h>
 #include <tuw_multi_robot_msgs/Graph.h>
 #include <nav_msgs/Path.h>
@@ -42,10 +42,10 @@
 #include <dynamic_reconfigure/server.h>
 #include <tuw_multi_robot_router/routerConfig.h>
 
-#include <tuw_global_router/mrr_utils.h>
+#include <tuw_global_router/legacy/mrr_utils.h>
 #include <opencv/cv.hpp>
 
-#include <tuw_global_router/router/router.h>
+#include <tuw_global_router/legacy/router.h>
 #include <optional>
 
 //TODO disable got_map if not used
@@ -170,7 +170,6 @@ namespace multi_robot_router
                              const tuw_multi_robot_msgs::RobotGoalsArray &_ros_goals,
                              std::vector<std::string> &robot_names);
 
-        std::vector<Agent> extractAgents(const tuw_multi_robot_msgs::RobotGoalsArray& goals);
 
         void processGraph(const tuw_multi_robot_msgs::Graph& graph);
 

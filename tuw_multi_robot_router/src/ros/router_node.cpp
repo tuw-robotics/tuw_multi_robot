@@ -28,7 +28,7 @@
 #define POT_HIGH 1.0e10
 
 #include <tuw_global_router/ros/router_node.h>
-#include <tuw_global_router/srr_utils.h>
+#include <tuw_global_router/legacy/srr_utils.h>
 #include <tuw_multi_robot_msgs/Route.h>
 #include <chrono>
 #include <boost/functional/hash.hpp>
@@ -41,7 +41,7 @@ int main ( int argc, char **argv ) {
 
     ros::init ( argc, argv, "tuw_multi_robot_router" );
     ros::NodeHandle n;
-    std::shared_ptr<multi_robot_router::DefaultRouter> router_ptr = std::make_shared<multi_robot_router::DefaultRouter>();
+    std::shared_ptr<multi_robot_router::Router> router_ptr = std::make_shared<multi_robot_router::Router>();
     ros::Rate r ( 1 );
 
     multi_robot_router::RouterNode node(router_ptr.get());
@@ -67,7 +67,6 @@ namespace multi_robot_router
         id_ = 0;
         router_ = router;
     }
-
 
     void RouterNode::start(ros::NodeHandle &n)
     {
@@ -394,11 +393,6 @@ namespace multi_robot_router
             ROS_INFO ("%s: New Map %i %i %lu", n_param_.getNamespace().c_str(), map.info.width, map.info.height,
                       current_map_hash_);
         }
-    }
-
-    std::vector<Agent> RouterNode::extractAgents(const tuw_multi_robot_msgs::RobotGoalsArray &goals)
-    {
-        return std::vector<Agent>();
     }
 
     bool RouterNode::preparePlanning(std::vector<float> &_radius, std::vector<Eigen::Vector3d> &_starts,

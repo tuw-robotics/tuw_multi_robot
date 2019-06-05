@@ -157,28 +157,35 @@ include_directories(
 
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
-  include/tuw_global_router/router/router.h include/tuw_global_router/router/agent.h include/tuw_global_router/router/environment.h
-  include/tuw_global_router/ros/router_config.h
-  src/ros/router_node.cpp include/tuw_global_router/ros/router_node.h
-  src/router/default_router.cpp  include/tuw_global_router/router/default_router.h
-    src/srr_utils.cpp
-    src/point_expander.cpp
-    src/multi_robot_router.cpp
-    src/multi_robot_router_threaded_srr.cpp
-    src/single_robot_router.cpp
-    src/segment_expander.cpp
-    src/route_coordinator_timed.cpp
-    src/traceback.cpp
-    src/robot_info.cpp
-    src/route_generator.cpp
-    src/backtracking_resolution.cpp
-    src/avoidance_resolution.cpp
-    src/empty_resolution.cpp
-    src/priority_scheduler.cpp
-    src/potential_calculator.cpp
-    src/speed_scheduler.cpp
-    src/route_coordinator.cpp
-  include/tuw_global_router/router/router_factory.h)
+
+        include/tuw_global_router/ros/router_node.h src/ros/router_node.cpp
+
+        include/tuw_global_router/router/router.h
+        include/tuw_global_router/router/models.h
+
+        include/tuw_global_router/model/graph.h
+
+        include/tuw_global_router/adapter/router_adapter.h src/adapter/router_adapter.cpp
+
+        src/legacy/router.cpp
+        src/legacy/srr_utils.cpp
+        src/legacy/point_expander.cpp
+        src/legacy/multi_robot_router.cpp
+        src/legacy/multi_robot_router_threaded_srr.cpp
+        src/legacy/single_robot_router.cpp
+        src/legacy/segment_expander.cpp
+        src/legacy/route_coordinator_timed.cpp
+        src/legacy/traceback.cpp
+        src/legacy/robot_info.cpp
+        src/legacy/route_generator.cpp
+        src/legacy/backtracking_resolution.cpp
+        src/legacy/avoidance_resolution.cpp
+        src/legacy/empty_resolution.cpp
+        src/legacy/priority_scheduler.cpp
+        src/legacy/potential_calculator.cpp
+        src/legacy/speed_scheduler.cpp
+        src/legacy/route_coordinator.cpp
+        )
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 
 add_executable(tuw_multi_robot_router_node src/ros/router_node.cpp)
