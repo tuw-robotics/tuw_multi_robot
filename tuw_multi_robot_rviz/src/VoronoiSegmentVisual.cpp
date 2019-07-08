@@ -81,15 +81,15 @@ void VoronoiSegmentVisual::setMessage(const tuw_multi_robot_msgs::Graph::ConstPt
 
 		// 	Ogre::Quaternion rotation  = Ogre::Quaternion ( Ogre::Radian( (*spline_)(i / (double)pointsNrPath_ )(2) + atan2(v_y, v_x) ), Ogre::Vector3::UNIT_Z );
 		Line l = {
-			(float)((p1.x + 0.5) * msg->resolution + msg->origin.position.x),
-			(float)((p1.y + 0.5) * msg->resolution + msg->origin.position.y),
-			(float)((p2.x + 0.5) * msg->resolution + msg->origin.position.x),
-			(float)((p2.y + 0.5) * msg->resolution + msg->origin.position.y)};
-		float z1 = p1.z * msg->resolution + msg->origin.position.z;
-		float z2 = p2.z * msg->resolution + msg->origin.position.z;
+			(float)((p1.x + 0.5)  + msg->origin.position.x),
+			(float)((p1.y + 0.5)  + msg->origin.position.y),
+			(float)((p2.x + 0.5)  + msg->origin.position.x),
+			(float)((p2.y + 0.5)  + msg->origin.position.y)};
+		float z1 = p1.z  + msg->origin.position.z;
+		float z2 = p2.z  + msg->origin.position.z;
 
-		Line l1 = offsetLine(l, msg->resolution * (0.5 + seg.width / 2));
-		Line l2 = offsetLine(l, msg->resolution * (-0.5 - seg.width / 2));
+		Line l1 = offsetLine(l,  (0.5 + seg.width / 2));
+		Line l2 = offsetLine(l,  (-0.5 - seg.width / 2));
 
 		pathLine[i * 4].reset(new rviz::Line(scene_manager_, frame_node_));
 		pathLine[i * 4]->setColor(colorPath_);
