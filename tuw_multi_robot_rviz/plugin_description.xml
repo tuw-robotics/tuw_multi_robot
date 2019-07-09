@@ -38,4 +38,11 @@
       Tool for planting flags on the ground plane in rviz.
     </description>
   </class>
+    <class name="Behaviour Inspection"
+           type="tuw_multi_robot_rviz::BehaviourInspectionPanel"
+           base_class_type="rviz::Panel">
+        <description>
+            A panel which allows the inspection of selected behaviour profiles.
+        </description>
+    </class>
 </library>
