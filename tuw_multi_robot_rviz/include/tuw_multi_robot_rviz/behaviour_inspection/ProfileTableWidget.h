@@ -8,7 +8,6 @@
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QTableWidget>
 #include <string>
-#include <set>
 #include "AddRobotWidget.h"
 
 namespace tuw_multi_robot_rviz {
@@ -39,7 +38,7 @@ namespace tuw_multi_robot_rviz {
         QTableWidget *table;
         AddRobotWidget *add_robot_widget;
 
-        std::set<std::string> robots;
+        std::vector<std::string> robots;
 
         int addRow();
 

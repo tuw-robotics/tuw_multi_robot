@@ -44,9 +44,9 @@ namespace tuw_multi_robot_rviz {
 
     void ProfileTableWidget::addRobot(const std::string &name)
     {
-        if (robots.find(name) == robots.end()) {
-
-            robots.insert(name);
+        auto found = std::find(robots.begin(), robots.end(), name);
+        if (found == robots.end()) {
+            robots.push_back(name);
             int current_row = addRow();
 
             table->item(current_row, Columns::Name)->setText(QString::fromStdString(name));
@@ -61,7 +61,7 @@ namespace tuw_multi_robot_rviz {
 
     void ProfileTableWidget::updateRobot(const std::string &robot, ProfileTableEntry entry)
     {
-        auto found = robots.find(robot);
+        auto found = std::find(robots.begin(), robots.end(), robot);
 
         if (found != robots.end()) {
             int row = std::distance(robots.begin(), found);
@@ -71,10 +71,10 @@ namespace tuw_multi_robot_rviz {
 
     void ProfileTableWidget::removeRobot(const std::string &robot)
     {
-        auto found = robots.find(robot);
+        auto found = std::find(robots.begin(), robots.end(), robot);
         if (found != robots.end()) {
             table->removeRow(std::distance(robots.begin(), found));
-            robots.erase(robot);
+            robots.erase(found);
             Q_EMIT removedRobot(robot);
         }
     }

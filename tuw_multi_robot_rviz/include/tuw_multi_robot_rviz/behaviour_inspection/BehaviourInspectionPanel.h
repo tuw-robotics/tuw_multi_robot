@@ -13,7 +13,7 @@ namespace tuw_multi_robot_rviz {
 
     Q_OBJECT
     public:
-        explicit BehaviourInspectionPanel(QWidget *parent = 0);
+        explicit BehaviourInspectionPanel(QWidget *parent = nullptr);
 
         void load(const rviz::Config &config) override;
 
