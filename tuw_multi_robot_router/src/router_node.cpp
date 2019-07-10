@@ -261,13 +261,19 @@ void Router_Node::robotInfoCallback ( const tuw_multi_robot_msgs::RobotInfo &_ro
 }
 
 void Router_Node::graphCallback ( const tuw_multi_robot_msgs::Graph &msg ) {
+
+    if (!got_map_) {
+        ROS_INFO("No map received. Waiting...");
+        return;
+    }
+
     std::vector<Segment> graph;
 
     for ( const tuw_multi_robot_msgs::Vertex &segment : msg.vertices ) {
         std::vector<Eigen::Vector2d> points;
 
         for ( const geometry_msgs::Point &point : segment.path ) {
-            points.emplace_back ( point.x, point.y );
+            points.emplace_back ( point.x / mapResolution_, point.y / mapResolution_);
         }
 
         std::vector<uint32_t> successors;

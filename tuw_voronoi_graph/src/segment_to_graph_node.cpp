@@ -106,7 +106,6 @@ void SegmentToGraphNode::readSegments()
     current_graph_.header.stamp = ros::Time::now();
     current_graph_.origin.position.x = origin_x;
     current_graph_.origin.position.y = origin_y;
-    current_graph_.resolution = resolution;
 
     for (uint32_t i = 0; i < graph.size(); i++)
     {
