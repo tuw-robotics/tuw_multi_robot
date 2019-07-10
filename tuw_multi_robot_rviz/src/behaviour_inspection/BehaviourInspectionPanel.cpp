@@ -6,15 +6,19 @@ namespace tuw_multi_robot_rviz {
 
     BehaviourInspectionPanel::BehaviourInspectionPanel(QWidget *parent) : Panel(parent)
     {
-        topic_layout = new QHBoxLayout;
+        auto *layout = new QVBoxLayout;
+        setupWidgets();
+        layout->addWidget(profile_table);
+        layout->setMargin(0);
+        layout->setAlignment(profile_table, Qt::Alignment::enum_type::AlignTop);
+        setLayout(layout);
+    }
 
-        //auto* label = new QLabel( "Output Topic:" );
-        table = new QTableWidget(4, 3);
-
-        topic_layout->addWidget(table);
-        topic_layout->setMargin(0);
-        topic_layout->setAlignment(table, Qt::Alignment::enum_type::AlignTop);
-        setLayout(topic_layout);
+    void BehaviourInspectionPanel::setupWidgets()
+    {
+        profile_table = new ProfileTableWidget;
+        connect(profile_table, &ProfileTableWidget::addedRobot, this, &BehaviourInspectionPanel::onRobotAdded);
+        connect(profile_table, &ProfileTableWidget::removedRobot, this, &BehaviourInspectionPanel::onRobotRemoved);
     }
 
     void BehaviourInspectionPanel::load(const rviz::Config &config)
@@ -27,10 +31,19 @@ namespace tuw_multi_robot_rviz {
         Panel::save(config);
     }
 
-    void BehaviourInspectionPanel::resizeEvent(QResizeEvent *event)
+    void BehaviourInspectionPanel::onRobotAdded(const std::string &robot_name)
     {
+        ProfileTableEntry entry;
+        entry.description = "description";
+        entry.profile = "slow";
+
+        profile_table->updateRobot(robot_name, entry);
     }
 
+    void BehaviourInspectionPanel::onRobotRemoved(const std::string &robot_name)
+    {
+        std::cout << "Removed Robot: " << robot_name << std::endl;
+    }
 
 }
 

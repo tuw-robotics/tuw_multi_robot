@@ -170,7 +170,9 @@ add_library(${PROJECT_NAME}
   src/VoronoiSegmentDisplay.cpp
   include/tuw_multi_robot_rviz/MultiRobotGoalSelector.h
   src/MultiRobotGoalSelector.cpp
-  include/tuw_multi_robot_rviz/behaviour_inspection/BehaviourInspectionPanel.h src/behaviour_inspection/BehaviourInspectionPanel.cpp include/tuw_multi_robot_rviz/behaviour_inspection/BehaviourInspectionWidget.h src/behaviour_inspection/BehaviourInspectionWidget.cpp)
+  include/tuw_multi_robot_rviz/behaviour_inspection/BehaviourInspectionPanel.h src/behaviour_inspection/BehaviourInspectionPanel.cpp include/tuw_multi_robot_rviz/behaviour_inspection/ProfileTableWidget.h src/behaviour_inspection/ProfileTableWidget.cpp
+  include/tuw_multi_robot_rviz/behaviour_inspection/AddRobotWidget.h src/behaviour_inspection/AddRobotWidget.cpp
+  )
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}
