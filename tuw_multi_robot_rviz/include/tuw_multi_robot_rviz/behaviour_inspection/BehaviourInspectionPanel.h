@@ -6,6 +6,9 @@
 #include <tuw_multi_robot_msgs/BehaviourProfile.h>
 #include "ProfileTableWidget.h"
 #include "AddRobotWidget.h"
+#include <unordered_map>
+#include <ros/ros.h>
+#include <boost/optional.hpp>
 
 namespace tuw_multi_robot_rviz {
 
@@ -22,10 +25,18 @@ namespace tuw_multi_robot_rviz {
     private:
         ProfileTableWidget *profile_table;
 
+        ros::NodeHandle node_handle;
+
+        std::unordered_map<std::string, boost::optional<tuw_multi_robot_msgs::BehaviourProfile>> profile_map;
+        std::unordered_map<std::string, ros::Subscriber> subscribers_map;
+
         void onRobotAdded(const std::string &robot_name);
 
         void onRobotRemoved(const std::string &robot_name);
 
+        void updateTable();
+
+        ProfileTableEntry mapProfileToEntry(const tuw_multi_robot_msgs::BehaviourProfile &profile);
         void setupWidgets();
     };
 

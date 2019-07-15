@@ -9,12 +9,20 @@
 #include <QtWidgets/QTableWidget>
 #include <string>
 #include "AddRobotWidget.h"
+#include <vector>
 
 namespace tuw_multi_robot_rviz {
 
+    enum class Status {
+        OK,
+        WAITING
+    };
+
     struct ProfileTableEntry {
+        std::string robot;
         std::string profile;
         std::string description;
+        Status status;
     };
 
     class ProfileTableWidget : public QWidget {
@@ -22,7 +30,7 @@ namespace tuw_multi_robot_rviz {
     public:
         ProfileTableWidget();
 
-        void updateRobot(const std::string &robot, ProfileTableEntry entry);
+        void update(const std::vector<ProfileTableEntry> &entries);
 
         void removeRobot(const std::string &robot);
 
@@ -40,20 +48,24 @@ namespace tuw_multi_robot_rviz {
 
         std::vector<std::string> robots;
 
-        int addRow();
-
-        void addColumn(int index, const std::string &name);
-
-        void writeEntry(int row, ProfileTableEntry entry);
-
-        void setupTable();
+        const QColor disabled_cell_color = QColor::fromRgb(237, 237, 237);
 
         enum Columns {
             Name = 0,
-            Profile,
-            Description,
-            Edit
+            Profile = 1,
+            Description = 2,
+            Edit = 3
         };
+
+        void insertActiveRobot(const ProfileTableEntry &entry, int row);
+
+        void insertInactiveRobot(const ProfileTableEntry &entry, int row);
+
+        void addColumn(int index, const std::string &name);
+
+        QPushButton *createDeleteButton();
+
+        void setupTable();
     };
 }
 

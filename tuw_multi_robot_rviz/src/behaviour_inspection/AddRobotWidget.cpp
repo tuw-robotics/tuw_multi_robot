@@ -13,7 +13,7 @@ namespace tuw_multi_robot_rviz {
     {
         auto *layout = new QHBoxLayout;
         setupWidgets(layout);
-
+        layout->setMargin(0);
         layout->addWidget(add_button);
         setLayout(layout);
     }

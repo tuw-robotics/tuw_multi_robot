@@ -4,8 +4,11 @@
 #include <QHBoxLayout>
 #include <QString>
 #include <iostream>
+#include <QtWidgets/QAction>
+#include <ros/package.h>
 
 namespace tuw_multi_robot_rviz {
+
     ProfileTableWidget::ProfileTableWidget()
     {
         auto *layout = new QVBoxLayout;
@@ -37,56 +40,70 @@ namespace tuw_multi_robot_rviz {
         addColumn(Columns::Profile, "Profile");
         addColumn(Columns::Description, "Description");
         addColumn(Columns::Edit, "Edit");
+        table->setColumnWidth(Columns::Edit, 30);
+        table->horizontalHeader()->setSectionResizeMode(Columns::Edit, QHeaderView::ResizeMode::Fixed);
 
         table->verticalHeader()->hide();
         table->horizontalHeader()->setSectionResizeMode(Columns::Description, QHeaderView::Stretch);
     }
 
-    void ProfileTableWidget::addRobot(const std::string &name)
+    void ProfileTableWidget::update(const std::vector<ProfileTableEntry> &entries)
     {
-        auto found = std::find(robots.begin(), robots.end(), name);
-        if (found == robots.end()) {
-            robots.push_back(name);
-            int current_row = addRow();
+        table->setRowCount(0);
+        for (const auto &entry: entries) {
 
-            table->item(current_row, Columns::Name)->setText(QString::fromStdString(name));
+            int row = table->rowCount();
+            table->insertRow(table->rowCount());
 
-            QPushButton *button = new QPushButton("X");
-            connect(button, &QPushButton::clicked, [=] { removeRobot(name); });
-            table->setCellWidget(current_row, Columns::Edit, button);
+            switch (entry.status) {
+                case Status::OK:
+                    insertActiveRobot(entry, row);
+                    break;
+                case Status::WAITING:
+                    insertInactiveRobot(entry, row);
+                    break;
 
-            Q_EMIT addedRobot(name);
+            }
         }
     }
 
-    void ProfileTableWidget::updateRobot(const std::string &robot, ProfileTableEntry entry)
+    void ProfileTableWidget::insertActiveRobot(const ProfileTableEntry &entry, int row)
     {
-        auto found = std::find(robots.begin(), robots.end(), robot);
+        table->setItem(row, Columns::Name, new QTableWidgetItem(QString::fromStdString(entry.robot)));
+        table->setItem(row, Columns::Profile, new QTableWidgetItem(QString::fromStdString(entry.profile)));
+        table->setItem(row, Columns::Description, new QTableWidgetItem(QString::fromStdString(entry.description)));
 
-        if (found != robots.end()) {
-            int row = std::distance(robots.begin(), found);
-            writeEntry(row, entry);
-        }
+        auto *button = createDeleteButton();
+        connect(button, &QPushButton::clicked, [=] { removeRobot(entry.robot); });
+        table->setCellWidget(row, Columns::Edit, button);
+    }
+
+    void ProfileTableWidget::insertInactiveRobot(const ProfileTableEntry &entry, int row)
+    {
+        table->setItem(row, Columns::Name, new QTableWidgetItem(QString::fromStdString(entry.robot)));
+        table->item(row, Columns::Name)->setBackground(disabled_cell_color);
+
+        table->setItem(row, Columns::Profile, new QTableWidgetItem);
+        table->item(row, Columns::Profile)->setBackground(disabled_cell_color);
+
+
+        table->setItem(row, Columns::Description, new QTableWidgetItem);
+        table->item(row, Columns::Description)->setBackground(disabled_cell_color);
+
+        auto *button = createDeleteButton();
+        connect(button, &QPushButton::clicked, [=] { removeRobot(entry.robot); });
+        table->setCellWidget(row, Columns::Edit, button);
+    }
+
+    void ProfileTableWidget::addRobot(const std::string &name)
+    {
+        Q_EMIT addedRobot(name);
     }
 
     void ProfileTableWidget::removeRobot(const std::string &robot)
     {
-        auto found = std::find(robots.begin(), robots.end(), robot);
-        if (found != robots.end()) {
-            table->removeRow(std::distance(robots.begin(), found));
-            robots.erase(found);
-            Q_EMIT removedRobot(robot);
-        }
-    }
 
-    int ProfileTableWidget::addRow()
-    {
-        int row = table->rowCount();
-        table->insertRow(row);
-        for (int i = 0; i < table->columnCount(); i++) {
-            table->setItem(row, i, new QTableWidgetItem);
-        }
-        return row;
+        Q_EMIT removedRobot(robot);
     }
 
     void ProfileTableWidget::addColumn(int index, const std::string &name)
@@ -95,10 +112,11 @@ namespace tuw_multi_robot_rviz {
         table->setHorizontalHeaderItem(index, new QTableWidgetItem(QString::fromStdString(name)));
     }
 
-
-    void ProfileTableWidget::writeEntry(int row, ProfileTableEntry entry)
+    QPushButton *ProfileTableWidget::createDeleteButton()
     {
-        table->item(row, Columns::Profile)->setText(QString::fromStdString(entry.profile));
-        table->item(row, Columns::Description)->setText(QString::fromStdString(entry.description));
+        auto path = ros::package::getPath("tuw_multi_robot_rviz") + "/icons/trash-solid.svg";
+        QPushButton *button = new QPushButton;
+        button->setIcon(QIcon(QString::fromStdString(path)));
+        return button;
     }
 }

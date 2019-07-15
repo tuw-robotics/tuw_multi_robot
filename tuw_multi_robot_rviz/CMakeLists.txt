@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(tuw_multi_robot_rviz)
 
 ## Add support for C++11, supported in ROS Kinetic and newer
-# add_definitions(-std=c++11)
+add_definitions(-std=c++17)
 add_compile_options(-std=c++17)
 
 ## Find catkin macros and libraries
