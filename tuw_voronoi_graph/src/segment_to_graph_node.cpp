@@ -114,6 +114,7 @@ void SegmentToGraphNode::readSegments()
 
         v.weight = (graph[i].start - graph[i].end).norm();
         v.width = graph[i].width / resolution;
+        v.valid = true;
 
         geometry_msgs::Point start;
         start.x = graph[i].start[0];
