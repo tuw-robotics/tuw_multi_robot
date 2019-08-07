@@ -42,6 +42,7 @@ RouteProgressMonitor::RouteProgressMonitor()
 }
 
 void RouteProgressMonitor::init ( const tuw_multi_robot_msgs::Route &route ) {
+    segments_.clear();
     for ( size_t i = 0; i < route.segments.size(); i++ ) {
         auto &seg = route.segments[i];
         SegmentPtr s = SegmentPtr ( new RouteProgressMonitor::Segment ( seg.start.position.x, seg.start.position.y, seg.end.position.x, seg.end.position.y, seg.width ) );

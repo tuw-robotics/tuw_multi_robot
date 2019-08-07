@@ -34,6 +34,7 @@
 #include <tuw_nav_msgs/ControllerState.h>
 #include <tuw_multi_robot_msgs/Route.h>
 #include <tuw_multi_robot_msgs/RobotInfo.h>
+#include <tuw_multi_robot_msgs/RouteProgress.h>
 #include <tuw_multi_robot_route_to_path/RobotRouteToPath.h>
 #include <tuw_multi_robot_route_to_path/RobotStateObserver.h>
 #include <tuw_multi_robot_route_to_path/RouteProgressMonitor.h>
@@ -53,11 +54,14 @@ public:
   std::unique_ptr<ros::Rate> rate_;
 
   void publishRobotInfo();
+
+    void publishRouteProgress();
 private:
   void updatePath();
 
   ros::Publisher pubPath_;
   ros::Publisher pubRobotInfo_;
+    ros::Publisher pubRouteProgress_;
   ros::Subscriber subRoute_;
   ros::Subscriber subCtrlState_;
   ros::Subscriber subPose_;
