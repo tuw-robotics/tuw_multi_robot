@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 #include <simple_velocity_controller/controller_node.h>
 #include <tuw_nav_msgs/ControllerState.h>
+#include <tuw_multi_robot_msgs/LocalControllerProgress.h>
 #include <tf/transform_datatypes.h>
 
 #define NSEC_2_SECS(A) ((float)A / 1000000000.0)
@@ -51,6 +52,7 @@ ControllerNode::ControllerNode(ros::NodeHandle& n) : Controller(), n_(n), n_para
   
   pubCmdVel_ = n.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
   pubState_ = n.advertise<tuw_nav_msgs::ControllerState>("state_trajectory_ctrl", 10);
+    pubProgress_ = n.advertise<tuw_multi_robot_msgs::LocalControllerProgress>("local_progress", 10);
   subPose_ = n.subscribe("pose", 1000, &ControllerNode::subPoseCb, this);
   subPath_ = n.subscribe("path", 1000, &ControllerNode::subPathCb, this);
   subCtrl_ = n.subscribe("ctrl", 1000, &ControllerNode::subCtrlCb, this);
@@ -91,7 +93,7 @@ void ControllerNode::subPoseCb(const geometry_msgs::PoseWithCovarianceStampedCon
   cmd_.linear.x = v;
   cmd_.angular.z = w;
 
-  
+    publishProgress();
   pubCmdVel_.publish(cmd_);
 }
 
@@ -106,7 +108,17 @@ void ControllerNode::publishState() {
     pubState_.publish(ctrl_state_);    
 }
 
-void ControllerNode::subPathCb(const nav_msgs::Path_<std::allocator<void>>::ConstPtr& _path)
+    void ControllerNode::publishProgress()
+    {
+        if (ctrl_state_.state == ctrl_state_.STATE_DRIVING) {
+            tuw_multi_robot_msgs::LocalControllerProgress progress;
+            progress.header.stamp = ros::Time::now();
+            progress.progress = (float) getProgress() / (float) currentPath().size();
+            pubProgress_.publish(progress);
+        }
+    }
+
+    void ControllerNode::subPathCb(const nav_msgs::Path_<std::allocator<void>>::ConstPtr& _path)
 {
     ctrl_state_.progress_in_relation_to = _path->header.seq;
     ctrl_state_.header.frame_id =  _path->header.frame_id;

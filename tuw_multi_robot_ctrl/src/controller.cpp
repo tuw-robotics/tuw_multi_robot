@@ -181,4 +181,9 @@ void Controller::getSpeed(float* _v, float* _w)
     {
         return this->orderStatus;
     }
+
+    const std::vector<PathPoint>& Controller::currentPath()
+    {
+        return path_;
+    }
 }

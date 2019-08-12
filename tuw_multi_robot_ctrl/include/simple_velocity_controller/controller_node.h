@@ -31,6 +31,7 @@ public:
 private:
   ros::Publisher pubCmdVel_;
   ros::Publisher pubState_;
+    ros::Publisher pubProgress_;
   ros::Subscriber subPose_;
   ros::Subscriber subPath_;
   ros::Subscriber subCtrl_;
@@ -45,6 +46,8 @@ private:
   void subPathCb(const nav_msgs::Path::ConstPtr &_path);
   void subCtrlCb(const std_msgs::String _cmd);
   void publishState();
+
+    void publishProgress();
   
   geometry_msgs::Twist cmd_;
   tuw_nav_msgs::ControllerState ctrl_state_;

@@ -92,6 +92,7 @@ public:
    */
   bool isActive();
 
+    const std::vector<PathPoint>& currentPath();
   int getStatus();
   void setGoodId(int);
   int getGoodId();
