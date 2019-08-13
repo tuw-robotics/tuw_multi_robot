@@ -111,10 +111,34 @@ void ControllerNode::publishState() {
     void ControllerNode::publishProgress()
     {
         if (ctrl_state_.state == ctrl_state_.STATE_DRIVING) {
-            tuw_multi_robot_msgs::LocalControllerProgress progress;
-            progress.header.stamp = ros::Time::now();
-            progress.progress = (float) getProgress() / (float) currentPath().size();
-            pubProgress_.publish(progress);
+            tuw_multi_robot_msgs::LocalControllerProgress progress_msg;
+            const auto& path = currentPath();
+            const int progress = getProgress();
+
+            progress_msg.header.stamp = ros::Time::now();
+            progress_msg.progress_metric = (float) progress / (float) path.size();
+
+            auto path_point_converter = [](const PathPoint& point) -> geometry_msgs::PoseStamped {
+                geometry_msgs::PoseStamped pose;
+                pose.header.frame_id = "map";
+                pose.pose.position.x = point.x;
+                pose.pose.position.y = point.y;
+                pose.pose.orientation = tf::createQuaternionMsgFromYaw(point.theta);
+                return pose;
+            };
+
+            for (size_t i = 0; i < path.size(); i++) {
+                const auto pose = path_point_converter(path[i]);
+                if (i < progress) {
+                    progress_msg.progress.poses.push_back(pose);
+                } else {
+                    progress_msg.ahead.poses.push_back(pose);
+                }
+            }
+
+            progress_msg.progress.header.frame_id = "map";
+            progress_msg.ahead.header.frame_id = "map";
+            pubProgress_.publish(progress_msg);
         }
     }
 
