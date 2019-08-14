@@ -26,6 +26,7 @@
 #include <ros/ros.h>
 #include <tuw_multi_robot_route_to_path/LocalBehaviorControllerNode.h>
 #include <tf/transform_datatypes.h>
+#include <tuw_multi_robot_msgs/ProgressRoute.h>
 
 int main ( int argc, char **argv ) {
     ros::init ( argc, argv, "local_behavior_controller_node" ); /// initializes the ros node with default name
@@ -69,7 +70,7 @@ namespace tuw_multi_robot_route_to_path {
 
         pubRobotInfo_ = n.advertise<tuw_multi_robot_msgs::RobotInfo>("robot_info", 10000);
         pubPath_ = n.advertise<nav_msgs::Path>("path", 1);
-        pubRouteProgress_ = n.advertise<tuw_multi_robot_msgs::RouteProgress>("progress", 1);
+        pubRouteProgress_ = n.advertise<tuw_multi_robot_msgs::ProgressRoute>("progress", 1);
 
 
         ros::Rate r(update_rate_);
@@ -186,24 +187,9 @@ namespace tuw_multi_robot_route_to_path {
             return;
         }
 
-        tuw_multi_robot_msgs::RouteProgress progress;
-
-        ROS_INFO("%s: %d", robot_name_.c_str(), current_index);
-
-        std::transform(route_.segments.begin() + current_index + 1, route_.segments.end() - 1,
-                       std::back_inserter(progress.todo), [&](const auto& segment) -> int {
-                    return segment.segment_id;
-                });
-
-        progress.current = route_.segments[current_index].segment_id;
-
-        std::transform(route_.segments.begin(), route_.segments.begin() + current_index,
-                       std::back_inserter(progress.passed), [&](const auto& segment) -> int {
-                    return segment.segment_id;
-                });
-
-        progress.progress = 1.0f - ((float) progress.todo.size()) / ((double) route_.segments.size());
-
+        tuw_multi_robot_msgs::ProgressRoute progress;
+        progress.progress = current_index;
+        progress.total_checkpoints = route_.segments.size();
         pubRouteProgress_.publish(progress);
     }
 

@@ -1,7 +1,7 @@
 #include <ros/ros.h>
 #include <simple_velocity_controller/controller_node.h>
 #include <tuw_nav_msgs/ControllerState.h>
-#include <tuw_multi_robot_msgs/LocalControllerProgress.h>
+#include <tuw_multi_robot_msgs/ProgressPath.h>
 #include <tf/transform_datatypes.h>
 
 #define NSEC_2_SECS(A) ((float)A / 1000000000.0)
@@ -52,7 +52,7 @@ ControllerNode::ControllerNode(ros::NodeHandle& n) : Controller(), n_(n), n_para
   
   pubCmdVel_ = n.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
   pubState_ = n.advertise<tuw_nav_msgs::ControllerState>("state_trajectory_ctrl", 10);
-    pubProgress_ = n.advertise<tuw_multi_robot_msgs::LocalControllerProgress>("local_progress", 10);
+    pubProgress_ = n.advertise<tuw_multi_robot_msgs::ProgressPath>("local_progress", 10);
   subPose_ = n.subscribe("pose", 1000, &ControllerNode::subPoseCb, this);
   subPath_ = n.subscribe("path", 1000, &ControllerNode::subPathCb, this);
   subCtrl_ = n.subscribe("ctrl", 1000, &ControllerNode::subCtrlCb, this);
@@ -111,12 +111,14 @@ void ControllerNode::publishState() {
     void ControllerNode::publishProgress()
     {
         if (ctrl_state_.state == ctrl_state_.STATE_DRIVING) {
-            tuw_multi_robot_msgs::LocalControllerProgress progress_msg;
+            tuw_multi_robot_msgs::ProgressPath progress_msg;
             const auto& path = currentPath();
             const int progress = getProgress();
 
             progress_msg.header.stamp = ros::Time::now();
             progress_msg.progress_metric = (float) progress / (float) path.size();
+            progress_msg.step = progress;
+            progress_msg.total_steps = path.size();
 
             auto path_point_converter = [](const PathPoint& point) -> geometry_msgs::PoseStamped {
                 geometry_msgs::PoseStamped pose;
