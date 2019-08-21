@@ -37,6 +37,9 @@
 #include <tuw_multi_robot_route_to_path/RobotRouteToPath.h>
 #include <tuw_multi_robot_route_to_path/RobotStateObserver.h>
 #include <tuw_multi_robot_route_to_path/RouteProgressMonitor.h>
+#include <actionlib/client/simple_action_client.h>
+
+#include <tuw_local_controller_msgs/ExecutePathAction.h>
 
 #include <memory>
 
@@ -90,6 +93,8 @@ private:
   std::map<std::string, int> robot_steps_;
   
   tuw::RouteProgressMonitor progress_monitor_;
+
+    actionlib::SimpleActionClient<tuw_local_controller_msgs::ExecutePathAction> client;
 };
 
 }  // namespace tuw_multi_robot_route_to_path

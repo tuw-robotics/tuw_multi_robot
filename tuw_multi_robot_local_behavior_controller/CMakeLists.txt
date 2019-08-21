@@ -14,6 +14,8 @@ find_package(catkin REQUIRED COMPONENTS
   tuw_multi_robot_msgs
   tuw_geometry
   tuw_nav_msgs
+  actionlib
+  tuw_local_controller_msgs
 )
 
 find_package(Eigen3 REQUIRED)

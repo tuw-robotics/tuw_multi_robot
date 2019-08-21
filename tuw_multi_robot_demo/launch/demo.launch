@@ -8,7 +8,7 @@
 <arg name="launch_map_server"                   default="true"      />
 <arg name="launch_multi_robot_route_planner"    default="true"      />
 <arg name="launch_local_controller"             default="true"      />
-<arg name="launch_local_controller_one_for_all" default="true"      />
+<arg name="launch_local_controller_one_for_all" default="false"      />
 <arg name="nr_of_robots"                        default="3"         /> 
 
 <arg name="launch_graph_generator"              default="true"      />

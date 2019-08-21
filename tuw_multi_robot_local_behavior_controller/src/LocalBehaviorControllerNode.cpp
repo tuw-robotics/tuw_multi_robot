@@ -38,7 +38,8 @@ int main ( int argc, char **argv ) {
 
 namespace tuw_multi_robot_route_to_path {
 LocalBehaviorControllerNode::LocalBehaviorControllerNode ( ros::NodeHandle &n )
-    : n_ ( n ), n_param_ ( "~" ) {
+        : n_(n), n_param_("~"), client(n, "local_controller")
+{
     robot_step_ = -1;
     route_ = tuw_multi_robot_msgs::Route();
     path_segment_end = 0;
@@ -119,7 +120,11 @@ void LocalBehaviorControllerNode::updatePath() {
             pose_stamped.pose = route_.segments[i].end;
             path_.poses.push_back(pose_stamped);            
         }
-        pubPath_.publish(path_);        
+        //pubPath_.publish(path_);
+        tuw_local_controller_msgs::ExecutePathGoal goal;
+        goal.path = path_;
+        client.cancelAllGoals();
+        client.sendGoal(goal);
     }
     
 }

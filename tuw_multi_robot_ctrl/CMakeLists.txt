@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   tuw_multi_robot_msgs
   tuw_nav_msgs
   nodelet
+  tuw_local_controller_util
 )
 
 ## System dependencies are found with CMake's conventions
@@ -131,6 +132,7 @@ include_directories(
 add_library(${PROJECT_NAME}
   src/controller.cpp
   src/segment_controller.cpp
+  include/simple_velocity_controller/local_controller_node.h
 )
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
@@ -151,12 +153,16 @@ add_dependencies(${PROJECT_NAME}
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(tuw_velocity_controller src/controller_node.cpp)
+#add_executable(tuw_velocity_controller src/controller_node.cpp)
+add_executable(tuw_velocity_controller src/local_controller_node.cpp)
+
+
 target_link_libraries(tuw_velocity_controller
   ${catkin_LIBRARIES}
   ${PROJECT_NAME}
 )
 add_executable(local_multi_robot_controller src/local_multi_robot_controller_node.cpp)
+
 target_link_libraries(local_multi_robot_controller
   ${catkin_LIBRARIES}
   ${PROJECT_NAME}
