@@ -12,13 +12,22 @@
 #include <nav_msgs/Path.h>
 #include <std_msgs/String.h>
 #include <memory>
+#include <actionlib/server/simple_action_server.h>
+#include <tuw_local_controller_msgs/ExecutePathAction.h>
 #include "controller.h"
-#include "../../../../../devel/include/tuw_local_controller_msgs/ExecutePathGoal.h"
-#include <tuw_local_controller_util/LocalControllerService.h>
 
 namespace velocity_controller {
-    class ControllerNode
-            : public velocity_controller::Controller, public tuw_local_controller::util::LocalControllerService {
+
+    struct ControllerConfig {
+        float max_v = 0.8;
+        float max_w = 1.0;
+        float goal_radius = 0.2;
+        float Kp = 5.0;
+        float Ki = 0.0;
+        float Kd = 1.0;
+    };
+
+    class ControllerNode: public velocity_controller::Controller {
         //special class-member functions.
     public:
         /**
@@ -32,31 +41,23 @@ namespace velocity_controller {
         ros::NodeHandle n_param_; ///< Node handler to the current node
         std::unique_ptr<ros::Rate> rate_;
 
-        void onGoalReceived(const tuw_local_controller_msgs::ExecutePathGoal &goal) override;
-
     private:
-        ros::Publisher pubCmdVel_;
-        ros::Publisher pubState_;
-        ros::Subscriber subPose_;
-        ros::Subscriber subPath_;
-        ros::Subscriber subCtrl_;
-        float max_vel_v_;
-        float max_vel_w_;
-        float goal_r_;
-        float Kp_val_;
-        float Ki_val_;
-        float Kd_val_;
+        ros::Publisher twist_publisher;
+        ros::Publisher state_publisher;
+        ros::Subscriber pose_subscriber;
+        ros::Subscriber command_subscriber;
         ros::Time last_update_;
+        actionlib::SimpleActionServer<tuw_local_controller_msgs::ExecutePathAction> action_server;
 
-        void subPoseCb(const geometry_msgs::PoseWithCovarianceStampedConstPtr &_pose);
+        void onPoseReceived(const geometry_msgs::PoseWithCovarianceStampedConstPtr& pose);
 
-        void subCtrlCb(const std_msgs::String _cmd);
+        void onCommandReceived(const std_msgs::String command);
 
-        void publishState();
+        void onGoalReceived(const tuw_local_controller_msgs::ExecutePathGoalConstPtr& goal);
 
-        geometry_msgs::Twist cmd_;
-        tuw_nav_msgs::ControllerState ctrl_state_;
-        geometry_msgs::Pose current_pose;
+        void publishControllerState(const nav_msgs::Path &path);
+
+        void setupController(const nav_msgs::Path &path, const ControllerConfig& config);
     };
 
 } // namespace velocity_controller

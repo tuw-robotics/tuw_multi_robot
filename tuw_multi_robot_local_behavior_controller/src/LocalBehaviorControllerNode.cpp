@@ -38,7 +38,7 @@ int main ( int argc, char **argv ) {
 
 namespace tuw_multi_robot_route_to_path {
 LocalBehaviorControllerNode::LocalBehaviorControllerNode ( ros::NodeHandle &n )
-        : n_(n), n_param_("~"), client(n, "local_controller")
+        : n_(n), n_param_("~"), client(n, "execute_path")
 {
     robot_step_ = -1;
     route_ = tuw_multi_robot_msgs::Route();

@@ -16,59 +16,30 @@ int main(int argc, char **argv)
 
     velocity_controller::ControllerNode ctrl(n);
 
-
+    ros::spin();
     return 0;
 }
 
 namespace velocity_controller {
-    ControllerNode::ControllerNode(ros::NodeHandle &n) : LocalControllerService(n), n_(n), n_param_("~")
+    ControllerNode::ControllerNode(ros::NodeHandle &n) : 
+    n_(n),
+    n_param_("~"), 
+    action_server(n, "execute_path", [&](const auto& goal) {this->onGoalReceived(goal);}, false)
     {
-        max_vel_v_ = 0.8;
-        n_param_.getParam("max_v", max_vel_v_);
-
-        max_vel_w_ = 1.0;
-        n_param_.getParam("max_w", max_vel_w_);
-        setSpeedParams(max_vel_v_, max_vel_w_);
-
-        goal_r_ = 0.2;
-        n_param_.getParam("goal_radius", goal_r_);
-        setGoalRadius(goal_r_);
-
-        Kp_val_ = 5.0;
-        n_param_.getParam("Kp", Kp_val_);
-
-        Ki_val_ = 0.0;
-        n_param_.getParam("Ki", Ki_val_);
-
-        Kd_val_ = 1.0;
-        n_param_.getParam("Kd", Kd_val_);
-        setPID(Kp_val_, Ki_val_, Kd_val_);
-
-        double loop_rate;
-        n_param_.param<double>("loop_rate", loop_rate, 5);
-
-        pubCmdVel_ = n.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
-        pubState_ = n.advertise<tuw_nav_msgs::ControllerState>("state_trajectory_ctrl", 10);
-        subPose_ = n.subscribe("pose", 1000, &ControllerNode::subPoseCb, this);
-        subCtrl_ = n.subscribe("ctrl", 1000, &ControllerNode::subCtrlCb, this);
-
-        ros::Rate r(loop_rate);
-
-        while (ros::ok()) {
-            ros::spinOnce();
-            publishState();
-            r.sleep();
-        }
+        twist_publisher = n.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
+        state_publisher = n.advertise<tuw_nav_msgs::ControllerState>("state_trajectory_ctrl", 10);
+        pose_subscriber = n.subscribe("pose", 1000, &ControllerNode::onPoseReceived, this);
+        command_subscriber = n.subscribe("ctrl", 1000, &ControllerNode::onCommandReceived, this);
+        action_server.start();
     }
 
-    void ControllerNode::subPoseCb(const geometry_msgs::PoseWithCovarianceStampedConstPtr &_pose)
-    {
+    void ControllerNode::onPoseReceived(const geometry_msgs::PoseWithCovarianceStampedConstPtr &pose){
         PathPoint pt;
-        pt.x = _pose->pose.pose.position.x;
-        pt.y = _pose->pose.pose.position.y;
+        pt.x = pose->pose.pose.position.x;
+        pt.y = pose->pose.pose.position.y;
 
-        tf::Quaternion q(_pose->pose.pose.orientation.x, _pose->pose.pose.orientation.y, _pose->pose.pose.orientation.z,
-                         _pose->pose.pose.orientation.w);
+        tf::Quaternion q(pose->pose.pose.orientation.x, pose->pose.pose.orientation.y, pose->pose.pose.orientation.z,
+                         pose->pose.pose.orientation.w);
         tf::Matrix3x3 m(q);
         double roll, pitch, yaw;
         m.getRPY(roll, pitch, yaw);
@@ -80,42 +51,31 @@ namespace velocity_controller {
 
         float delta_t = d.sec + NSEC_2_SECS(d.nsec);
         update(pt, delta_t);
-
-
+        
         float v, w;
         getSpeed(&v, &w);
-        cmd_.linear.x = v;
-        cmd_.angular.z = w;
-
-        current_pose = _pose->pose.pose;
-
-        pubCmdVel_.publish(cmd_);
+        geometry_msgs::Twist command;
+        command.linear.x = v;
+        command.angular.z = w;
+        twist_publisher.publish(command);
     }
 
-    void ControllerNode::publishState()
-    {
-        ctrl_state_.header.stamp = ros::Time::now();
-        ctrl_state_.progress = getProgress();
+    void ControllerNode::publishControllerState(const nav_msgs::Path &path) {
+        tuw_nav_msgs::ControllerState controller_state;
+        controller_state.progress_in_relation_to = path.header.seq;
+        controller_state.header.frame_id = path.header.frame_id;
+        controller_state.header.stamp = ros::Time::now();
+        controller_state.progress = getProgress();
         if (isActive()) {
-            ctrl_state_.state = ctrl_state_.STATE_DRIVING;
-            tuw_local_controller_msgs::ExecutePathFeedback feedback;
-            feedback.current_step = getProgress();
-            sendFeedback(feedback);
-        } else if (ctrl_state_.state == ctrl_state_.STATE_DRIVING) {
-            ROS_INFO("FINISHED!!!!!!");
-            tuw_local_controller_msgs::ExecutePathResult result;
-            result.pose = current_pose;
-            sendResult(result);
+            controller_state.state = controller_state.STATE_DRIVING;
         } else {
-            ctrl_state_.state = ctrl_state_.STATE_IDLE;
+            controller_state.state = controller_state.STATE_IDLE;
         }
-
-        pubState_.publish(ctrl_state_);
+        state_publisher.publish(controller_state);
     }
 
-    void ControllerNode::subCtrlCb(const std_msgs::String _cmd)
-    {
-        std::string s = _cmd.data;
+    void ControllerNode::onCommandReceived(const std_msgs::String command){
+        std::string s = command.data;
 
         ROS_INFO("Multi Robot Controller: received %s", s.c_str());
         if (s.compare("run") == 0) {
@@ -129,47 +89,64 @@ namespace velocity_controller {
         }
     }
 
-    void ControllerNode::onGoalReceived(const tuw_local_controller_msgs::ExecutePathGoal &goal)
-    {
-        auto _path = goal.path;
-        ctrl_state_.progress_in_relation_to = _path.header.seq;
-        ctrl_state_.header.frame_id = _path.header.frame_id;
+    void ControllerNode::onGoalReceived(const tuw_local_controller_msgs::ExecutePathGoalConstPtr &goal) {
 
-        if (_path.poses.size() == 0)
+        const auto& path = goal->path;
+        if (path.poses.empty()) {
             return;
+        }
 
-        // start at nearest point on path to pose
-        // behavior controller resends full paths, therefore
-        // it is important to start from the robots location
+        ControllerConfig config;
+        n_param_.getParam("max_v",config.max_v);
+        n_param_.getParam("max_w", config.max_w);
+        n_param_.getParam("goal_radius", config.goal_radius);
+        n_param_.getParam("Kp", config.Kp);;
+        n_param_.getParam("Ki", config.Ki);
+        n_param_.getParam("Kd", config.Kd);
+        setSpeedParams(config.max_v, config.max_w);
+        setGoalRadius(config.goal_radius);
+        setPID(config.Kp, config.Ki, config.Kd);
 
-        float nearest_dist = std::numeric_limits<float>::max();
-        float dist = 0;
+        setupController(path, config);
 
-        auto it = _path.poses.begin();
-        /*
-        bool changed = true;
+        tuw_local_controller_msgs::ExecutePathResult result;
+        geometry_msgs::Pose pose;
+        result.pose = pose;
 
-        while (it != _path.poses.end() && changed)
+        ros::Rate rate(5);
+        int progress = getProgress();
+        bool success = true;
+
+        while (progress < goal->path.poses.size()) {
+            if (action_server.isPreemptRequested() || !ros::ok()) {
+                ROS_INFO("Goal preempted.");
+                action_server.setPreempted(result);
+                success = false;
+                break;
+            }
+
+            tuw_local_controller_msgs::ExecutePathFeedback feedback;
+            feedback.current_step = progress;
+            action_server.publishFeedback(feedback);
+            publishControllerState(path);
+            rate.sleep();
+            progress = getProgress();
+        }
+
+        if (success) {
+            action_server.setSucceeded(result, "Robot finished path.");
+        }
+    }
+
+    void ControllerNode::setupController(const nav_msgs::Path &path, const ControllerConfig& config) {
+
+        auto it = path.poses.begin();
+        std::vector<PathPoint> path_points;
+        for (; it != path.poses.end(); ++it)
         {
-          dist = pow(current_pose_.x - it->pose.position.x, 2) + pow(current_pose_.y - it->pose.position.y, 2);
-          if (dist < nearest_dist)
-          {
-            nearest_dist = dist;
-            changed = true;
-            it++;
-          }
-          else
-          {
-            changed = false;
-          }
-        }*/
-
-        std::vector<PathPoint> path;
-        for (; it != _path.poses.end(); ++it) {
             PathPoint pt;
 
-            tf::Quaternion q(it->pose.orientation.x, it->pose.orientation.y, it->pose.orientation.z,
-                             it->pose.orientation.w);
+            tf::Quaternion q(it->pose.orientation.x, it->pose.orientation.y, it->pose.orientation.z, it->pose.orientation.w);
             tf::Matrix3x3 m(q);
             double roll, pitch, yaw;
             m.getRPY(roll, pitch, yaw);
@@ -178,9 +155,12 @@ namespace velocity_controller {
             pt.y = it->pose.position.y;
             pt.theta = yaw;
 
-            path.push_back(pt);
+            path_points.push_back(pt);
         }
 
-        setPath(std::make_shared<std::vector<PathPoint>>(path));
+        setSpeedParams(config.max_v, config.max_w);
+        setGoalRadius(config.goal_radius);
+        setPID(config.Kp, config.Ki, config.Kd);
+        setPath(std::make_shared<std::vector<PathPoint>>(path_points));
     }
 }
