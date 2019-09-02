@@ -5,7 +5,8 @@
 <arg name="update_rate_info" value="1.0" />
       
 <group ns="$(arg robot_name)">
-  
+  <node pkg="tf2_ros" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 0 0 map $(arg robot_name)/odom" />
+
   <node pkg="tuw_multi_robot_ctrl" type="tuw_velocity_controller" name="trajectory_controller" output="screen" >
       <!--remap from="cmd_vel" to="cmd_vel_not_connected"/-->
   </node>
