@@ -94,7 +94,7 @@ private:
   
   tuw::RouteProgressMonitor progress_monitor_;
 
-    actionlib::SimpleActionClient<tuw_local_controller_msgs::ExecutePathAction> client;
+  actionlib::SimpleActionClient<tuw_local_controller_msgs::ExecutePathAction> client;
 };
 
 }  // namespace tuw_multi_robot_route_to_path

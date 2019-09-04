@@ -120,10 +120,10 @@ void LocalBehaviorControllerNode::updatePath() {
             pose_stamped.pose = route_.segments[i].end;
             path_.poses.push_back(pose_stamped);            
         }
-        //pubPath_.publish(path_);
+
         tuw_local_controller_msgs::ExecutePathGoal goal;
         goal.path = path_;
-        client.cancelAllGoals();
+        pubPath_.publish(path_);
         client.sendGoal(goal);
     }
     
