@@ -3,14 +3,22 @@
 <launch>
 <arg name="nr_of_robots" default="1"/> 
 <arg name="robot_name_prefix" default="robot_"/>
+<arg name="use_default" default="true" />
       
 <!-- reduce the loop counter "nr_of_robots-1" = robot_id -->
 <arg name="robot_id" value="$(eval arg('nr_of_robots') - 1)"/>
 
 <!-- launch the controller -->
-<include file="$(find tuw_multi_robot_demo)/launch/local_controller.launch">
+<group if="$(arg use_default)">
+  <include file="$(find tuw_multi_robot_demo)/launch/local_controller.launch">
     <arg name="robot_name" value="$(arg robot_name_prefix)$(arg robot_id)" />
-</include>
+  </include>
+</group>
+<group unless="$(arg use_default)">
+  <include file="$(find tuw_multi_robot_demo)/launch/pid_local_controller.launch">
+    <arg name="robot_name" value="$(arg robot_name_prefix)$(arg robot_id)" />
+  </include>
+</group>
 
 <!-- recursive call -->
 <include file="$(find tuw_multi_robot_demo)/launch/local_controller_recursive.launch" if="$(eval arg('robot_id') > 0)">

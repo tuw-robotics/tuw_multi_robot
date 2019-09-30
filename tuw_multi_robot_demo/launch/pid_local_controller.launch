@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+
+<launch>
+<arg name="robot_name" default="robot_0"/>
+<arg name="update_rate_info" value="1.0" />
+      
+<group ns="$(arg robot_name)">
+
+  <node pkg="tf" type="static_transform_publisher" name="odom_bc" args="0 0 0 0 0 0 1 map $(arg robot_name)/odom 10" />
+
+  <param name="base_frame" value="$(arg robot_name)/base_link" />
+  <include file="$(find tuw_traj_pid)/launch/traj_pid_nodelet.launch">
+  </include>
+
+  <node pkg="tuw_multi_robot_local_behavior_controller" type="tuw_local_behavior_controller_node" name="local_behavior" output="screen">
+    <param name="robot_name" value="$(arg robot_name)" />
+    <param name="robot_radius" value="0.3" />
+    <remap from="robot_info" to="/robot_info" />
+  </node>
+
+  <node pkg="nodelet" type="nodelet" name="self_localization" args="standalone FakePoseEstimationNodelet"/>
+  
+</group>
+  
+</launch>
