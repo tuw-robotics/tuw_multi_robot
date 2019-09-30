@@ -18,7 +18,6 @@ find_package(catkin REQUIRED COMPONENTS
   tuw_multi_robot_msgs
   tuw_nav_msgs
   nodelet
-  tuw_local_controller_util
 )
 
 ## System dependencies are found with CMake's conventions
