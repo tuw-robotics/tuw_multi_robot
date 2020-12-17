@@ -2,6 +2,9 @@
 This RQT plugin provides a map view where stations and orders can be built.
 <img src="res/rqt_ordermanager.png" alt="RQT ordermanager" width="400px" />
 
+# Unstable
+Since this code is unstable you mide have to remove the CATKIN_IGNORE file fist in order o compile it.
+
 # Demo
 
 ```
@@ -40,8 +43,11 @@ Still some synchronisation of shared structures are necessary, for which mutexes
 # Troubleshooting
 If the plugin does not load after (re-)compiling, try `rqt --clear-config`.
 
-# Installl
+# Install
 
 ```
-sudo apt install ros-melodic-rqt ros-melodic-rqt-common-plugins
+export ROS_VERSION=melodic  # for Ubuntu 18.04
+export ROS_VERSION=noetic   # for Ubuntu 20.04
+
+sudo apt install ros-$ROS_VERSION-rqt ros-$ROS_VERSION-rqt-common-plugins
 ```
