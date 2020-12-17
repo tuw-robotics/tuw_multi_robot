@@ -27,6 +27,7 @@ Since there are not all programs and pkgs available for ubuntu 18.04 you have to
 ```
 export ROS_VERSION=kinetic  # for Ubuntu 16.04
 export ROS_VERSION=melodic  # for Ubuntu 18.04
+export ROS_VERSION=noetic  # for Ubuntu 18.04
 
 sudo apt install ros-$ROS_VERSION-map-server
 sudo apt install ros-$ROS_VERSION-stage-ros
