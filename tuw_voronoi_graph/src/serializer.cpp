@@ -1,9 +1,11 @@
 #include <ros/ros.h>
 #include <tuw_serialization/serializer.h>
 #include <memory>
-#include <opencv/cv.hpp>
+#include <opencv2/core/core.hpp>
 #include <queue>
 #include <string>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 
 #include <boost/archive/xml_iarchive.hpp>

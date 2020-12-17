@@ -4,7 +4,7 @@
 
 #include <nav_msgs/OccupancyGrid.h>
 #include <memory>
-#include <opencv/cv.hpp>
+#include <opencv2/core/core.hpp>
 #include <tuw_voronoi_graph/segment.h>
 
 #include <fstream>

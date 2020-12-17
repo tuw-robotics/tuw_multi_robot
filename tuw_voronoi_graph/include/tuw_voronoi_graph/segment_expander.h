@@ -35,7 +35,7 @@
 #include <vector>
 #include <tuw_voronoi_graph/segment.h>
 #include <tuw_voronoi_graph/crossing.h>
-#include <opencv/cv.hpp>
+#include <opencv2/core/core.hpp>
 
 namespace tuw_graph
 {

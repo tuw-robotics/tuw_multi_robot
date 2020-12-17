@@ -22,7 +22,21 @@ find_package(catkin REQUIRED COMPONENTS
 # find_package(Boost REQUIRED COMPONENTS system)
 find_package(Boost COMPONENTS serialization filesystem program_options REQUIRED)
 find_package(Eigen3 REQUIRED)
-find_package(OpenCV 3 REQUIRED)
+
+set(_opencv_version 4)
+find_package(OpenCV 4 QUIET)
+if(NOT OpenCV_FOUND)
+  message(STATUS "Did not find OpenCV 4, trying OpenCV 3")
+  set(_opencv_version 3)
+endif()
+
+find_package(OpenCV ${_opencv_version} REQUIRED
+  COMPONENTS
+    opencv_core
+    opencv_imgproc
+    opencv_imgcodecs
+  CONFIG
+)
 
 find_library(DXF_LIB dxflib)
 if(NOT DXF_LIB)

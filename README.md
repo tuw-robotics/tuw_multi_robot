@@ -32,8 +32,8 @@ Contains launch and config files to run a sample demo.
 
 ```
 roslaunch tuw_multi_robot_demo demo.launch room:=cave  nr_of_robots:=3 
-roslaunch tuw_multi_robot_demo demo.launch room:=warehouse_14  nr_of_robots:=14 
-roslaunch tuw_multi_robot_demo demo.launch room:=warehouse_200  nr_of_robots:=50 
+roslaunch tuw_multi_robot_demo demo.launch room:=warehouse032  nr_of_robots:=14 
+roslaunch tuw_multi_robot_demo demo.launch room:=warehouse200  nr_of_robots:=50 
 ```
 ## tuw\_multi\_robot\_goal\_generator
 Using this pkg one can generate, save and read goal lists.

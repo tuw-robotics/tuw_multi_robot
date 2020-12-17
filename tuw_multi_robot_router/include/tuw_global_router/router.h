@@ -31,7 +31,7 @@
 
 #include <vector>
 #include <memory>
-#include <opencv/cv.h>
+#include <opencv2/core/core.hpp>
 #include <tuw_global_router/point_expander.h>
 #include <tuw_global_router/multi_robot_router.h>
 #include <tuw_global_router/multi_robot_router_threaded_srr.h>

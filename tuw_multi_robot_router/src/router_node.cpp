@@ -34,6 +34,8 @@
 #include <boost/functional/hash.hpp>
 #include <boost/regex.hpp>
 #include <tf/tf.h>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 //TODO add Weights from robots...
 
@@ -218,8 +220,8 @@ void Router_Node::mapCallback ( const nav_msgs::OccupancyGrid &_map ) {
         m.convertTo ( m, CV_8UC1 );
         cv::bitwise_not ( m, m );
 
-        cv::threshold ( m, m, 40, 255, CV_THRESH_BINARY | CV_THRESH_OTSU );
-        cv::distanceTransform ( m, distMap_, CV_DIST_L1, 3 );
+        cv::threshold ( m, m, 40, 255, cv::THRESH_BINARY | cv::THRESH_OTSU );
+        cv::distanceTransform ( m, distMap_, cv::DIST_L1, 3 );
 
         current_map_hash_ = new_hash;
         got_map_ = true;

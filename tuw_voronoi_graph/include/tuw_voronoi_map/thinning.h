@@ -1,7 +1,7 @@
 #ifndef _THINNING
 #define _THINNING
 
-#include <opencv/cv.h>
+#include <opencv2/core/core.hpp>
 #include <queue>
 
 namespace voronoi_map

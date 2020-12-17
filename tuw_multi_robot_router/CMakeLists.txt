@@ -17,11 +17,24 @@ find_package(catkin REQUIRED COMPONENTS
   tuw_voronoi_graph
 )
  
-find_package(OpenCV 3 REQUIRED)
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 find_package(Eigen3 QUIET)
 
+set(_opencv_version 4)
+find_package(OpenCV 4 QUIET)
+if(NOT OpenCV_FOUND)
+  message(STATUS "Did not find OpenCV 4, trying OpenCV 3")
+  set(_opencv_version 3)
+endif()
+
+find_package(OpenCV ${_opencv_version} REQUIRED
+  COMPONENTS
+    opencv_core
+    opencv_imgproc
+    opencv_imgcodecs
+  CONFIG
+)
 
 if(NOT EIGEN3_FOUND)
   find_package(cmake_modules REQUIRED)
