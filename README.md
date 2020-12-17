@@ -86,5 +86,5 @@ RQT plugin to build stations interactively and assign them to orders. See [tuw\_
 http://wiki.ros.org/tuw_multi_robot
 
 # Citations
-* [B. Binder, F. Beck, F. König and M. Bader, "Multi Robot Route Planning (MRRP): Extended Spatial-Temporal Prioritized Planning," 2019 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), Macau, China, 2019, pp. 4133-4139, doi: 10.1109/IROS40897.2019.8968465](https://ieeexplore.ieee.org/document/8968465)
-* [B. Binder. (2017), "Spatio-Temporal Prioritized Planning (Master thesis)", Retrieved from TU Wien Bibliothekssystem (Accession No. AC14520240)](http://repositum.tuwien.ac.at/obvutwhs/content/titleinfo/2400890)
+* [1] [B. Binder, F. Beck, F. König and M. Bader, "Multi Robot Route Planning (MRRP): Extended Spatial-Temporal Prioritized Planning," 2019 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), Macau, China, 2019, pp. 4133-4139, doi: 10.1109/IROS40897.2019.8968465](https://ieeexplore.ieee.org/document/8968465)
+* [2] [B. Binder. (2017), "Spatio-Temporal Prioritized Planning (Master thesis)", Retrieved from TU Wien Bibliothekssystem (Accession No. AC14520240)](http://repositum.tuwien.ac.at/obvutwhs/content/titleinfo/2400890)
