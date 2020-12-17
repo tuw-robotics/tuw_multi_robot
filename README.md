@@ -60,7 +60,7 @@ The _graph-generator-node_ receives a grid\_map like the one published from voro
 ## tuw\_multi\_robot\_router
 The tuw_multi_robot_router is a Multi Robot Route Planner, which subscribes to tuw_multi_robot_msgs/RobotInfo messages, to the map/graph published from the tuw_voronoi_graph package, and to the tuw_multi_robot_msgs/RobotGoalsArray message.
 
-The MRRP uses a prioritized planning approach to find the robots routes. Additionally, there are a Priority and a Speed Rescheduler as well as a Collision resolver integrated to solve special scenarios not solvable by standard prioritized planning approaches. Since the results generated for these scenarios are interdependent, the given routes have to be executed in a synchronized fashion. Therefore, the Router publishes a tuw_multi_robot_msgs/Route containing preconditions, when a robot is allowed to enter a segment. Additionally a unsynchronized version via nav_msgs/Path is published for every robot. The algorithm is documented in the master thesis [1]. 
+The MRRP uses a prioritized planning approach to find the robots routes. Additionally, there are a Priority and a Speed Rescheduler as well as a Collision resolver integrated to solve special scenarios not solvable by standard prioritized planning approaches. Since the results generated for these scenarios are interdependent, the given routes have to be executed in a synchronized fashion. Therefore, the Router publishes a tuw_multi_robot_msgs/Route containing preconditions, when a robot is allowed to enter a segment. Additionally a unsynchronized version via nav_msgs/Path is published for every robot. The algorithm is documented in the master thesis [2] and published at IROS [1]. 
 
 ## tuw\_multi\_robot\_rviz
 Presents rviz plugins to set goal positions for the planner and a tool to visualize generated graphs. 
@@ -86,5 +86,5 @@ RQT plugin to build stations interactively and assign them to orders. See [tuw\_
 http://wiki.ros.org/tuw_multi_robot
 
 # Citations
-[1] [B. Binder, F. Beck, F. König and M. Bader, "Multi Robot Route Planning (MRRP): Extended Spatial-Temporal Prioritized Planning," 2019 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), Macau, China, 2019, pp. 4133-4139, doi: 10.1109/IROS40897.2019.8968465](https://ieeexplore.ieee.org/document/8968465)
-[2] [B. Binder. (2017), "Spatio-Temporal Prioritized Planning (Master thesis)", Retrieved from TU Wien Bibliothekssystem (Accession No. AC14520240)](http://repositum.tuwien.ac.at/obvutwhs/content/titleinfo/2400890)
+* [B. Binder, F. Beck, F. König and M. Bader, "Multi Robot Route Planning (MRRP): Extended Spatial-Temporal Prioritized Planning," 2019 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), Macau, China, 2019, pp. 4133-4139, doi: 10.1109/IROS40897.2019.8968465](https://ieeexplore.ieee.org/document/8968465)
+* [B. Binder. (2017), "Spatio-Temporal Prioritized Planning (Master thesis)", Retrieved from TU Wien Bibliothekssystem (Accession No. AC14520240)](http://repositum.tuwien.ac.at/obvutwhs/content/titleinfo/2400890)
