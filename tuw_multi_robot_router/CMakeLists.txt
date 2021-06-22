@@ -235,7 +235,7 @@ add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EX
 # )
 
 # Mark executables and/or libraries for installation
-install(TARGETS ${PROJECT_NAME} tuw_multi_robot_router_node
+install(TARGETS tuw_multi_robot_router_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
