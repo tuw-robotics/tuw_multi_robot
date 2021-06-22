@@ -232,7 +232,7 @@ add_dependencies(tuw_segment_to_graph_node ${${PROJECT_NAME}_EXPORTED_TARGETS} $
 # )
 
 # Mark executables and/or libraries for installation
-install(TARGETS tuw_voronoi_graph_node tuw_dxf_graph_node tuw_segment_to_graph_node
+install(TARGETS voronoi_path_lib dxf_graph_lib graph_serialization_lib tuw_voronoi_graph_node tuw_dxf_graph_node tuw_segment_to_graph_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
