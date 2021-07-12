@@ -205,6 +205,9 @@ target_link_libraries(
     simplesolver
     ${catkin_LIBRARIES}
 )
+add_dependencies(simplesolver
+  tuw_multi_robot_msgs_generate_messages_cpp
+)
 
 add_executable(${PROJECT_NAME} src/order_planner.cpp)
 target_link_libraries(
