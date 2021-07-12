@@ -243,6 +243,11 @@ install(
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/icons
 )
 
+install(
+  DIRECTORY media
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+
 #############
 ## Testing ##
 #############
