@@ -60,17 +60,22 @@ namespace tuw_graph
 
         std::ifstream ifs(_mapPath + GRAPH_INFO_NAME);
         assert(ifs.good());
-        boost::archive::xml_iarchive xml(ifs);
-        xml >> boost::serialization::make_nvp("GraphInfo", g);
-
+        {
+            boost::archive::xml_iarchive xml(ifs);
+            xml >> boost::serialization::make_nvp("GraphInfo", g);
+        }
+        ifs.close();
 
 
         TreeInfo t(g.SegmentLength);
 
         std::ifstream ifti(_mapPath + TREE_INFO_NAME);
         assert(ifti.good());
-        boost::archive::xml_iarchive xmlti(ifti);
-        xmlti >> boost::serialization::make_nvp("TreeInfo", t);
+        {
+            boost::archive::xml_iarchive xmlti(ifti);
+            xmlti >> boost::serialization::make_nvp("TreeInfo", t);
+        }
+        ifti.close();
 
         _origin[0] = g.Origin.x;
         _origin[1] = g.Origin.y;
@@ -90,8 +95,11 @@ namespace tuw_graph
 
         GraphSerializer graph(segs);
         std::ifstream ifsDist(_mapPath + DATA_NAME);
-        boost::archive::xml_iarchive iaDist(ifsDist);
-        iaDist >> boost::serialization::make_nvp("graph",graph);
+        {
+            boost::archive::xml_iarchive iaDist(ifsDist);
+            iaDist >> boost::serialization::make_nvp("graph",graph);
+        }
+        ifsDist.close();
 
         _segs.clear();
 
@@ -162,16 +170,20 @@ namespace tuw_graph
         GraphInfo info(_origin, _resolution, _segs.size());
         std::ofstream ofs(_mapPath + GRAPH_INFO_NAME);
         assert(ofs.good());
-        boost::archive::xml_oarchive oa(ofs);
-        oa << boost::serialization::make_nvp("GraphInfo", info);
+        {
+            boost::archive::xml_oarchive oa(ofs);
+            oa << boost::serialization::make_nvp("GraphInfo", info);
+        }
         ofs.close();
 
         //Save data strucutre info (Length pred, succ, points)
         TreeInfo tInfo(_segs);
         std::ofstream ofsTree(_mapPath + TREE_INFO_NAME);
         assert(ofsTree.good());
-        boost::archive::xml_oarchive ot(ofsTree);
-        ot << boost::serialization::make_nvp("TreeInfo", tInfo);
+        {
+            boost::archive::xml_oarchive ot(ofsTree);
+            ot << boost::serialization::make_nvp("TreeInfo", tInfo);
+        }
         ofsTree.close();
 
         //Save data
@@ -185,8 +197,10 @@ namespace tuw_graph
         GraphSerializer graph(segs);
 
         std::ofstream ofsGraph(_mapPath + DATA_NAME);
-        boost::archive::xml_oarchive oaGraph(ofsGraph);
-        oaGraph <<  boost::serialization::make_nvp("graph", graph);
+        {
+            boost::archive::xml_oarchive oaGraph(ofsGraph);
+            oaGraph <<  boost::serialization::make_nvp("graph", graph);
+        }
         ofsGraph.close();
         
     }
