@@ -14,4 +14,13 @@
 
   <author email="eugen.kaltengger@gmail.com">Eugen Kaltenegger</author>
 
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>tuw_multi_robot_msgs</build_depend>
+  <build_export_depend>rospy</build_export_depend>
+  <build_export_depend>tuw_multi_robot_msgs</build_export_depend>
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>tuw_multi_robot_msgs</exec_depend>
+
+
 </package>
