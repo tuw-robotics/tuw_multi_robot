@@ -40,7 +40,12 @@ Using this pkg one can generate, save and read goal lists.
 The random goal generation needs a running map publisher in order to generate valid goals.
 
 ```
-rosrun tuw_multi_robot_goal_generator goals_random _nr_of_robots:=3 _distance_boundary:=0.6 _distance_to_map_border:=0.2 _nr_of_avaliable_robots:=14
+# for cave with 3 robots
+rosrun tuw_multi_robot_goal_generator goals_random _nr_of_robots:=3 _distance_boundary:=0.6 _distance_to_map_border:=0.2 _nr_of_avaliable_robots:=3
+# for warehouse032 with 14 robots
+rosrun tuw_multi_robot_goal_generator goals_random _nr_of_robots:=32 _distance_boundary:=0.6 _distance_to_map_border:=0.2 _nr_of_avaliable_robots:=14
+# for warehouse200 with 50 robots
+rosrun tuw_multi_robot_goal_generator goals_random _nr_of_robots:=200 _distance_boundary:=0.6 _distance_to_map_border:=0.2 _nr_of_avaliable_robots:=50
 ```
 ## tuw\_voronoi\_graph
 This package includes a voronoi-graph-generator, a dxf-to-graph-node and a segment-to-graph node for creating search graphs for the multi robot router.
