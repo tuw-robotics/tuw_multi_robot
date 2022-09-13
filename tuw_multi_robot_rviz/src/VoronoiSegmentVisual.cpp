@@ -27,13 +27,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <OGRE/OgreVector3.h>
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreSceneManager.h>
+//#include <OGRE/OgreVector3.h>
+#include <OgreVector.h>
+#include <OgreSceneNode.h>
+#include <OgreSceneManager.h>
 
-#include <rviz/ogre_helpers/line.h>
-#include <tuw_multi_robot_msgs/Vertex.h>
-#include <tuw_multi_robot_rviz/VoronoiSegmentVisual.h>
+#include <rviz_rendering/objects/line.hpp>
+#include <tuw_multi_robot_msgs/msg/vertex.hpp>
+#include <tuw_multi_robot_rviz/VoronoiSegmentVisual.hpp>
 
 namespace tuw_multi_robot_rviz
 {
@@ -63,21 +64,21 @@ VoronoiSegmentVisual::~VoronoiSegmentVisual()
 	scene_manager_->destroySceneNode(frame_node_);
 }
 
-void VoronoiSegmentVisual::setMessage(const tuw_multi_robot_msgs::Graph::ConstPtr &msg)
+void VoronoiSegmentVisual::setMessage(Graph::ConstSharedPtr msg)
 {
 	static double timeOld_;
-	if (timeOld_ == msg->header.stamp.toSec())
+	if (timeOld_ == msg->header.stamp.sec)
 	{
 		return;
 	}
-	timeOld_ = msg->header.stamp.toSec();
+	timeOld_ = msg->header.stamp.sec;
 
 	pathLine.resize(msg->vertices.size() * 4);
 	for (size_t i = 0; i < msg->vertices.size(); ++i)
 	{
-		tuw_multi_robot_msgs::Vertex seg = msg->vertices[i];
-		geometry_msgs::Point p1 = seg.path.front();
-		geometry_msgs::Point p2 = seg.path.back();
+		tuw_multi_robot_msgs::msg::Vertex seg = msg->vertices[i];
+		geometry_msgs::msg::Point p1 = seg.path.front();
+		geometry_msgs::msg::Point p2 = seg.path.back();
 
 		// 	Ogre::Quaternion rotation  = Ogre::Quaternion ( Ogre::Radian( (*spline_)(i / (double)pointsNrPath_ )(2) + atan2(v_y, v_x) ), Ogre::Vector3::UNIT_Z );
 		Line l = {
@@ -91,22 +92,22 @@ void VoronoiSegmentVisual::setMessage(const tuw_multi_robot_msgs::Graph::ConstPt
 		Line l1 = offsetLine(l,  (0.5 + seg.width / 2));
 		Line l2 = offsetLine(l,  (-0.5 - seg.width / 2));
 
-		pathLine[i * 4].reset(new rviz::Line(scene_manager_, frame_node_));
+		pathLine[i * 4].reset(new rviz_rendering::Line(scene_manager_, frame_node_));
 		pathLine[i * 4]->setColor(colorPath_);
 		pathLine[i * 4]->setPoints(Ogre::Vector3(l1.x0, l1.y0, z1), Ogre::Vector3(l1.x1, l1.y1, z2));
 		pathLine[i * 4]->setScale(Ogre::Vector3(scalePath_, scalePath_, scalePath_));
 
-		pathLine[i * 4 + 1].reset(new rviz::Line(scene_manager_, frame_node_));
+		pathLine[i * 4 + 1].reset(new rviz_rendering::Line(scene_manager_, frame_node_));
 		pathLine[i * 4 + 1]->setColor(colorPath_);
 		pathLine[i * 4 + 1]->setPoints(Ogre::Vector3(l2.x0, l2.y0, z1), Ogre::Vector3(l2.x1, l2.y1, z2));
 		pathLine[i * 4 + 1]->setScale(Ogre::Vector3(scalePath_, scalePath_, scalePath_));
 
-		pathLine[i * 4 + 2].reset(new rviz::Line(scene_manager_, frame_node_));
+		pathLine[i * 4 + 2].reset(new rviz_rendering::Line(scene_manager_, frame_node_));
 		pathLine[i * 4 + 2]->setColor(colorPath_);
 		pathLine[i * 4 + 2]->setPoints(Ogre::Vector3(l1.x0, l1.y0, z1), Ogre::Vector3(l2.x0, l2.y0, z2));
 		pathLine[i * 4 + 2]->setScale(Ogre::Vector3(scalePath_, scalePath_, scalePath_));
 
-		pathLine[i * 4 + 3].reset(new rviz::Line(scene_manager_, frame_node_));
+		pathLine[i * 4 + 3].reset(new rviz_rendering::Line(scene_manager_, frame_node_));
 		pathLine[i * 4 + 3]->setColor(colorPath_);
 		pathLine[i * 4 + 3]->setPoints(Ogre::Vector3(l2.x1, l2.y1, z1), Ogre::Vector3(l1.x1, l1.y1, z2));
 		pathLine[i * 4 + 3]->setScale(Ogre::Vector3(scalePath_, scalePath_, scalePath_));

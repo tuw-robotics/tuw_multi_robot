@@ -30,17 +30,20 @@
 #ifndef VORONOIGRAPHVISUAL_H
 #define VORONOIGRAPHVISUAL_H
 
-#include <tuw_multi_robot_msgs/Graph.h>
-#include <geometry_msgs/Vector3.h>
+#include <boost/circular_buffer.hpp>
+#include <boost/shared_ptr.hpp>
+
+#include <tuw_multi_robot_msgs/msg/graph.hpp>
+#include <geometry_msgs/msg/vector3.h>
 
 
-#include <rviz/ogre_helpers/shape.h>
-#include <rviz/ogre_helpers/arrow.h>
-#include <rviz/ogre_helpers/line.h>
+#include <rviz_rendering/objects/shape.hpp>
+#include <rviz_rendering/objects/arrow.hpp>
+#include <rviz_rendering/objects/line.hpp>
 
 namespace Ogre
 {
-class Vector3;
+//class Vector3;
 class Quaternion;
 }
 
@@ -69,8 +72,10 @@ public:
   // Destructor.  Removes the visual stuff from the scene.
   virtual ~VoronoiGraphVisual();
 
+  using Graph = tuw_multi_robot_msgs::msg::Graph;
+
   // Configure the visual to show the data in the message.
-  void setMessage( const tuw_multi_robot_msgs::Graph::ConstPtr& msg );
+  void setMessage( Graph::ConstSharedPtr msg );
 
   // Set the pose of the coordinate frame the message refers to.
   // These could be done inside setMessage(), but that would require
@@ -89,8 +94,8 @@ public:
 private:
   // The objects implementing the actual shape
   //std::vector<boost::shared_ptr<rviz::Arrow> > pathPtsTheta_;
-  std::vector<boost::shared_ptr<rviz::Line> > pathLine;
-  std::vector<boost::shared_ptr<rviz::Shape> > crossingShape;
+  std::vector<boost::shared_ptr<rviz_rendering::Line> > pathLine;
+  std::vector<boost::shared_ptr<rviz_rendering::Shape> > crossingShape;
 
   // A SceneNode whose pose is set to match the coordinate frame of
   // the Imu message header.

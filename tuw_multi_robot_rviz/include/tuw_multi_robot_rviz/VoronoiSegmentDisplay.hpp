@@ -31,28 +31,40 @@
 #define VORONOISEGMENTDISPLAY_H
 
 #include <boost/circular_buffer.hpp>
+#include <boost/shared_ptr.hpp>
 
-#include <rviz/message_filter_display.h>
-#include <tuw_multi_robot_msgs/Graph.h>
+#include <rviz_common/ros_topic_display.hpp>
+#include <rviz_common/display.hpp>
+//#include <rviz_common/message_filter_display.hpp>
+//#include <rviz_common/display_context.hpp>
+
+#include <tuw_multi_robot_msgs/msg/graph.hpp>
 
 
 #ifndef Q_MOC_RUN
 #include <boost/circular_buffer.hpp>
 
-#include <rviz/message_filter_display.h>
-#include <nav_msgs/Path.h>
-#include <rviz/ogre_helpers/arrow.h>
+//#include <rviz_common/display.hpp>
+//#include <rviz_common/message_filter_display.hpp>
+//#include <rviz_common/display_context.hpp>
+
+//#include <rviz_common/ros_topic_display.hpp>
+#include <nav_msgs/msg/path.hpp>
+#include <rviz_rendering/objects/arrow.hpp>
 #endif
 
 
-#include <rviz/properties/enum_property.h>
+#include <rviz_common/properties/enum_property.hpp>
+#include <rviz_common/properties/color_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/int_property.hpp>
 
 namespace Ogre
 {
 class SceneNode;
 }
 
-namespace rviz
+namespace rviz_common
 {
 class ColorProperty;
 class EnumProperty;
@@ -84,25 +96,27 @@ class VoronoiSegmentVisual;
 // themselves are represented by a separate class, ImuVisual.  The
 // idiom for the visuals is that when the objects exist, they appear
 // in the scene, and when they are deleted, they disappear.
-class VoronoiSegmentDisplay: public rviz::MessageFilterDisplay<tuw_multi_robot_msgs::Graph>
+class VoronoiSegmentDisplay: public rviz_common::RosTopicDisplay<tuw_multi_robot_msgs::msg::Graph>
 {
 Q_OBJECT
 public:
   // Constructor.  pluginlib::ClassLoader creates instances by calling
   // the default constructor, so make sure you have one.
   VoronoiSegmentDisplay();
-  virtual ~VoronoiSegmentDisplay();
+  void onInitialize() override;
+  void reset() override;
+  //virtual ~VoronoiSegmentDisplay();
 
   // Overrides of protected virtual functions from Display.  As much
   // as possible, when Displays are not enabled, they should not be
   // subscribed to incoming data and should not show anything in the
   // 3D view.  These functions are where these connections are made
   // and broken.
-protected:
-  virtual void onInitialize();
+//protected:
+  //virtual void onInitialize();
 
   // A helper to clear this display back to the initial state.
-  virtual void reset();
+  //virtual void reset();
 
   // These Qt slots get connected to signals indicating changes in the user-editable properties.
 private Q_SLOTS:
@@ -113,7 +127,10 @@ private Q_SLOTS:
   
   // Function to handle an incoming ROS message.
 private:
-  void processMessage( const tuw_multi_robot_msgs::Graph::ConstPtr& msg );
+  using Graph = tuw_multi_robot_msgs::msg::Graph;
+
+
+  void processMessage( Graph::ConstSharedPtr msg );
 
   // Storage for the list of visuals.  It is a circular buffer where
   // data gets popped from the front (oldest) and pushed to the back (newest)
@@ -121,10 +138,10 @@ private:
 
   
   // User-editable property variables.
-  rviz::ColorProperty* color_path_property_;
-  rviz::FloatProperty* scale_point_property_;
-  rviz::FloatProperty* scale_path_property_;
-  rviz::IntProperty* history_length_property_;
+  rviz_common::properties::ColorProperty* color_path_property_;
+  rviz_common::properties::FloatProperty* scale_point_property_;
+  rviz_common::properties::FloatProperty* scale_path_property_;
+  rviz_common::properties::IntProperty* history_length_property_;
   
   enum LineStyle {
     LINES,

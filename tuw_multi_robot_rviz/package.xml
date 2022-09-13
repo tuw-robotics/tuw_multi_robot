@@ -51,14 +51,20 @@
   <!--   <test_depend>gtest</test_depend> -->
   <!-- Use doc_depend for packages you need only for building documentation: -->
   <!--   <doc_depend>doxygen</doc_depend> -->
-  <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>rviz</build_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <build_depend>rviz2</build_depend>
   <build_depend>tuw_multi_robot_msgs</build_depend>
   <build_depend>nav_msgs</build_depend>
   <build_depend>boost</build_depend>
   <build_depend>qtbase5-dev</build_depend>
   
-  <exec_depend>rviz</exec_depend>
+  <depend>pluginlib</depend>
+  <depend>rclcpp</depend>
+  <depend>rviz_common</depend>
+  <depend>rviz_rendering</depend>
+  <depend>rviz_default_plugins</depend>
+
+  <exec_depend>rviz2</exec_depend>
   <exec_depend>tuw_multi_robot_msgs</exec_depend>
   <exec_depend>nav_msgs</exec_depend>
   <exec_depend>boost</exec_depend>
@@ -68,5 +74,6 @@
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <rviz plugin="${prefix}/plugin_description.xml"/>
+    <build_type>ament_cmake</build_type>
   </export>
 </package>
