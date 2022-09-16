@@ -7,6 +7,8 @@ set(CMAKE_CXX_STANDARD 14)
 ##################
 ## Dependencies ##
 ##################
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_AUTOMOC ON)
 
 # Find ROS dependencies
 find_package(ament_cmake REQUIRED)
@@ -16,6 +18,8 @@ find_package(rviz_rendering REQUIRED)
 find_package(Qt5 REQUIRED COMPONENTS Widgets)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(rviz_default_plugins REQUIRED)
 
 # Find custom dependencies
 find_package(tuw_multi_robot_msgs REQUIRED)
@@ -33,33 +37,38 @@ set(plugin_headers_to_moc
   include/tuw_multi_robot_rviz/VoronoiSegmentVisual.hpp
 )
 
-# Moc header files
-foreach(header "${plugin_headers_to_moc}")
-  qt5_wrap_cpp(plugin_headers_moc_files "${header}")
-endforeach()
+include_directories(
+  include
+)
 
-# Set the source files
-set(plugin_src_files
+add_library(${PROJECT_NAME} SHARED
+  ${plugin_headers_to_moc}
   src/VoronoiGraphDisplay.cpp
   src/VoronoiGraphVisual.cpp
   src/VoronoiSegmentDisplay.cpp
   src/VoronoiSegmentVisual.cpp
 )
 
-add_library(tuw_multi_robot_rviz
-  ${plugin_src_files}
- #${voronoi_rviz_plugin_headers_to_moc} 
-  ${plugin_headers_moc_files}
+set(dependencies
+  pluginlib
+  Qt5
+  rclcpp
+  rviz_common
+  rviz_ogre_vendor
+  rviz_rendering
+  std_msgs
+  nav_msgs
+  tuw_multi_robot_msgs
 )
 
 
-# Define the included directories
-target_include_directories(${PROJECT_NAME} PRIVATE include/${PROJECT_NAME})
+ament_target_dependencies(${PROJECT_NAME}
+  ${dependencies}
+)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
   ${Qt5Widgets_INCLUDE_DIRS}
+  ${OGRE_INCLUDE_DIRS}
 )
 
 # Causes the visibility macros to use dllexport rather than dllimport,
@@ -71,28 +80,6 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNC
 
 pluginlib_export_plugin_description_file(rviz_common plugin_description.xml)
 
-ament_export_include_directories(include/${PROJECT_NAME})
-ament_export_targets(${PROJECT_NAME} HAS_LIBRARY_TARGET)
-
-
-ament_target_dependencies(${PROJECT_NAME}
-  PUBLIC
-  tuw_multi_robot_msgs
-  rclcpp
-  rviz_common
-  rviz_rendering
-  rviz_ogre_vendor
-)
-
-#############
-## Testing ##
-#############
-
-
-#############
-## Install ##
-#############
-
 install(
   TARGETS ${PROJECT_NAME}
   EXPORT ${PROJECT_NAME}
@@ -101,29 +88,34 @@ install(
   RUNTIME DESTINATION bin
   INCLUDES DESTINATION include
 )
-## Mark executables and/or libraries for installation
-#install(TARGETS 
-#  ${PROJECT_NAME} 
-#  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+
+#install(FILES
+#  plugin_description.xml
+#  DESTINATION share
 #)
 
-## Mark other files for installation (e.g. launch and bag files, etc.)
-install(FILES
-  plugin_description.xml
-  DESTINATION share
+install(
+  DIRECTORY include/
+  DESTINATION include/${PROJECT_NAME}
 )
 
 install(
   DIRECTORY icons
-  DESTINATION share
+  DESTINATION share/${PROJECT_NAME}
 )
 
 install(
   DIRECTORY media
-  DESTINATION share
+  DESTINATION share/${PROJECT_NAME}
 )
 
+ament_export_include_directories(include)
+ament_export_targets(${PROJECT_NAME} HAS_LIBRARY_TARGET)
+ament_export_dependencies(
+  Qt5
+  rviz_common
+  rclcpp
+  tuw_multi_robot_msgs
+)
 
 ament_package()
