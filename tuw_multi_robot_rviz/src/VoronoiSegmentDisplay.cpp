@@ -43,9 +43,6 @@
 #include <rviz_common/message_filter_display.hpp>
 #include <rviz_common/display_context.hpp>
 
-//#include <rviz_common/frame_manager.hpp>
-
-
 #include <tuw_multi_robot_rviz/VoronoiSegmentDisplay.hpp>
 #include <tuw_multi_robot_rviz/VoronoiSegmentVisual.hpp>
 
@@ -151,10 +148,9 @@ void VoronoiSegmentDisplay::processMessage ( Graph::ConstSharedPtr msg ) {
 }
 
 
-} // end namespace rviz_plugin_tutorials
+} // end namespace tuw_multi_robot_rviz
 
 // Tell pluginlib about this class.  It is important to do this in
 // global scope, outside our package's namespace.
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(tuw_multi_robot_rviz::VoronoiSegmentDisplay,rviz_common::Display )
-// END_TUTORIAL

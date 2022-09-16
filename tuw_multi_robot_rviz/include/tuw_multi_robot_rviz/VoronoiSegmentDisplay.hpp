@@ -27,37 +27,23 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef VORONOISEGMENTDISPLAY_H
-#define VORONOISEGMENTDISPLAY_H
+#ifndef TUW_MULIT_ROBOT_RVIZ_VORONOISEGMENTDISPLAY_H
+#define TUW_MULIT_ROBOT_RVIZ_VORONOISEGMENTDISPLAY_H
 
 #include <boost/circular_buffer.hpp>
 #include <boost/shared_ptr.hpp>
 
 #include <rviz_common/ros_topic_display.hpp>
 #include <rviz_common/display.hpp>
-//#include <rviz_common/message_filter_display.hpp>
-//#include <rviz_common/display_context.hpp>
 
 #include <tuw_multi_robot_msgs/msg/graph.hpp>
 
 
 #ifndef Q_MOC_RUN
-#include <boost/circular_buffer.hpp>
-
-//#include <rviz_common/display.hpp>
-//#include <rviz_common/message_filter_display.hpp>
-//#include <rviz_common/display_context.hpp>
-
-//#include <rviz_common/ros_topic_display.hpp>
 #include <nav_msgs/msg/path.hpp>
 #include <rviz_rendering/objects/arrow.hpp>
 #endif
 
-
-#include <rviz_common/properties/enum_property.hpp>
-#include <rviz_common/properties/color_property.hpp>
-#include <rviz_common/properties/float_property.hpp>
-#include <rviz_common/properties/int_property.hpp>
 
 namespace Ogre
 {
@@ -66,10 +52,13 @@ class SceneNode;
 
 namespace rviz_common
 {
+namespace properties
+{
 class ColorProperty;
 class EnumProperty;
 class FloatProperty;
 class IntProperty;
+}
 }
 
 // All the source in this plugin is in its own namespace.  This is not
@@ -149,7 +138,6 @@ private:
   };
 };
 
-} // end namespace rviz_plugin_tutorials
+} // end namespace tuw_multi_robot_rviz
 
-#endif // IMU_DISPLAY_H
-// %EndTag(FULL_SOURCE)%
+#endif // TUW_MULIT_ROBOT_RVIZ_VORONOISEGMENTDISPLAY_H

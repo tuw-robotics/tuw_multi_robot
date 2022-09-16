@@ -36,8 +36,6 @@
 
 #include <tuw_multi_robot_msgs/msg/graph.hpp>
 
-#include <tf2_ros/transform_listener.h>
-
 #include <rviz_common/visualization_manager.hpp>
 #include <rviz_common/properties/color_property.hpp>
 #include <rviz_common/properties/float_property.hpp>
@@ -161,6 +159,5 @@ void VoronoiGraphDisplay::processMessage ( Graph::ConstSharedPtr msg ) {
 
 // Tell pluginlib about this class.  It is important to do this in
 // global scope, outside our package's namespace.
-#include "pluginlib/class_list_macros.hpp"
-PLUGINLIB_EXPORT_CLASS(tuw_multi_robot_rviz::VoronoiGraphDisplay, rviz_common::Display )
-// END_TUTORIAL
+#include <pluginlib/class_list_macros.hpp> 
+PLUGINLIB_EXPORT_CLASS(tuw_multi_robot_rviz::VoronoiGraphDisplay, rviz_common::Display)
