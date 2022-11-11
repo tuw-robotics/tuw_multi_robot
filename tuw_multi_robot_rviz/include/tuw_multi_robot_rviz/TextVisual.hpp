@@ -32,10 +32,10 @@
 #ifndef MULTI_ROBOT_TEXT_VISUAL_H
 #define MULTI_ROBOT_TEXT_VISUAL_H
 
-#include <rviz/ogre_helpers/shape.h>
-#include <rviz/ogre_helpers/movable_text.h>
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreSceneManager.h>
+#include <rviz_rendering/objects/shape.hpp>
+#include <rviz_rendering/objects/movable_text.hpp>
+#include <OgreSceneNode.h>
+#include <OgreSceneManager.h>
 
 namespace tuw_multi_robot_rviz
 {
@@ -45,8 +45,8 @@ public:
     TextVisual ( Ogre::SceneManager* sceneManager, Ogre::SceneNode* parentNode, Ogre::Vector3 position = Ogre::Vector3::ZERO ) : m_sceneManager(sceneManager){
       m_sceneNode = parentNode->createChildSceneNode();
 
-      m_text = new rviz::MovableText("text");
-      m_text->setTextAlignment(rviz::MovableText::H_CENTER, rviz::MovableText::V_BELOW);
+      m_text = new rviz_rendering::MovableText("text");
+      m_text->setTextAlignment(rviz_rendering::MovableText::H_CENTER, rviz_rendering::MovableText::V_BELOW);
       m_sceneNode->attachObject(m_text);
 
       setCharacterHeight(1.0);
@@ -92,7 +92,7 @@ public:
 private:
     Ogre::SceneManager* m_sceneManager;
     Ogre::SceneNode* m_sceneNode;
-    rviz::MovableText* m_text;
+    rviz_rendering::MovableText* m_text;
 };
 
 }

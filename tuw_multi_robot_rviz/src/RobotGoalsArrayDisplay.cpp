@@ -27,31 +27,32 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreSceneManager.h>
+#include <OgreSceneNode.h>
+#include <OgreSceneManager.h>
 
-#include <tf/transform_listener.h>
+#include <tf2_ros/transform_listener.h>
 
-#include <rviz/visualization_manager.h>
-#include <rviz/properties/color_property.h>
-#include <rviz/properties/float_property.h>
-#include <rviz/frame_manager.h>
+#include <rviz_common/visualization_manager.hpp>
+#include <rviz_common/properties/color_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/frame_manager_iface.hpp>
 
-#include "tuw_multi_robot_rviz/RobotGoalsArrayDisplay.h"
-#include "tuw_multi_robot_rviz/RobotGoalsArrayVisual.h"
+#include <tuw_multi_robot_rviz/RobotGoalsArrayDisplay.hpp>
+#include <tuw_multi_robot_rviz/RobotGoalsArrayVisual.hpp>
 
 namespace tuw_multi_robot_rviz {
 
 // The constructor must have no arguments, so we can't give the
 // constructor the parameters it needs to fully initialize.
-RobotGoalsArrayDisplay::RobotGoalsArrayDisplay() {
-    property_scale_pose_ = new rviz::FloatProperty ( "Scale Pose", 0.4,
+RobotGoalsArrayDisplay::RobotGoalsArrayDisplay() : rviz_common::RosTopicDisplay<tuw_multi_robot_msgs::msg::RobotGoalsArray>()
+{
+    property_scale_pose_ = new rviz_common::properties::FloatProperty ( "Scale Pose", 0.4,
             "Scale of the pose's pose.",
             this, SLOT ( updateScalePose() ) );
     property_scale_pose_->setMin ( 0 );
     property_scale_pose_->setMax ( 1 );
 
-    property_color_pose_ = new rviz::ColorProperty ( "Color Pose", QColor ( 204, 51, 0 ),
+    property_color_pose_ = new rviz_common::properties::ColorProperty ( "Color Pose", QColor ( 204, 51, 0 ),
             "Color to draw the pose's pose.",
             this, SLOT ( updateColorPose() ) );
 }
@@ -67,7 +68,7 @@ RobotGoalsArrayDisplay::RobotGoalsArrayDisplay() {
 // templated class name every time you need to refer to the
 // superclass.
 void RobotGoalsArrayDisplay::onInitialize() {
-    MFDClass::onInitialize();
+    RTDClass::onInitialize();
     visual_.reset ( new RobotGoalsArrayVisual ( context_->getSceneManager(), scene_node_ ) );
 }
 
@@ -76,7 +77,7 @@ RobotGoalsArrayDisplay::~RobotGoalsArrayDisplay() {
 
 // Clear the visual by deleting its object.
 void RobotGoalsArrayDisplay::reset() {
-    MFDClass::reset();
+    RTDClass::reset();
 }
 
 // Set the current scale for the visual's pose.
@@ -92,7 +93,7 @@ void RobotGoalsArrayDisplay::updateColorPose() {
 }
 
 // This is our callback to handle an incoming message.
-void RobotGoalsArrayDisplay::processMessage ( const tuw_multi_robot_msgs::RobotGoalsArray::ConstPtr& msg ) {
+void RobotGoalsArrayDisplay::processMessage( GoalsArray::ConstSharedPtr msg ) {
     // Here we call the rviz::FrameManager to get the transform from the
     // fixed frame to the frame in the header of this Imu message.  If
     // it fails, we can't do anything else so we return.
@@ -100,8 +101,8 @@ void RobotGoalsArrayDisplay::processMessage ( const tuw_multi_robot_msgs::RobotG
     Ogre::Vector3 position;
 
     if ( !context_->getFrameManager()->getTransform ( msg->header.frame_id, msg->header.stamp, position, orientation ) ) {
-        ROS_DEBUG ( "Error transforming from frame '%s' to frame '%s'",
-                    msg->header.frame_id.c_str(), qPrintable ( fixed_frame_ ) );
+        /*ROS_DEBUG ( "Error transforming from frame '%s' to frame '%s'",
+                    msg->header.frame_id.c_str(), qPrintable ( fixed_frame_ ) );*/
         return;
     }
 
@@ -117,6 +118,6 @@ void RobotGoalsArrayDisplay::processMessage ( const tuw_multi_robot_msgs::RobotG
 
 // Tell pluginlib about this class.  It is important to do this in
 // global scope, outside our package's namespace.
-#include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS (tuw_multi_robot_rviz::RobotGoalsArrayDisplay,rviz::Display )
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS (tuw_multi_robot_rviz::RobotGoalsArrayDisplay,rviz_common::Display )
 

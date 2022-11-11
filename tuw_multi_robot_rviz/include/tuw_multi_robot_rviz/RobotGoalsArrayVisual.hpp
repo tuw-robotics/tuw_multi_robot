@@ -30,13 +30,15 @@
 #ifndef TUW_ROBOT_GOALS_ARRAY_VISUAL_H
 #define TUW_ROBOT_GOALS_ARRAY_VISUAL_H
 
-#include <tuw_multi_robot_msgs/RobotGoalsArray.h>
-#include <rviz/ogre_helpers/arrow.h>
-#include <rviz/ogre_helpers/shape.h>
+#include <boost/shared_ptr.hpp>
+
+#include <tuw_multi_robot_msgs/msg/robot_goals_array.hpp>
+#include <rviz_rendering/objects/arrow.hpp>
+#include <rviz_rendering/objects/shape.hpp>
 
 namespace Ogre
 {
-class Vector3;
+//class Vector3;
 class Quaternion;
 }
 
@@ -53,6 +55,8 @@ namespace tuw_multi_robot_rviz
 class RobotGoalsArrayVisual
 {
 public:
+  using GoalArray = tuw_multi_robot_msgs::msg::RobotGoalsArray;
+
   // Constructor.  Creates the visual stuff and puts it into the
   // scene, but in an unconfigured state.
   RobotGoalsArrayVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node );
@@ -61,7 +65,7 @@ public:
   virtual ~RobotGoalsArrayVisual();
 
   // Configure the visual to show the data in the message.
-  void setMessage( const tuw_multi_robot_msgs::RobotGoalsArray::ConstPtr& msg );
+  void setMessage( GoalArray::ConstSharedPtr msg );
 
   // Set the pose of the coordinate frame the message refers to.
   // These could be done inside setMessage(), but that would require
@@ -81,7 +85,7 @@ public:
 
 private:
   // The object implementing the actual pose shape
-  std::vector< boost::shared_ptr<rviz::Arrow> > goals_;
+  std::vector< boost::shared_ptr<rviz_rendering::Arrow> > goals_;
 
   // A SceneNode whose pose is set to match the coordinate frame of
   // the Imu message header.

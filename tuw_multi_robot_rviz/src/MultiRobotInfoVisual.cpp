@@ -1,5 +1,10 @@
-#include <tuw_multi_robot_rviz/MultiRobotInfoVisual.h>
+#include <tuw_multi_robot_rviz/MultiRobotInfoVisual.hpp>
 #include <boost/format.hpp>
+#include <boost/bind.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp/clock.hpp>
+#include <rclcpp/time.hpp>
+#include <rclcpp/duration.hpp>
 
 namespace tuw_multi_robot_rviz {
 
@@ -27,7 +32,7 @@ namespace tuw_multi_robot_rviz {
     arrow = nullptr;
     circle = nullptr;
     route = nullptr;
-    sub_route = ros::NodeHandle("").subscribe<tuw_multi_robot_msgs::Route>(robot_name + "/route", 1, boost::bind(&RobotAttributes::cbRoute, this, _1, id));
+    //sub_route = rclcpp::Node::make_shared("")->create_subscription<tuw_multi_robot_msgs::msg::Route>(robot_name + "/route", 1, boost::bind(&RobotAttributes::cbRoute, this, _1, id));
     path_length_ = 0;
   }
 
@@ -55,9 +60,10 @@ namespace tuw_multi_robot_rviz {
   }
 
   //only called once! not consecutively
-  void RA::cbRoute(const ros::MessageEvent<const tuw_multi_robot_msgs::Route> &_event, int _topic)
+  void RA::cbRoute(tuw_multi_robot_msgs::msg::Route::ConstSharedPtr msg, int _topic)
   {
-    route.reset(new tuw_multi_robot_msgs::Route (*_event.getMessage() ) );
+    //route.reset(new tuw_multi_robot_msgs::Route (*_event.getMessage() ) );
+    //route.reset(new tuw_multi_robot_msgs::msg::Route msg);
   }
 
   void RA::updateCircle(bool first_time)
@@ -169,7 +175,7 @@ namespace tuw_multi_robot_rviz {
 
   MultiRobotInfoVisual::MultiRobotInfoVisual(Ogre::SceneManager* _scene_manager, Ogre::SceneNode* _parent_node) : scene_manager_(_scene_manager), frame_node_(_parent_node->createChildSceneNode())
   {
-    last_render_time_ = ros::Time::now();
+    last_render_time_ = rclcpp::Time();
   }
 
   MultiRobotInfoVisual::~MultiRobotInfoVisual()
@@ -177,7 +183,7 @@ namespace tuw_multi_robot_rviz {
     scene_manager_->destroySceneNode(frame_node_);
   }
 
-  void MultiRobotInfoVisual::resetDuration(const ros::Duration &newDur)
+  void MultiRobotInfoVisual::resetDuration(const rclcpp::Duration &newDur)
   {
     recycle_thresh_ = newDur;
   }
@@ -194,7 +200,7 @@ namespace tuw_multi_robot_rviz {
   std::vector<std::string> MultiRobotInfoVisual::recycle()
   {
     std::vector<std::string> mark_for_deletion;
-    auto ts_now = ros::Time::now();
+    auto ts_now = rclcpp::Time();
     for (auto &elem : recycle_map_)
     {
       auto dur = ts_now - elem.second;
@@ -257,16 +263,16 @@ namespace tuw_multi_robot_rviz {
 
     } //end for
 
-    last_render_time_ = ros::Time::now();
+    last_render_time_ = rclcpp::Time();
   }
 
-  void MultiRobotInfoVisual::setMessage(const tuw_multi_robot_msgs::RobotInfoConstPtr _msg)
+  void MultiRobotInfoVisual::setMessage( RobotInfo::ConstSharedPtr _msg )
   {
     map_iterator it = robot2attribute_map_.find(_msg->robot_name);
     if (it == robot2attribute_map_.end())
     {
       double robot_radius = _msg->shape_variables.size() ? _msg->shape_variables[0] : 1.0;
-      boost::circular_buffer<geometry_msgs::PoseWithCovariance> pose;
+      boost::circular_buffer<geometry_msgs::msg::PoseWithCovariance> pose;
       pose.set_capacity(default_size_);
       std::string rn = _msg->robot_name;
       std::shared_ptr<RA> robot_attr = std::make_shared<RA>(id_cnt++,
@@ -280,13 +286,13 @@ namespace tuw_multi_robot_rviz {
       robot2attribute_map_.insert(internal_map_type(rn, robot_attr));
       it = robot2attribute_map_.find(_msg->robot_name);
 
-      recycle_map_.insert(std::pair<std::string, ros::Time>(_msg->robot_name, ros::Time(0)));
+      recycle_map_.insert(std::pair<std::string, rclcpp::Time>(_msg->robot_name, rclcpp::Time(0)));
     }
 
     it->second->updatePose(_msg->pose);
     it->second->robot_radius = _msg->shape_variables.size() ? _msg->shape_variables[0] : 1.0;
 
-    if ((ros::Time::now() - last_render_time_) > render_dur_thresh_)
+    if ((rclcpp::Time() - last_render_time_) > render_dur_thresh_)
     {
       doRender();
     }

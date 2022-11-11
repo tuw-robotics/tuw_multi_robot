@@ -27,14 +27,15 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
-#include <OGRE/OgreVector3.h>
-#include <OGRE/OgreMatrix3.h>
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreSceneManager.h>
+#include <OgreVector.h>
+#include <OgreMatrix3.h>
+#include <OgreSceneNode.h>
+#include <OgreSceneManager.h>
 
-#include "tuw_multi_robot_rviz/RobotGoalsArrayVisual.h"
+#include <rviz_rendering/objects/arrow.hpp>
+#include <tuw_multi_robot_rviz/RobotGoalsArrayVisual.hpp>
 
 namespace tuw_multi_robot_rviz {
 
@@ -57,20 +58,20 @@ RobotGoalsArrayVisual::~RobotGoalsArrayVisual() {
     scene_manager_->destroySceneNode ( frame_node_ );
 }
 
-void RobotGoalsArrayVisual::setMessage ( const tuw_multi_robot_msgs::RobotGoalsArray::ConstPtr& msg ) {
+void RobotGoalsArrayVisual::setMessage ( GoalArray::ConstSharedPtr msg ) {
     
     goals_.resize(msg->robots.size());
     
     for (size_t i = 0; i < msg->robots.size(); i++){
-        goals_[i].reset ( new rviz::Arrow( scene_manager_, frame_node_ ) );
-        boost::shared_ptr<rviz::Arrow> arrow = goals_[i];
+        goals_[i].reset ( new rviz_rendering::Arrow( scene_manager_, frame_node_ ) );
+        boost::shared_ptr<rviz_rendering::Arrow> arrow = goals_[i];
         /// @ToDo generate an error message
         if(msg->robots[i].destinations.size() == 0) {
             continue;  
         }
         
         /// @Info # if there are more than one points the first one is the start pose  else the current pose of the robot is used as start
-        const geometry_msgs::Pose &pose = msg->robots[i].destinations.back();  
+        const geometry_msgs::msg::Pose &pose = msg->robots[i].destinations.back();  
         
         Ogre::Vector3 position = Ogre::Vector3 ( pose.position.x, pose.position.y, pose.position.z );
         Ogre::Quaternion orientation = Ogre::Quaternion ( pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w );
@@ -100,7 +101,7 @@ void RobotGoalsArrayVisual::setFrameOrientation ( const Ogre::Quaternion& orient
 // Scale is passed through to the pose Shape object.
 void RobotGoalsArrayVisual::setScalePose ( float scale ) {
     
-    for(boost::shared_ptr<rviz::Arrow>& goal: goals_){
+    for(boost::shared_ptr<rviz_rendering::Arrow>& goal: goals_){
         goal->setScale ( Ogre::Vector3 ( scale, scale, scale ));
     }
     scale_pose_ = scale;
@@ -108,7 +109,7 @@ void RobotGoalsArrayVisual::setScalePose ( float scale ) {
 
 // Color is passed through to the pose Shape object.
 void RobotGoalsArrayVisual::setColorPose ( Ogre::ColourValue color ) {
-    for(boost::shared_ptr<rviz::Arrow>& goal: goals_){
+    for(boost::shared_ptr<rviz_rendering::Arrow>& goal: goals_){
         goal->setColor ( color );;
     }
     color_pose_ = color;

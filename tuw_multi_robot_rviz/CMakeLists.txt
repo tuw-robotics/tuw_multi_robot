@@ -31,6 +31,12 @@ find_package(tuw_multi_robot_msgs REQUIRED)
 
 # Set the headers to moc
 set(plugin_headers_to_moc
+  include/tuw_multi_robot_rviz/MultiRobotGoalSelector.hpp
+  include/tuw_multi_robot_rviz/MultiRobotInfoDisplay.hpp
+  include/tuw_multi_robot_rviz/MultiRobotInfoVisual.hpp
+  include/tuw_multi_robot_rviz/RobotGoalsArrayDisplay.hpp
+  include/tuw_multi_robot_rviz/RobotGoalsArrayVisual.hpp
+  include/tuw_multi_robot_rviz/TextVisual.hpp
   include/tuw_multi_robot_rviz/VoronoiGraphDisplay.hpp
   include/tuw_multi_robot_rviz/VoronoiGraphVisual.hpp
   include/tuw_multi_robot_rviz/VoronoiSegmentDisplay.hpp
@@ -43,6 +49,11 @@ include_directories(
 
 add_library(${PROJECT_NAME} SHARED
   ${plugin_headers_to_moc}
+  src/MultiRobotGoalSelector.cpp
+  src/MultiRobotInfoDisplay.cpp  
+  src/MultiRobotInfoVisual.cpp
+  src/RobotGoalsArrayDisplay.cpp  
+  src/RobotGoalsArrayVisual.cpp
   src/VoronoiGraphDisplay.cpp
   src/VoronoiGraphVisual.cpp
   src/VoronoiSegmentDisplay.cpp

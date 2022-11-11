@@ -30,9 +30,11 @@
 #ifndef POSE_WITH_COVARIANCE_DISPLAY_H
 #define POSE_WITH_COVARIANCE_DISPLAY_H
 
+#include <boost/shared_ptr.hpp>
+
 #ifndef Q_MOC_RUN
-#include <tuw_multi_robot_msgs/RobotGoalsArray.h>
-#include <rviz/message_filter_display.h>
+#include <tuw_multi_robot_msgs/msg/robot_goals_array.hpp>
+#include <rviz_common/ros_topic_display.hpp>
 #endif
 
 namespace Ogre
@@ -40,10 +42,13 @@ namespace Ogre
 class SceneNode;
 }
 
-namespace rviz
+namespace rviz_common
+{
+namespace properties
 {
 class ColorProperty;
 class FloatProperty;
+}
 }
 
 // All the source in this plugin is in its own namespace.  This is not
@@ -56,13 +61,15 @@ class RobotGoalsArrayVisual;
 // Here we declare our new subclass of rviz::Display.  Every display
 // which can be listed in the "Displays" panel is a subclass of
 // rviz::Display.
-class RobotGoalsArrayDisplay: public rviz::MessageFilterDisplay<tuw_multi_robot_msgs::RobotGoalsArray>
+class RobotGoalsArrayDisplay: public rviz_common::RosTopicDisplay<tuw_multi_robot_msgs::msg::RobotGoalsArray>
 {
 Q_OBJECT
 public:
   // Constructor.  pluginlib::ClassLoader creates instances by calling
   // the default constructor, so make sure you have one.
   RobotGoalsArrayDisplay();
+  void onInitialize() override;
+  void reset() override;
   virtual ~RobotGoalsArrayDisplay();
 
   // Overrides of protected virtual functions from Display.  As much
@@ -70,11 +77,11 @@ public:
   // subscribed to incoming data and should not show anything in the
   // 3D view.  These functions are where these connections are made
   // and broken.
-protected:
-  virtual void onInitialize();
+//protected:
+  //virtual void onInitialize();
 
   // A helper to clear this display back to the initial state.
-  virtual void reset();
+  //virtual void reset();
 
   // These Qt slots get connected to signals indicating changes in the user-editable properties.
 private Q_SLOTS:
@@ -83,14 +90,15 @@ private Q_SLOTS:
 
   // Function to handle an incoming ROS message.
 private:
-  void processMessage( const tuw_multi_robot_msgs::RobotGoalsArray::ConstPtr& msg );
+  using GoalsArray = tuw_multi_robot_msgs::msg::RobotGoalsArray;
+  void processMessage( GoalsArray::ConstSharedPtr msg ) override;
 
   // Storage of the visual
   boost::shared_ptr<RobotGoalsArrayVisual> visual_;
 
   // User-editable property variables.
-  rviz::FloatProperty* property_scale_pose_;
-  rviz::ColorProperty* property_color_pose_;
+  rviz_common::properties::FloatProperty* property_scale_pose_;
+  rviz_common::properties::ColorProperty* property_color_pose_;
 };
 
 } // end namespace tuw_pose_rviz

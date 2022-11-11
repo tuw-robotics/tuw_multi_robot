@@ -1,24 +1,28 @@
 #ifndef MULTI_ROBOT_INFO_VISUAL_HPP
 #define MULTI_ROBOT_INFO_VISUAL_HPP
 
-#include <rviz/tool.h>
-#include <ros/ros.h>
-#include <rviz/properties/vector_property.h>
-#include <rviz/properties/int_property.h>
-#include <rviz/properties/string_property.h>
-#include <rviz/properties/float_property.h>
-#include <rviz/ogre_helpers/arrow.h>
-#include <OgreManualObject.h>
-#include <rviz/ogre_helpers/shape.h>
+#include <rviz_common/tool.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp/duration.hpp>
+#include <rclcpp/time.hpp>
+#include <rviz_common/properties/vector_property.hpp>
+#include <rviz_common/properties/int_property.hpp>
+#include <rviz_common/properties/string_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_rendering/objects/arrow.hpp>
+#include <rviz_rendering/objects/shape.hpp>
+
+//#include <OgreManualObject.h>
+
 #include <map>
 #include <memory>
 #include <vector>
 #include <boost/circular_buffer.hpp>
-#include "TextVisual.h"
+#include "TextVisual.hpp"
 
-#include <tuw_multi_robot_msgs/RobotInfo.h>
-#include <tuw_multi_robot_msgs/Route.h>
-#include <geometry_msgs/PoseWithCovariance.h>
+#include <tuw_multi_robot_msgs/msg/robot_info.hpp>
+#include <tuw_multi_robot_msgs/msg/route.hpp>
+#include <geometry_msgs/msg/pose_with_covariance.hpp>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
@@ -29,7 +33,7 @@ class RobotAttributes {
 
   public:
 
-    using buf_type = boost::circular_buffer<geometry_msgs::PoseWithCovariance>;
+    using buf_type = boost::circular_buffer<geometry_msgs::msg::PoseWithCovariance>;
     RobotAttributes(size_t id,
                     std::string &rname,
                     double rad,
@@ -65,7 +69,7 @@ class RobotAttributes {
       arrow = NULL;
     }
 
-    void updatePose(const geometry_msgs::PoseWithCovariance &pose)
+    void updatePose(const geometry_msgs::msg::PoseWithCovariance &pose)
     {
       ros_poses.push_front(pose);
       current_pos = Ogre::Vector3(pose.pose.position.x, pose.pose.position.y, pose.pose.position.z);
@@ -111,8 +115,8 @@ class RobotAttributes {
 
   private:
     buf_type ros_poses;
-    std::shared_ptr<tuw_multi_robot_msgs::Route> route;
-    ros::Subscriber sub_route;
+    std::shared_ptr<tuw_multi_robot_msgs::msg::Route> route;
+    rclcpp::Subscription<tuw_multi_robot_msgs::msg::Route>::SharedPtr sub_route;
     std::size_t seg_id_current;
 
     /** all things ogre */
@@ -126,7 +130,7 @@ class RobotAttributes {
     std::unique_ptr<TextVisual> text;
 
     /** callback for obtaining route information */
-    void cbRoute(const ros::MessageEvent<const tuw_multi_robot_msgs::Route> &_event, int _topic);
+    void cbRoute( tuw_multi_robot_msgs::msg::Route::ConstSharedPtr msg, int _topic);
 
     /** Update Circle rendering */
     void updateCircle(bool first_time=false);
@@ -190,12 +194,13 @@ class MultiRobotInfoVisual
 {
 
 public:
+  using RobotInfo = tuw_multi_robot_msgs::msg::RobotInfo;
 
   MultiRobotInfoVisual(Ogre::SceneManager *_scene_manager, Ogre::SceneNode *_parent_node);
 
   virtual ~MultiRobotInfoVisual();
 
-  void setMessage(const tuw_multi_robot_msgs::RobotInfoConstPtr _msg);
+  void setMessage( RobotInfo::ConstSharedPtr _msg);
 
   void setFramePosition( const Ogre::Vector3& _position);
   void setFrameOrientation( const Ogre::Quaternion& orientation );
@@ -212,7 +217,7 @@ public:
 
   void enableRobot( const std::string &rName );
 
-  void resetDuration( const ros::Duration &ts);
+  void resetDuration( const rclcpp::Duration &ts);
 
   void resetKeepMeasurementsCount ( const unsigned int c );
 
@@ -223,7 +228,7 @@ private:
   using internal_map_type = std::pair<std::string, std::shared_ptr<RobotAttributes>>;
   using map_type = std::map<std::string, std::shared_ptr<RobotAttributes>>;
   using map_iterator = std::map<std::string, std::shared_ptr<RobotAttributes>>::iterator;
-  using recycle_map_type = std::map<std::string, ros::Time>;
+  using recycle_map_type = std::map<std::string, rclcpp::Time>;
 
   std::vector<std::string> recycle();
 
@@ -238,9 +243,9 @@ private:
 
   int default_size_ = {5};
   int id_cnt = 0;
-  ros::Duration recycle_thresh_ = ros::Duration(5,0);
-  ros::Duration render_dur_thresh_ = ros::Duration(0.1);
-  ros::Time last_render_time_;
+  rclcpp::Duration recycle_thresh_ = rclcpp::Duration(5,0);
+  rclcpp::Duration render_dur_thresh_ = rclcpp::Duration(0,1);
+  rclcpp::Time last_render_time_;
   // A SceneNode whose pose is set to match the coordinate frame of
   // the Imu message header.
   Ogre::SceneNode* frame_node_;

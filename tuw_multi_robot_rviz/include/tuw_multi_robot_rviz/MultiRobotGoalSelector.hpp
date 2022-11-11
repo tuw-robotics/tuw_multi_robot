@@ -29,22 +29,31 @@
 #ifndef MULTI_ROBOT_GOAL_SELECTOR_H
 #define MULTI_ROBOT_GOAL_SELECTOR_H
 
-#include <rviz/tool.h>
-#include <ros/ros.h>
-#include <rviz/properties/vector_property.h>
-#include <rviz/properties/int_property.h>
-#include <rviz/properties/string_property.h>
-#include <rviz/properties/float_property.h>
-#include <rviz/ogre_helpers/arrow.h>
-#include <memory>
-#include "TextVisual.h"
+#include <rviz_common/tool.hpp>
+#include <rviz_common/viewport_mouse_event.hpp>
+#include <rviz_rendering/viewport_projection_finder.hpp>
 
-#include <geometry_msgs/Pose.h>
+#include <rclcpp/rclcpp.hpp>
+
+#include <rviz_common/properties/vector_property.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/int_property.hpp>
+#include <rviz_common/properties/string_property.hpp>
+
+
+#include <memory>
+#include "TextVisual.hpp"
+
+#ifndef Q_MOC_RUN
+#include <rviz_rendering/objects/arrow.hpp>
+#endif
+
+#include <geometry_msgs/msg/pose.hpp>
 
 namespace Ogre
 {
 class SceneNode;
-class Vector3;
+//class Vector3;
 class Quaternion;
 }
 
@@ -65,7 +74,7 @@ namespace tuw_multi_robot_rviz
 // Here we declare our new subclass of rviz::Tool.  Every tool
 // which can be added to the tool bar is a subclass of
 // rviz::Tool.
-class MultiRobotGoalSelector: public rviz::Tool
+class MultiRobotGoalSelector: public rviz_common::Tool
 {
 Q_OBJECT
 public:
@@ -77,10 +86,13 @@ public:
   virtual void activate();
   virtual void deactivate();
 
-  virtual int processMouseEvent( rviz::ViewportMouseEvent& event );
+  virtual int processMouseEvent( rviz_common::ViewportMouseEvent& event );
 
 protected Q_SLOTS:
   void onRobotNrChanged();
+
+protected:
+  std::shared_ptr<rviz_rendering::ViewportProjectionFinder> projection_finder_;
 
 private:
   enum state {
@@ -88,25 +100,25 @@ private:
     Orientation
   };
 
-  void make_quaternion(geometry_msgs::Pose::_orientation_type &q, double pitch, double roll, double yaw);
+  void make_quaternion(geometry_msgs::msg::Pose::_orientation_type &q, double pitch, double roll, double yaw);
   void make_quaternion(Ogre::Quaternion &q, double pitch, double roll, double yaw);
   void makeFlag( const Ogre::Vector3& position, const Ogre::Quaternion &orientation);
 
-  ros::NodeHandle nh_;
-  ros::Publisher pubGoals_;
+  //ros::NodeHandle nh_;
+  //ros::Publisher pubGoals_;
   std::vector<Ogre::SceneNode*> flag_nodes_;
   Ogre::SceneNode* moving_flag_node_;
   std::string flag_resource_;
-  rviz::VectorProperty* current_flag_property_;
-  rviz::IntProperty* nr_robots_;
-  std::vector<rviz::StringProperty*> robot_names_;
-  rviz::Property *group_robot_names_;
-  rviz::Property *group_robot_goals_;
-  std::unique_ptr<rviz::Arrow> arrow_;
-  std::unique_ptr<rviz::Arrow> arrow_robot2flag_;
+  rviz_common::properties::VectorProperty* current_flag_property_;
+  rviz_common::properties::IntProperty* nr_robots_;
+  std::vector<rviz_common::properties::StringProperty*> robot_names_;
+  rviz_common::properties::Property *group_robot_names_;
+  rviz_common::properties::Property *group_robot_goals_;
+  std::unique_ptr<rviz_rendering::Arrow> arrow_;
+  std::unique_ptr<rviz_rendering::Arrow> arrow_robot2flag_;
   state state_;
   std::vector<double> flag_angles_;
-  std::vector<std::unique_ptr<rviz::Arrow>> arrows_robot2flag_;
+  std::vector<std::unique_ptr<rviz_rendering::Arrow>> arrows_robot2flag_;
   std::vector<Ogre::Vector3> flag_positions_;
   
   uint32_t currentRobotNr_;

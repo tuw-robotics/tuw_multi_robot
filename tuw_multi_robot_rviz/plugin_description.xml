@@ -6,6 +6,7 @@
     <description>
       Displays Voronoi Graphs in RVIZ
     </description>
+    <message_type>tuw_multi_robot_msgs/msg/Graph</message_type>
   </class>
 
   <class name="tuw_multi_robot_rviz/VoronoiSegment"
@@ -14,6 +15,33 @@
     <description>
       Displays Voronoi Segments in RVIZ
     </description>
+    <message_type>tuw_multi_robot_msgs/msg/Graph</message_type>
+  </class>
+
+  <class name="tuw_multi_robot_rviz/MultiRobotInfo"
+         type="tuw_multi_robot_rviz::MultiRobotInfoDisplay"
+         base_class_type="rviz_common::Display">
+    <description>
+      Displays Robot Positions in RVIZ
+    </description>
+    <message_type>tuw_multi_robot_msgs/msg/RobotInfo</message_type>
   </class>
   
+  <class name="tuw_multi_robot_rviz/RobotGoalArray"
+         type="tuw_multi_robot_rviz::RobotGoalsArrayDisplay"
+         base_class_type="rviz_common::Display">
+    <description>
+      Displays Robot Goals in RVIZ
+    </description>
+    <message_type>tuw_multi_robot_msgs/msg/RobotGoalsArray</message_type>
+  </class>
+
+  <class name="tuw_multi_robot_rviz/GoalSelector"
+         type="tuw_multi_robot_rviz::MultiRobotGoalSelector"
+         base_class_type="rviz_common::Tool">
+    <description>
+      Tool for planting flags on the ground plane in rviz.
+    </description>
+  </class>
+
 </library>
