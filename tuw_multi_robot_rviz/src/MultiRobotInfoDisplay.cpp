@@ -51,8 +51,6 @@ namespace tuw_multi_robot_rviz {
 // constructor the parameters it needs to fully initialize.
 MultiRobotInfoDisplay::MultiRobotInfoDisplay() : rviz_common::RosTopicDisplay<tuw_multi_robot_msgs::msg::RobotInfo>(){
 
-    //sub_robot_info_ = rclcpp::Subscription::create_subscription<RobotInfo::ConstSharedPtr>("robot_info", 10000, std::bind(&MultiRobotInfoDisplay::callbackRobotInfo, this, _1));
-    
     property_scale_pose_.reset(new rviz_common::properties::FloatProperty ( "Scale Pose", 0.4,
             "Scale of the pose's pose.",
             this, SLOT ( updateScalePose() ) ));
@@ -137,7 +135,8 @@ void MultiRobotInfoDisplay::callbackRobotInfo( RobotInfo::ConstSharedPtr &msg )
 // superclass.
 void MultiRobotInfoDisplay::onInitialize() {
     RTDClass::onInitialize();
-    visual_.reset ( new MultiRobotInfoVisual ( context_->getSceneManager(), scene_node_ ) );
+    createRawNode();
+    visual_.reset ( new MultiRobotInfoVisual ( raw_node_, context_->getSceneManager(), scene_node_ ) );
 }
 
 MultiRobotInfoDisplay::~MultiRobotInfoDisplay() {
@@ -191,7 +190,7 @@ void MultiRobotInfoDisplay::processMessage ( RobotInfo::ConstSharedPtr msg ) {
 
   if (!visual_) return;
 
-    rclcpp::Time tic = rclcpp::Time();
+    rclcpp::Time tic = clock_->now();
     // Here we call the rviz::FrameManager to get the transform from the
     // fixed frame to the frame in the header of this Imu message.  If
     // it fails, we can't do anything else so we return.
@@ -211,7 +210,7 @@ void MultiRobotInfoDisplay::processMessage ( RobotInfo::ConstSharedPtr msg ) {
     //visual_->setScalePose ( property_scale_pose_->getFloat() );
     //visual_->setColorPose ( property_color_pose_->getOgreColor() );
 
-    //auto dur = ros::Time::now() - tic;
+    auto dur = clock_->now() - tic;
     auto it = bool_properties_.find(msg->robot_name);
     if (it == bool_properties_.end())
     {
@@ -225,6 +224,13 @@ void MultiRobotInfoDisplay::processMessage ( RobotInfo::ConstSharedPtr msg ) {
       bool_properties_.insert(std::pair<std::string,std::unique_ptr<rviz_common::properties::BoolProperty>>(msg->robot_name, std::move(bp)));
     }
 
+}
+
+void MultiRobotInfoDisplay::createRawNode()
+{
+  raw_node_ = context_->getRosNodeAbstraction().lock()->get_raw_node();
+  //sub_robot_info_ = raw_node -> template create_subscription<tuw_multi_robot_msgs::msg::RobotGoalsArray>("goals", 0);
+  clock_ = raw_node_->get_clock();
 }
 
 } // end namespace tuw_multi_robot_rviz

@@ -3,8 +3,11 @@
 
 #include <rviz_common/tool.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <rclcpp/node.hpp>
 #include <rclcpp/duration.hpp>
 #include <rclcpp/time.hpp>
+
+#include <rviz_common/display_context.hpp>
 #include <rviz_common/properties/vector_property.hpp>
 #include <rviz_common/properties/int_property.hpp>
 #include <rviz_common/properties/string_property.hpp>
@@ -40,7 +43,8 @@ class RobotAttributes {
                     buf_type &pose,
                     Ogre::ColourValue color,
                     Ogre::SceneManager *_scene_manager,
-                    Ogre::SceneNode *_parent_node);
+                    Ogre::SceneNode *_parent_node,
+                    rclcpp::Node::SharedPtr _ros_node);
 
     ~RobotAttributes();
 
@@ -125,12 +129,13 @@ class RobotAttributes {
     Ogre::Quaternion current_orient;
     Ogre::SceneManager *scene_manager;
     Ogre::SceneNode *frame_node;
+    rclcpp::Node::SharedPtr ros_node;
     Ogre::ManualObject* circle;
     Ogre::ManualObject* arrow;
     std::unique_ptr<TextVisual> text;
 
     /** callback for obtaining route information */
-    void cbRoute( tuw_multi_robot_msgs::msg::Route::ConstSharedPtr msg, int _topic);
+    void cbRoute( tuw_multi_robot_msgs::msg::Route::ConstSharedPtr msg);
 
     /** Update Circle rendering */
     void updateCircle(bool first_time=false);
@@ -188,7 +193,7 @@ class RobotAttributes {
       }
       path_length_ = acc_len;
     }
-  };
+};
 
 class MultiRobotInfoVisual
 {
@@ -196,7 +201,7 @@ class MultiRobotInfoVisual
 public:
   using RobotInfo = tuw_multi_robot_msgs::msg::RobotInfo;
 
-  MultiRobotInfoVisual(Ogre::SceneManager *_scene_manager, Ogre::SceneNode *_parent_node);
+  MultiRobotInfoVisual(rclcpp::Node::SharedPtr node, Ogre::SceneManager *_scene_manager, Ogre::SceneNode *_parent_node);
 
   virtual ~MultiRobotInfoVisual();
 
@@ -230,7 +235,12 @@ private:
   using map_iterator = std::map<std::string, std::shared_ptr<RobotAttributes>>::iterator;
   using recycle_map_type = std::map<std::string, rclcpp::Time>;
 
+
+  
   std::vector<std::string> recycle();
+
+  rclcpp::Node::SharedPtr node_;
+  rclcpp::Clock::SharedPtr clock_;
 
   // The object implementing the actual pose shape
   //std::map<std::string, std::vector<Ogre::ManualObject*>> robot_renderings_map_;

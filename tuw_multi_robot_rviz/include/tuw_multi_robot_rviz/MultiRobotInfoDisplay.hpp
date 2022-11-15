@@ -80,9 +80,14 @@ private Q_SLOTS:
   // Function to handle an incoming ROS message.
 private:
   void processMessage( RobotInfo::ConstSharedPtr msg ) override;
+  void createRawNode();
 
   // Storage of the visual
   std::shared_ptr<MultiRobotInfoVisual> visual_ = nullptr;
+
+  //rclcpp::Subscriber<RobotInfo>::SharedPtr sub_robot_info_;
+  rclcpp::Node::SharedPtr raw_node_;
+  rclcpp::Clock::SharedPtr clock_;
 
   // User-editable property variables.
   std::shared_ptr<rviz_common::properties::Property> robot_bool_properties_;
@@ -91,8 +96,7 @@ private:
   std::shared_ptr<rviz_common::properties::FloatProperty> property_scale_pose_;
   std::shared_ptr<rviz_common::properties::ColorProperty> property_color_pose_;
   std::map<std::string, std::shared_ptr<rviz_common::properties::BoolProperty>> bool_properties_;
-  //rclcpp::Subscription<RobotInfo>::SharedPtr sub_robot_info_;
-  //ros::NodeHandle nh_;
+  
 };
 
 } // end namespace tuw_pose_rviz
