@@ -34,11 +34,15 @@
 #include <rviz_rendering/viewport_projection_finder.hpp>
 
 #include <rclcpp/rclcpp.hpp>
+#include <rclcpp/node.hpp>
 
 #include <rviz_common/properties/vector_property.hpp>
 #include <rviz_common/properties/float_property.hpp>
 #include <rviz_common/properties/int_property.hpp>
 #include <rviz_common/properties/string_property.hpp>
+
+#include <tuw_multi_robot_msgs/msg/robot_goals.hpp>
+#include <tuw_multi_robot_msgs/msg/robot_goals_array.hpp>
 
 
 #include <memory>
@@ -103,9 +107,10 @@ private:
   void make_quaternion(geometry_msgs::msg::Pose::_orientation_type &q, double pitch, double roll, double yaw);
   void make_quaternion(Ogre::Quaternion &q, double pitch, double roll, double yaw);
   void makeFlag( const Ogre::Vector3& position, const Ogre::Quaternion &orientation);
+  void createRawNode();
 
-  //ros::NodeHandle nh_;
-  //ros::Publisher pubGoals_;
+  rclcpp::Publisher<tuw_multi_robot_msgs::msg::RobotGoalsArray>::SharedPtr pubGoals_;
+  rclcpp::Clock::SharedPtr clock_;
   std::vector<Ogre::SceneNode*> flag_nodes_;
   Ogre::SceneNode* moving_flag_node_;
   std::string flag_resource_;

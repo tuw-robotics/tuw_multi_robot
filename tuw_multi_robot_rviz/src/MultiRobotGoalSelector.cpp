@@ -33,12 +33,16 @@
 
 //#include <rclcpp/console.hpp>
 
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/interaction/view_picker_iface.hpp>
 #include <rviz_common/viewport_mouse_event.hpp>
 #include <rviz_common/visualization_manager.hpp>
+#include <rviz_common/render_panel.hpp>
+
 #include <rviz_rendering/mesh_loader.hpp>
 #include <rviz_rendering/geometry.hpp>
-#include "rviz_rendering/render_window.hpp"
-#include "rviz_common/render_panel.hpp"
+#include <rviz_rendering/render_window.hpp>
+
 
 #include <tuw_multi_robot_rviz/MultiRobotGoalSelector.hpp>
 #include <tuw_multi_robot_msgs/msg/robot_goals.hpp>
@@ -58,7 +62,6 @@ MultiRobotGoalSelector::MultiRobotGoalSelector()
     robotCount_ = 0;
     maxRobots_ = 3;
 
-    //pubGoals_ = nh_.advertise<tuw_multi_robot_msgs::msg::RobotGoalsArray>("goals", 0);
 }
 
 MultiRobotGoalSelector::~MultiRobotGoalSelector()
@@ -81,7 +84,7 @@ void MultiRobotGoalSelector::onInitialize()
 
     if (rviz_rendering::loadMeshFromResource(flag_resource_) == NULL)
     {
-        //ROS_ERROR("MultiRobotGoalSelector: failed to load model resource '%s'.", flag_resource_.c_str());
+        printf("MultiRobotGoalSelector: failed to load model resource '%s'.", flag_resource_.c_str());
         return;
     }
 
@@ -101,6 +104,7 @@ void MultiRobotGoalSelector::onInitialize()
 
     currentRobotNr_ = 0;
     onRobotNrChanged();
+    createRawNode();
 }
 
 void MultiRobotGoalSelector::onRobotNrChanged()
@@ -214,87 +218,69 @@ int MultiRobotGoalSelector::processMouseEvent(rviz_common::ViewportMouseEvent &e
     }
 
     Ogre::Vector3 intersection;
-    Ogre::Plane ground_plane(Ogre::Vector3::UNIT_Z, 0.0f);
-
-
-    auto point_projection_on_xy_plane = projection_finder_->getViewportPointProjectionOnXYPlane(
-    event.panel->getRenderWindow(), event.x, event.y);
-
     if (event.leftDown())
     {
-            /*if (rviz_rendering::getPointOnPlaneFromWindowXY(event.viewport,
-                                          ground_plane,
-                                          event.x, event.y, intersection))
-            {*/
-            auto n = rclcpp::Node::make_shared("Log2343214");
-            RCLCPP_INFO(n->get_logger(), point_projection_on_xy_plane);
-              moving_flag_node_->setVisible(true);
-              moving_flag_node_->setPosition(intersection);
-              current_flag_property_->setVector(intersection);
+        if (context_->getViewPicker()->get3DPoint(event.panel, event.x, event.y, intersection))
+        {
+            intersection.z = 0.0f;
+            moving_flag_node_->setVisible(true);
+            moving_flag_node_->setPosition(intersection);
+            current_flag_property_->setVector(intersection);
 
-              flag_positions_.push_back(intersection);
+            flag_positions_.push_back(intersection);
 
-              arrow_->setPosition(intersection);
-              arrow_->getSceneNode()->setVisible(true);
+            arrow_->setPosition(intersection);
+            arrow_->getSceneNode()->setVisible(true);
 
-              state_ = state::Orientation;
+            state_ = state::Orientation;
 
-            //}
+        }
 
-     } /*else if (event.type == QEvent::MouseMove && event.left()) {
+     } else if (event.type == QEvent::MouseMove && event.left()) {
             //compute angle in x-y plane
 
-            //Ogre::Vector3 cur_pos;
-            Ogre::Plane ground_plane( Ogre::Vector3::UNIT_Z, 0.0f );
-
-            /*if( rviz_rendering::getPointOnPlaneFromWindowXY( event.viewport,
-                                                   ground_plane,
-                                                   event.x, event.y, cur_pos ))
+            Ogre::Vector3 cur_pos;
+            if( context_ -> getViewPicker()-> get3DPoint(event.panel, event.x, event.y, cur_pos))
             {
-             auto cur_pos = projection_finder_->getViewportPointProjectionOnXYPlane(event.panel->getRenderWindow(), event.x, event.y);
-              double angle = atan2( cur_pos.y - arrow_->getPosition().y, cur_pos.x - arrow_->getPosition().x );
+                double angle = atan2( cur_pos.y - arrow_->getPosition().y, cur_pos.x - arrow_->getPosition().x );
 
-              //we need base_orient, since the arrow goes along the -z axis by default (for historical reasons)
-              Ogre::Quaternion orient_x = Ogre::Quaternion( Ogre::Radian(-Ogre::Math::HALF_PI), Ogre::Vector3::UNIT_Y );
+                //we need base_orient, since the arrow goes along the -z axis by default (for historical reasons)
+                Ogre::Quaternion orient_x = Ogre::Quaternion( Ogre::Radian(-Ogre::Math::HALF_PI), Ogre::Vector3::UNIT_Y );
 
-              arrow_->setOrientation( Ogre::Quaternion( Ogre::Radian(angle), Ogre::Vector3::UNIT_Z ) * orient_x );
+                arrow_->setOrientation( Ogre::Quaternion( Ogre::Radian(angle), Ogre::Vector3::UNIT_Z ) * orient_x );
 
-              Ogre::Quaternion q_from_angle;
-              make_quaternion(q_from_angle, 0,0, angle);
-              moving_flag_node_->setOrientation(q_from_angle);
+                Ogre::Quaternion q_from_angle;
+                make_quaternion(q_from_angle, 0,0, angle);
+                moving_flag_node_->setOrientation(q_from_angle);
 
-            //}
+            }
 
      } else if (event.leftUp()) {
 
-            if (state_ == state::Orientation)
+        if (state_ == state::Orientation)
+        {
+            //compute angle in x-y plane
+            Ogre::Vector3 cur_pos;
+            if(context_ -> getViewPicker()-> get3DPoint(event.panel, event.x, event.y, cur_pos))
             {
-              //compute angle in x-y plane
-              //Ogre::Vector3 cur_pos;
-              Ogre::Plane ground_plane( Ogre::Vector3::UNIT_Z, 0.0f );
-              if(rviz_rendering::getPointOnPlaneFromWindowXY( event.viewport,
-                                                    ground_plane,
-                                                    event.x, event.y, cur_pos ))
-              {
-                    auto cur_pos = projection_finder_->getViewportPointProjectionOnXYPlane(event.panel->getRenderWindow(), event.x, event.y);
-                    double angle = atan2( cur_pos.y - arrow_->getPosition().y, cur_pos.x - arrow_->getPosition().x );
+                double angle = atan2( cur_pos.y - arrow_->getPosition().y, cur_pos.x - arrow_->getPosition().x );
 
-                    Ogre::Quaternion q_from_angle;
-                    make_quaternion(q_from_angle, 0,0, angle);
-                    makeFlag(current_flag_property_->getVector(), q_from_angle);
-                    //current_flag_property_ = new rviz::VectorProperty("Goal " + QString::number(flag_nodes_.size()));
+                Ogre::Quaternion q_from_angle;
+                make_quaternion(q_from_angle, 0,0, angle);
+                makeFlag(current_flag_property_->getVector(), q_from_angle);
+                current_flag_property_ = new rviz_common::properties::VectorProperty("Goal " + QString::number(flag_nodes_.size()));
 
-                    //cool stuff here, since unique_ptr only allows 1 ptr count arrow_robot2flag_ will be automatically nullptr after this call
-                    arrows_robot2flag_.push_back(std::move(arrow_robot2flag_));
+                //cool stuff here, since unique_ptr only allows 1 ptr count arrow_robot2flag_ will be automatically nullptr after this call
+                arrows_robot2flag_.push_back(std::move(arrow_robot2flag_));
 
-                    flag_angles_.push_back(angle);
+                flag_angles_.push_back(angle);
 
-                    maxRobots_ = nr_robots_->getInt();
-                    robotCount_++;
+                maxRobots_ = nr_robots_->getInt();
+                robotCount_++;
 
-                    arrow_->getSceneNode()->setVisible(false);
+                arrow_->getSceneNode()->setVisible(false);
 
-                    if (robotCount_ >= maxRobots_) {
+                if (robotCount_ >= maxRobots_) {
 
                     tuw_multi_robot_msgs::msg::RobotGoalsArray array;
                     for (int i = 0; i < maxRobots_; i++)
@@ -311,32 +297,31 @@ int MultiRobotGoalSelector::processMouseEvent(rviz_common::ViewportMouseEvent &e
                         goals.robot_name = robot_names_[i]->getStdString();
 
                         array.robots.push_back(goals);
-                   }
+                    }
 
-                   //array.header.stamp = ros::Time::now();
-                   array.header.frame_id = context_->getFixedFrame().toStdString();
-                   //pubGoals_.publish(array);
+                    array.header.stamp = clock_->now();
+                    array.header.frame_id = context_->getFixedFrame().toStdString();
+                    pubGoals_->publish(array);
 
-                   return Render | Finished;
-                //}
+                    return Render | Finished;
+                }
             } // end get point
-
          } // end state == Orientation
 
-    } // end if leftUp()*/
+    } // end if leftUp()
     else //if mouse is not clicked just update the moving flag
     {
-       /*if (rviz_rendering::getPointOnPlaneFromWindowXY(event.viewport,
-                                                 ground_plane,
-                                                 event.x, event.y, intersection))
-       {*/
-          moving_flag_node_->setVisible(true);
-          moving_flag_node_->setPosition(intersection);
-          current_flag_property_->setVector(intersection);
-          double length = Ogre::Vector3(0,0,0).distance(intersection);
+       if (context_ -> getViewPicker()-> get3DPoint(event.panel, event.x, event.y, intersection))
+       {
+        
+            intersection.z = 0.0f;
+            moving_flag_node_->setVisible(true);
+            moving_flag_node_->setPosition(intersection);
+            current_flag_property_->setVector(intersection);
+            double length = Ogre::Vector3(0,0,0).distance(intersection);
 
-          if (!arrow_robot2flag_)
-          {
+            if (!arrow_robot2flag_)
+            {
 
             arrow_robot2flag_.reset(new rviz_rendering::Arrow(scene_manager_, NULL, length - 0.5f, 0.2f, 0.5f, 0.35f));
             arrow_robot2flag_->setColor(1.0f, 0.0f, 0.0f, 1.0f);
@@ -344,16 +329,16 @@ int MultiRobotGoalSelector::processMouseEvent(rviz_common::ViewportMouseEvent &e
             arrow_robot2flag_->getSceneNode()->setVisible(false);
             arrow_robot2flag_->setPosition(Ogre::Vector3(0,0,0));
 
-          }
+            }
 
-          arrow_robot2flag_->set(length - 0.5f, 0.2f, 0.5f, 0.35f);
-          double angle = atan2( intersection.y - arrow_robot2flag_->getPosition().y, intersection.x - arrow_robot2flag_->getPosition().x );
-          Ogre::Quaternion orient_x = Ogre::Quaternion( Ogre::Radian(-Ogre::Math::HALF_PI), Ogre::Vector3::UNIT_Y );
-          arrow_robot2flag_->setOrientation( Ogre::Quaternion( Ogre::Radian(angle), Ogre::Vector3::UNIT_Z ) * orient_x );
+            arrow_robot2flag_->set(length - 0.5f, 0.2f, 0.5f, 0.35f);
+            double angle = atan2( intersection.y - arrow_robot2flag_->getPosition().y, intersection.x - arrow_robot2flag_->getPosition().x );
+            Ogre::Quaternion orient_x = Ogre::Quaternion( Ogre::Radian(-Ogre::Math::HALF_PI), Ogre::Vector3::UNIT_Y );
+            arrow_robot2flag_->setOrientation( Ogre::Quaternion( Ogre::Radian(angle), Ogre::Vector3::UNIT_Z ) * orient_x );
 
-       /*} else {
+       } else {
           moving_flag_node_->setVisible(false);
-       }*/
+       }
     }
 
     return Render;
@@ -375,6 +360,14 @@ void MultiRobotGoalSelector::makeFlag(const Ogre::Vector3 &position, const Ogre:
     tw->setCharacterHeight(0.25);
     flag_nodes_.push_back(node);
 
+}
+
+
+void MultiRobotGoalSelector::createRawNode()
+{
+    rclcpp::Node::SharedPtr raw_node = context_->getRosNodeAbstraction().lock()->get_raw_node();
+    pubGoals_ = raw_node -> template create_publisher<tuw_multi_robot_msgs::msg::RobotGoalsArray>("goals", 0);
+    clock_ = raw_node->get_clock();
 }
 
 } // namespace tuw_multi_robot_rviz
