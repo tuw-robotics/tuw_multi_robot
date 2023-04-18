@@ -41,6 +41,8 @@
 #include <rviz_rendering/objects/arrow.hpp>
 #include <rviz_rendering/objects/line.hpp>
 
+#include "TextVisual.hpp"
+
 namespace Ogre
 {
 //class Vector3;
@@ -96,6 +98,7 @@ private:
   //std::vector<boost::shared_ptr<rviz::Arrow> > pathPtsTheta_;
   std::vector<boost::shared_ptr<rviz_rendering::Line> > pathLine;
   std::vector<boost::shared_ptr<rviz_rendering::Shape> > crossingShape;
+  std::vector<boost::shared_ptr<TextVisual> > seg_id_text;
 
   // A SceneNode whose pose is set to match the coordinate frame of
   // the Imu message header.

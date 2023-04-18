@@ -36,6 +36,8 @@
 #include <tuw_multi_robot_msgs/msg/vertex.hpp>
 #include <tuw_multi_robot_rviz/VoronoiGraphVisual.hpp>
 
+#include <boost/format.hpp>
+
 namespace tuw_multi_robot_rviz
 {
 
@@ -75,6 +77,7 @@ void VoronoiGraphVisual::setMessage(Graph::ConstSharedPtr msg)
 
     pathLine.resize(msg->vertices.size());
     crossingShape.resize(pathLine.size() * 2);
+    seg_id_text.resize(msg->vertices.size());
     for (size_t i = 0; i < pathLine.size(); ++i)
     {
         tuw_multi_robot_msgs::msg::Vertex seg = msg->vertices[i];
@@ -106,6 +109,20 @@ void VoronoiGraphVisual::setMessage(Graph::ConstSharedPtr msg)
         crossingShape[2 * i + 1]->setPosition(Ogre::Vector3((p2.x)  + msg->origin.position.x, (p2.y)  + msg->origin.position.y, p2.z  + msg->origin.position.z));
         crossingShape[2 * i + 1]->setOrientation(rotation * rotation2);
         crossingShape[2 * i + 1]->setScale(Ogre::Vector3(scalePoint_, scalePoint_, scalePoint_));
+
+        //auto current_pos = Ogre::Vector3((p1.x + msg->origin.position.x - p1.x + msg->origin.position.x), (p1.y - p2.y)  + msg->origin.position.y, (p1.z - p2.z)  + msg->origin.position.z);
+        auto a = Ogre::Vector3(p1.x, p1.y, p1.z);
+        auto b = Ogre::Vector3(p2.x, p2.y, p2.z);
+        
+        //auto current_pos = Ogre::Vector3((p1.x + msg->origin.position.x), (p1.y + msg->origin.position.y), (p1.z + msg->origin.position.z));
+        auto current_pos = (a + (b-a)/2) + Ogre::Vector3(msg->origin.position.x, msg->origin.position.y, msg->origin.position.z);
+
+        seg_id_text[i].reset(new TextVisual(scene_manager_, frame_node_, current_pos));
+        seg_id_text[i]->setCharacterHeight(0.2);
+    
+        std::string capt = (boost::format("%d") % msg->vertices[i].id).str();
+        seg_id_text[i]->setCaption(capt);
+        seg_id_text[i]->setPosition(current_pos);// - Ogre::Vector3(0.25,0.25,0));
     }
 }
 

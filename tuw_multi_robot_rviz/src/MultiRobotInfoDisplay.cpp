@@ -208,7 +208,7 @@ void MultiRobotInfoDisplay::processMessage ( RobotInfo::ConstSharedPtr msg ) {
     //visual_->setFramePosition ( position );
     //visual_->setFrameOrientation ( orientation );
     //visual_->setScalePose ( property_scale_pose_->getFloat() );
-    //visual_->setColorPose ( property_color_pose_->getOgreColor() );
+    visual_->setColorPose ( property_color_pose_->getOgreColor() );
 
     auto dur = clock_->now() - tic;
     auto it = bool_properties_.find(msg->robot_name);
