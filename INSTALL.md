@@ -28,5 +28,14 @@ mkdir -p $MRRP_DIR/src
 cd $MRRP_DIR/src
 git clone --branch $ROS_VERSION git@github.com:tuw-robotics/tuw_multi_robot.git 
 git clone --branch $ROS_VERSION git@github.com:tuw-robotics/tuw_geometry.git 
-git clone git@github.com:tuw-robotics/tuw_msgs.git 
+git clone --branch $ROS_VERSION git@github.com:tuw-robotics/tuw_msgs.git 
 
+```
+
+## Installation
+```
+cd $MRRP_DIR
+catkin_make
+source devel/setup.bash
+
+```
